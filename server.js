@@ -53,6 +53,7 @@ const getIATACode = (city) => {
         "beijing":"PEK","shanghai":"PVG","taipei":"TPE","manila":"MNL",
         "ho chi minh":"SGN","hanoi":"HAN","jakarta":"CGK","colombo":"CMB"
     };
+    if (!city || typeof city !== 'string') return 'N/A';
     return map[city.toLowerCase().trim()] || city.substring(0, 3).toUpperCase();
 };
 
@@ -62,12 +63,27 @@ const getIATACode = (city) => {
 app.post("/generate", async (req, res) => {
     if (!genAI) return res.status(500).json({ error: "Gemini API key is not configured." });
 
-    const { from, destination, budget, days, date, style, travelers, pace, interests, cities } = req.body;
+    const {
+        from        = '',
+        destination = '',
+        budget      = '20000',
+        days        = '3',
+        date        = '',
+        style       = 'budget',
+        travelers   = 'solo',
+        pace        = 'normal',
+        interests   = 'nature',
+        cities      = ''
+    } = req.body;
 
     // Multi-city support
-    const isMultiCity = cities && typeof cities === 'string' && cities.length > 0;
+    const isMultiCity = cities && typeof cities === 'string' && cities.trim().length > 2;
     let parsedCities = [];
     try { parsedCities = isMultiCity ? JSON.parse(cities) : []; } catch(e) {}
+
+    // Derive destination from first multi-city entry if destination is blank
+    const effectiveDestination = destination || (parsedCities[0]?.city) || 'Unknown';
+    const effectiveFrom        = from || 'Unknown';
 
     const travelStyle = style === "luxury" ? "luxury 5-star" : style === "mid" ? "mid-range comfortable" : style === "adventure" ? "adventure-focused" : style === "relax" ? "relaxing & leisurely" : "budget-friendly";
     const travelPace = pace === "slow" ? "slow (max 2-3 places per day)" : pace === "fast" ? "fast (5-6 places per day)" : "normal (3-4 places per day)";
@@ -90,13 +106,13 @@ app.post("/generate", async (req, res) => {
             const endDay = startDay + parseInt(c.days || 1) - 1;
             return `Days ${startDay}-${endDay}: ${c.city}`;
           }).join(', ')
-        : `All ${totalDays} days in ${destination}`;
+        : `All ${totalDays} days in ${effectiveDestination}`;
 
     const prompt = `
 You are an elite AI travel planner API. Create a hyper-personalized travel itinerary.
 
 TRIP DETAILS:
-- From: ${from} → Destination: ${destDisplay}
+- From: ${effectiveFrom} → Destination: ${destDisplay}
 - Travelers: ${travelers} | Style: ${travelStyle} | Pace: ${travelPace}
 - Interests: ${interestsList} | Budget: ₹${budget} | Days: ${totalDays} | Date: ${date}
 - Day Plan: ${itineraryInstruction}
@@ -144,38 +160,38 @@ Return ONLY this JSON (no markdown, no extra text):
     {
       "category": "budget",
       "categoryLabel": "🎒 Budget Stay",
-      "name": "Real Budget Hotel in ${destination}",
+      "name": "Real Budget Hotel in ${effectiveDestination}",
       "rating": "3.0★",
       "price": "₹1500/night",
-      "address": "Budget Area, ${destination}",
+      "address": "Budget Area, ${effectiveDestination}",
       "amenities": ["WiFi", "AC", "Breakfast"]
     },
     {
       "category": "mid",
       "categoryLabel": "🏙️ Mid-Range",
-      "name": "Real Mid Hotel in ${destination}",
+      "name": "Real Mid Hotel in ${effectiveDestination}",
       "rating": "4.0★",
       "price": "₹4500/night",
-      "address": "Central Area, ${destination}",
+      "address": "Central Area, ${effectiveDestination}",
       "amenities": ["WiFi", "Pool", "Restaurant", "Gym"]
     },
     {
       "category": "luxury",
       "categoryLabel": "👑 Luxury",
-      "name": "Real Luxury Hotel in ${destination}",
+      "name": "Real Luxury Hotel in ${effectiveDestination}",
       "rating": "5.0★",
       "price": "₹12000/night",
-      "address": "Premium Area, ${destination}",
+      "address": "Premium Area, ${effectiveDestination}",
       "amenities": ["WiFi", "Infinity Pool", "Spa", "Fine Dining", "Concierge"]
     }
   ],
   "itinerary": [
     {
       "day": 1,
-      "city": "${destination}",
+      "city": "${effectiveDestination}",
       "theme": "Arrival & Exploration",
       "places": ["Exact Famous Place 1", "Exact Famous Place 2", "Exact Famous Place 3"],
-      "imageSearchQueries": ["Exact Famous Place 1 ${destination}", "Exact Famous Place 2 ${destination}", "Exact Famous Place 3 ${destination}"],
+      "imageSearchQueries": ["Exact Famous Place 1 ${effectiveDestination}", "Exact Famous Place 2 ${effectiveDestination}", "Exact Famous Place 3 ${effectiveDestination}"],
       "food": "Restaurant Name — Dish (e.g. Café De Sol — Fish Curry ₹350)",
       "transport": "Mode — e.g. Taxi ₹500 or Metro ₹50",
       "cost": "₹2000",
@@ -234,8 +250,8 @@ Return ONLY this JSON (no markdown, no extra text):
         text = text.slice(jsonStart, jsonEnd + 1);
         const data = JSON.parse(text);
         data.meta = {
-            originCode: getIATACode(from),
-            destCode: getIATACode(destination),
+            originCode: getIATACode(effectiveFrom),
+            destCode: getIATACode(effectiveDestination),
             isMultiCity,
             cities: parsedCities
         };
@@ -370,8 +386,8 @@ app.post("/email-itinerary", async (req, res) => {
         <tr>
           <td style="background:linear-gradient(135deg,#0a0f1a 0%,#1a2235 100%);padding:36px 40px 28px;text-align:center;border-bottom:1px solid rgba(212,167,106,0.18);">
             <div style="font-family:Georgia,serif;font-size:13px;letter-spacing:0.22em;text-transform:uppercase;color:#d4a76a;margin-bottom:14px;">✈ TravelAI</div>
-            <h1 style="font-family:Georgia,serif;color:#f5f0e8;font-size:30px;font-weight:300;margin:0 0 10px;line-height:1.2;">Your Trip to ${destination}</h1>
-            <p style="color:rgba(245,240,232,0.48);font-size:13px;margin:0;">${days} Days &nbsp;·&nbsp; ${from || 'Home'} → ${destination} &nbsp;·&nbsp; ${tripStyle} Style</p>
+            <h1 style="font-family:Georgia,serif;color:#f5f0e8;font-size:30px;font-weight:300;margin:0 0 10px;line-height:1.2;">Your Trip to ${effectiveDestination}</h1>
+            <p style="color:rgba(245,240,232,0.48);font-size:13px;margin:0;">${days} Days &nbsp;·&nbsp; ${effectiveFrom || 'Home'} → ${effectiveDestination} &nbsp;·&nbsp; ${tripStyle} Style</p>
           </td>
         </tr>
         <tr>
@@ -429,7 +445,7 @@ app.post("/email-itinerary", async (req, res) => {
         await axios.post('https://api.brevo.com/v3/smtp/email', {
             sender: { email: EMAIL_USER, name: "TravelAI Planner" },
             to: [{ email }],
-            subject: `✈️ Your ${days}-Day ${destination} Itinerary — TravelAI`,
+            subject: `✈️ Your ${days}-Day ${destination || effectiveDestination} Itinerary — TravelAI`,
             htmlContent
         }, { headers: { 'accept':'application/json','api-key':BREVO_API_KEY,'content-type':'application/json' } });
         res.json({ success: true });
