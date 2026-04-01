@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelAI — Your AI Travel Planner</title>
+    <meta name="description" content="TravelAI is your personal AI travel planner. Instantly generate custom day-by-day itineraries, flight estimates, hotel recommendations, and budget breakdowns in seconds.">
+    <meta name="keywords" content="AI travel planner, itinerary generator, travel AI, vacation planner, custom trip planner, Gemini AI travel">
+    <meta name="author" content="TravelAI">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://amazing-travel-123.netlify.app/"> <meta property="og:title" content="TravelAI — Your AI Travel Planner">
+    <meta property="og:description" content="Instantly generate custom day-by-day itineraries, flight estimates, and budget breakdowns.">
+    <meta property="og:image" content="https://placehold.co/1200x630/1a2235/d4a76a?text=TravelAI+Smart+Planner"> <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TravelAI — Your AI Travel Planner">
+    <meta name="twitter:description" content="Instantly generate custom day-by-day itineraries in seconds.">
+    <meta name="twitter:image" content="https://placehold.co/1200x630/1a2235/d4a76a?text=TravelAI+Smart+Planner">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') document.documentElement.classList.add('light-theme');
+        })();
+    </script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8T2Y0ZGS30"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-8T2Y0ZGS30');
+</script>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="cursorFollower"></div>
+
+<nav class="navbar" id="navbar">
+    <div class="nav-logo">✈ TravelAI</div>
+    <div class="nav-links">
+        <button class="btn-outline btn-sm theme-toggle-btn" onclick="toggleTheme()" style="padding: 8px 16px; border-radius: 50px;">
+            <span class="light-icon">☀️</span><span class="dark-icon">🌙</span>
+        </button>
+        <a href="#features">Features</a>
+        <a href="blog.html">Blog</a>
+        <a href="dashboard.html" id="navDashboard" style="display: none; font-weight: 500; color: var(--gold);">Dashboard</a>
+        <a href="profile.html" id="navProfile" style="display: none; font-weight: 500; color: var(--gold);">Profile</a>
+        <a href="admin.html" id="navAdmin" style="display: none; font-size: 12px; color: rgba(var(--white-rgb),0.5);">Admin</a>
+        <button class="btn-outline btn-sm" id="authBtn">Sign In</button>
+        <a href="form.html" class="nav-cta">Plan My Trip</a>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="hero-bg">
+        <div class="hero-overlay"></div>
+        <div class="bg-grid"></div>
+    </div>
+
+    <div class="hero-content">
+        <div class="hero-badge">✦ Powered by SmartTripPlanner AI</div>
+        <h1 class="hero-title">
+            Travel Smarter.<br>
+            <span class="gradient-text">Plan in Seconds.</span>
+        </h1>
+        <p class="hero-sub">Your AI co-pilot that builds complete travel plans — flights, hotels, day-by-day itinerary, budget — all instantly tailored to you.</p>
+        <div class="hero-actions">
+            <a href="form.html"><button class="btn-primary">Start Planning Free <span>→</span></button></a>
+            <div class="hero-stat-row">
+                <div class="stat"><span>10K+</span><small>Trips Planned</small></div>
+                <div class="stat-divider"></div>
+                <div class="stat"><span>150+</span><small>Destinations</small></div>
+                <div class="stat-divider"></div>
+                <div class="stat"><span>4.9★</span><small>Avg Rating</small></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-visual">
+        <div class="card-stack">
+            <div class="float-card card1">
+                <div class="card-icon">🗓</div>
+                <div>
+                    <div class="card-label">Day 1 — Goa</div>
+                    <div class="card-sub">Baga Beach → Fort Aguada → Sunset Cruise</div>
+                </div>
+            </div>
+            <div class="float-card card2">
+                <div class="card-icon">🏨</div>
+                <div>
+                    <div class="card-label">Hotel Suggested</div>
+                    <div class="card-sub">The Leela Goa — ₹8,200/night</div>
+                </div>
+            </div>
+            <div class="float-card card3">
+                <div class="card-icon">✈️</div>
+                <div>
+                    <div class="card-label">Flight Found</div>
+                    <div class="card-sub">IndiGo 6E-201 · Mumbai → Goa · ₹3,400</div>
+                </div>
+            </div>
+            <div class="float-card card4">
+                <div class="card-icon">💰</div>
+                <div>
+                    <div class="card-label">Total Budget</div>
+                    <div class="card-sub">₹24,500 for 3 days</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="scroll-hint">
+        <div class="scroll-line"></div>
+        <span>Scroll</span>
+    </div>
+</section>
+
+<section class="features" id="features">
+    <div class="section-header">
+        <div class="section-tag">What We Offer</div>
+        <h2>Everything Planned.<br>Nothing Left to Chance.</h2>
+    </div>
+
+    <div class="features-grid">
+        <div class="feat-card feat-large">
+            <div class="feat-icon">🧠</div>
+            <h3>AI Itinerary Builder</h3>
+            <p>Smart AI crafts a complete day-by-day plan based on your interests, budget, travel style, and pace — hyper-personalized in under 5 seconds. Choose from Budget, Luxury, Adventure, or Relaxation modes.</p>
+            <div class="feat-tag">Powered by SmartTripPlanner</div>
+        </div>
+        <div class="feat-card">
+            <div class="feat-icon">💰</div>
+            <h3>Budget Breakdown</h3>
+            <p>Full cost breakdown — flights, hotels, food, transport, activities — with Budget, Mid-Range, and Luxury totals.</p>
+        </div>
+        <div class="feat-card">
+            <div class="feat-icon">🛂</div>
+            <h3>Visa Info</h3>
+            <p>Instant visa requirements, processing time, cost, and official links for your destination.</p>
+        </div>
+        <div class="feat-card">
+            <div class="feat-icon">📅</div>
+            <h3>Best Time to Visit</h3>
+            <p>Peak season, off-season, weather summary, and cheapest months — all powered by AI.</p>
+        </div>
+        <div class="feat-card">
+            <div class="feat-icon">💱</div>
+            <h3>Currency Converter</h3>
+            <p>Live exchange rates from INR to 8+ currencies updated in real-time.</p>
+        </div>
+        <div class="feat-card feat-accent">
+            <div class="feat-icon">🤖</div>
+            <h3>AI Chatbot Assistant</h3>
+            <p>Ask anything about your trip — safety, culture, packing, local customs — and get instant AI answers.</p>
+        </div>
+    </div>
+</section>
+
+<section class="how-section" id="how">
+    <div class="section-header">
+        <div class="section-tag">The Process</div>
+        <h2>3 Steps to Your<br>Perfect Trip</h2>
+    </div>
+    <div class="steps-row">
+        <div class="step-card">
+            <div class="step-num">01</div>
+            <h3>Fill the Form</h3>
+            <p>Tell us your destination, budget, travel dates, and style preferences.</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step-card">
+            <div class="step-num">02</div>
+            <h3>AI Does Its Magic</h3>
+            <p>Smart AI processes your inputs and builds a fully customized travel plan.</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step-card">
+            <div class="step-num">03</div>
+            <h3>Explore & Book</h3>
+            <p>Get your itinerary with maps, hotels, flights, and a full cost breakdown.</p>
+        </div>
+    </div>
+    <div class="cta-center">
+        <a href="form.html"><button class="btn-primary">Plan My Trip Now <span>→</span></button></a>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-logo">✈ SmartTripPlanner</div>
+        <p>Your AI-powered travel companion. Build your dream trip in seconds.</p>
+        <div class="footer-bottom">© 2026 SmartTripPlanner.in — All Rights Reserved</div>
+    </div>
+</footer>
+
+<script type="module">
+// --- FIREBASE AUTHENTICATION ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA-9y06D-vMg4kP9RQ91Ms_OPfrd9Ap_EE",
+  authDomain: "travel-ai-app-ae087.firebaseapp.com",
+  projectId: "travel-ai-app-ae087",
+  storageBucket: "travel-ai-app-ae087.firebasestorage.app",
+  messagingSenderId: "484864841789",
+  appId: "1:484864841789:web:9a71aa69bd9ce5866e7254"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+const authBtn = document.getElementById('authBtn');
+const navDashboard = document.getElementById('navDashboard');
+let currentUser = null;
+
+const ADMIN_EMAILS = ["shubhambhatt2004@gmail.com"]; // update with your admin email
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        authBtn.textContent = `Sign Out (${(user.displayName||'User').split(' ')[0]})`;
+        navDashboard.style.display = "inline-block";
+        document.getElementById('navProfile').style.display = "inline-block";
+        if (ADMIN_EMAILS.includes(user.email)) {
+            document.getElementById('navAdmin').style.display = "inline-block";
+        }
+    } else {
+        currentUser = null;
+        authBtn.textContent = "Sign In";
+        navDashboard.style.display = "none";
+        document.getElementById('navProfile').style.display = "none";
+        document.getElementById('navAdmin').style.display = "none";
+    }
+});
+
+// Login / Logout Handler
+authBtn.addEventListener('click', () => {
+    if (currentUser) {
+        signOut(auth).then(() => alert("Signed out successfully."));
+    } else {
+        signInWithPopup(auth, provider).catch(err => alert("Login failed: " + err.message));
+    }
+});
+
+// --- UI SCRIPTS ---
+window.toggleTheme = function() {
+    document.documentElement.classList.toggle('light-theme');
+    const isLight = document.documentElement.classList.contains('light-theme');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+}
+
+const cursor = document.getElementById('cursor');
+const follower = document.getElementById('cursorFollower');
+document.addEventListener('mousemove', (e) => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    setTimeout(() => {
+        follower.style.left = e.clientX + 'px';
+        follower.style.top = e.clientY + 'px';
+    }, 80);
+});
+
+window.addEventListener('scroll', () => {
+    const nav = document.getElementById('navbar');
+    nav.classList.toggle('scrolled', window.scrollY > 50);
+});
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add('visible');
+    });
+}, { threshold: 0.15 });
+document.querySelectorAll('.feat-card, .step-card, .hero-content, .hero-visual').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shared Trip — TravelAI</title>
+    <meta name="description" content="TravelAI is your personal AI travel planner. Instantly generate custom day-by-day itineraries, flight estimates, hotel recommendations, and budget breakdowns in seconds.">
+    <meta name="keywords" content="AI travel planner, itinerary generator, travel AI, vacation planner, custom trip planner, Gemini AI travel">
+    <meta name="author" content="TravelAI">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://amazing-travel-123.netlify.app/"> <meta property="og:title" content="TravelAI — Your AI Travel Planner">
+    <meta property="og:description" content="Instantly generate custom day-by-day itineraries, flight estimates, and budget breakdowns.">
+    <meta property="og:image" content="https://placehold.co/1200x630/1a2235/d4a76a?text=TravelAI+Smart+Planner"> <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TravelAI — Your AI Travel Planner">
+    <meta name="twitter:description" content="Instantly generate custom day-by-day itineraries in seconds.">
+    <meta name="twitter:image" content="https://placehold.co/1200x630/1a2235/d4a76a?text=TravelAI+Smart+Planner">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDkD0iyaPkulI8IosMnbhKQgBQ3PO29JkQ"></script>
+</head>
+<body class="result-body">
+
+<div id="fullLoader" style="position:fixed; inset:0; background:var(--dark); z-index:9999; display:flex; justify-content:center; align-items:center; color:var(--gold); font-size:24px; font-family:var(--font-serif);">
+    Loading this adventure... ✈️
+</div>
+
+<nav class="result-nav" id="topNav">
+    <a href="index.html" class="nav-logo">✈ TravelAI</a>
+    <div class="result-nav-actions">
+        <a href="form.html"><button class="btn-primary btn-sm">Plan Your Own Trip ✨</button></a>
+    </div>
+</nav>
+
+<div id="pdf-content">
+    <div class="result-hero" id="resultHero">
+        <div class="result-hero-overlay"></div>
+        <div class="result-hero-content">
+            <div class="rh-badge" id="authorBadge" style="background: var(--accent); color: var(--dark);">✦ Shared Trip Plan</div>
+            <h1 id="heroTitle">Trip to <span id="heroDestination">—</span></h1>
+            <div class="rh-meta" id="rhMeta"></div>
+        </div>
+    </div>
+
+    <div class="summary-section">
+        <div class="summary-grid" id="summaryGrid">
+            <div class="sum-card"><div class="sum-icon">📍</div><div><div class="sum-label">Destination</div><div class="sum-val" id="sumDest">—</div></div></div>
+            <div class="sum-card"><div class="sum-icon">📅</div><div><div class="sum-label">Duration</div><div class="sum-val" id="sumDays">—</div></div></div>
+            <div class="sum-card"><div class="sum-icon">💰</div><div><div class="sum-label">Est. Cost</div><div class="sum-val" id="sumCost">—</div></div></div>
+            <div class="sum-card"><div class="sum-icon">✈️</div><div><div class="sum-label">From</div><div class="sum-val" id="sumFrom">—</div></div></div>
+            <div class="sum-card"><div class="sum-icon">🎨</div><div><div class="sum-label">Style</div><div class="sum-val" id="sumStyle">—</div></div></div>
+        </div>
+    </div>
+    
+    <div class="section-block">
+        <div class="section-title-row">
+            <h2>🗓 Day-by-Day Itinerary</h2>
+            <div class="section-sub">A curated plan powered by AI</div>
+        </div>
+        <div id="itinerary-container" class="itinerary-container"></div>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA-9y06D-vMg4kP9RQ91Ms_OPfrd9Ap_EE",
+  authDomain: "travel-ai-app-ae087.firebaseapp.com",
+  projectId: "travel-ai-app-ae087"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Extract the ?id= from the URL
+const urlParams = new URLSearchParams(window.location.search);
+const tripId = urlParams.get('id');
+
+async function loadSharedTrip() {
+    if (!tripId) { alert("Invalid Trip Link"); window.location.href = "index.html"; return; }
+
+    try {
+        const docRef = doc(db, "trips", tripId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            renderSharedUI(data);
+            document.getElementById('fullLoader').style.display = 'none';
+        } else {
+            alert("This trip does not exist or was deleted.");
+            window.location.href = "index.html";
+        }
+    } catch (e) {
+        alert("Error loading trip.");
+        console.error(e);
+    }
+}
+
+function renderSharedUI(data) {
+    const destination = data.destination;
+    document.getElementById("heroDestination").textContent = destination;
+    document.getElementById("authorBadge").textContent = `✦ Trip curated by ${data.userName || 'a friend'}`;
+    document.getElementById("rhMeta").innerHTML = `<span>📅 ${data.days} Days</span> <span>✈ ${data.from} → ${destination}</span>`;
+    
+    document.getElementById("sumDest").textContent = destination;
+    document.getElementById("sumDays").textContent = data.days + " Days";
+    document.getElementById("sumFrom").textContent = data.from;
+    document.getElementById("sumStyle").textContent = data.style.charAt(0).toUpperCase() + data.style.slice(1);
+    document.getElementById("sumCost").textContent = "₹" + parseInt(data.budget).toLocaleString('en-IN');
+
+    // Hero Image Fetch - UPDATED TO USE RENDER URL
+    fetch(`https://ai-travel-planner-gmmc.onrender.com/get-image?query=${encodeURIComponent(destination + ' travel landscape')}&type=place`)
+        .then(r => r.json()).then(d => {
+            if(d.imageUrl) {
+                document.getElementById("resultHero").style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.65)), url('${d.imageUrl}')`;
+                document.getElementById("resultHero").style.backgroundSize = 'cover';
+                document.getElementById("resultHero").style.backgroundPosition = 'center';
+            }
+        });
+
+    // Render Clean Itinerary
+    const container = document.getElementById("itinerary-container");
+    data.tripData.itinerary.forEach((day, index) => {
+        const card = document.createElement("div");
+        card.className = "day-card";
+        const placeChips = day.places.map(p => `<span class="place-chip">${p.trim()}</span>`).join("");
+        
+        card.innerHTML = `
+            <div class="day-header-wrap" style="padding-bottom: 16px;">
+                <div class="day-number-badge">Day ${day.day}</div>
+            </div>
+            <div class="day-body">
+                <div class="day-places-row">${placeChips}</div>
+                <div class="day-details">
+                    <div class="day-detail-item"><div class="dd-icon">🍴</div><div><strong>Food</strong><p>${day.food}</p></div></div>
+                    <div class="day-detail-item"><div class="dd-icon">🚕</div><div><strong>Transport</strong><p>${day.transport}</p></div></div>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+loadSharedTrip();
+</script>
+</body>
+</html>

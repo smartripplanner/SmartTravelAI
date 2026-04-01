@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Blog — TravelAI</title>
+    <meta name="description" id="metaDesc" content="Read travel guides, tips and destination inspiration on TravelAI.">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') document.documentElement.classList.add('light-theme');
+        })();
+    </script>
+    <style>
+        .post-page { max-width: 780px; margin: 0 auto; padding: 100px 24px 80px; }
+        .post-back { display: inline-flex; align-items: center; gap: 6px; color: rgba(var(--white-rgb),0.5); font-size: 0.85rem; text-decoration: none; margin-bottom: 32px; transition: color 0.2s; }
+        .post-back:hover { color: var(--gold); }
+        .post-category { display: inline-flex; align-items: center; gap: 5px; padding: 4px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+        .cat-destinations { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .cat-tips { background: rgba(234,179,8,0.15); color: #facc15; }
+        .cat-budget { background: rgba(34,197,94,0.15); color: #4ade80; }
+        .cat-guides { background: rgba(168,85,247,0.15); color: #c084fc; }
+        .cat-ai { background: rgba(212,167,106,0.15); color: var(--gold); }
+        .post-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 5vw, 3rem); color: var(--white); line-height: 1.2; margin-bottom: 20px; }
+        .post-meta { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+        .post-meta-item { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: rgba(var(--white-rgb),0.5); }
+        .post-cover { width: 100%; height: 400px; object-fit: cover; border-radius: 18px; margin-bottom: 40px; background: var(--glass-white); display: flex; align-items: center; justify-content: center; font-size: 5rem; overflow: hidden; }
+        .post-cover img { width: 100%; height: 100%; object-fit: cover; border-radius: 18px; }
+        .post-body { font-size: 1.02rem; line-height: 1.85; color: rgba(var(--white-rgb),0.82); }
+        .post-body h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; color: var(--white); margin: 36px 0 14px; }
+        .post-body h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; color: var(--white); margin: 28px 0 10px; }
+        .post-body p { margin-bottom: 18px; }
+        .post-body ul, .post-body ol { padding-left: 24px; margin-bottom: 18px; }
+        .post-body li { margin-bottom: 8px; }
+        .post-body strong { color: var(--white); font-weight: 600; }
+        .post-body em { color: var(--gold); font-style: italic; }
+        .post-body blockquote { border-left: 3px solid var(--gold); padding: 12px 20px; margin: 24px 0; background: rgba(212,167,106,0.06); border-radius: 0 10px 10px 0; color: rgba(var(--white-rgb),0.75); font-style: italic; }
+        .post-body a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+        .post-body code { background: rgba(var(--white-rgb),0.08); padding: 2px 8px; border-radius: 4px; font-size: 0.9em; font-family: monospace; }
+        .post-body hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+        .post-cta { background: var(--glass-white); border: 1px solid var(--border); border-radius: 18px; padding: 36px; text-align: center; margin: 48px 0; }
+        .post-cta h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--white); margin-bottom: 10px; }
+        .post-cta p { color: rgba(var(--white-rgb),0.6); margin-bottom: 20px; }
+        .post-share { display: flex; align-items: center; gap: 12px; margin: 40px 0; padding: 20px 0; border-top: 1px solid var(--border); flex-wrap: wrap; }
+        .post-share span { font-size: 0.85rem; color: rgba(var(--white-rgb),0.5); }
+        .share-btn { padding: 7px 16px; border-radius: 50px; border: 1px solid var(--border); background: transparent; color: rgba(var(--white-rgb),0.7); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+        .share-btn:hover { border-color: var(--gold); color: var(--gold); }
+        .related-section { margin-top: 48px; }
+        .related-section h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--white); margin-bottom: 20px; }
+        .related-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .related-card { background: var(--glass-white); border: 1px solid var(--border); border-radius: 14px; padding: 18px; text-decoration: none; display: block; transition: border-color 0.2s, transform 0.2s; }
+        .related-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+        .related-card-cat { font-size: 0.72rem; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .related-card-title { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--white); line-height: 1.3; }
+        .post-not-found { text-align: center; padding: 80px 20px; }
+        .post-not-found h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--white); margin-bottom: 12px; }
+        .post-not-found p { color: rgba(var(--white-rgb),0.6); }
+        @media (max-width: 600px) {
+            .post-cover { height: 240px; }
+            .related-grid { grid-template-columns: 1fr; }
+            .post-title { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="cursorFollower"></div>
+
+<nav class="navbar scrolled" id="navbar">
+    <a href="index.html" class="nav-logo">✈ TravelAI</a>
+    <div class="nav-links">
+        <button class="btn-outline btn-sm theme-toggle-btn" onclick="toggleTheme()" style="padding: 8px 16px; border-radius: 50px;">
+            <span class="light-icon">☀️</span><span class="dark-icon">🌙</span>
+        </button>
+        <a href="index.html#features">Features</a>
+        <a href="blog.html" style="font-weight:500; color:var(--gold);">Blog</a>
+        <a href="dashboard.html" id="navDashboard" style="display:none; font-weight:500; color:var(--gold);">Dashboard</a>
+        <a href="profile.html" id="navProfile" style="display:none; color:var(--gold);">Profile</a>
+        <a href="admin.html" id="navAdmin" style="display:none; font-size:12px; color:rgba(var(--white-rgb),0.5);">Admin</a>
+        <button class="btn-outline btn-sm" id="authBtn">Sign In</button>
+        <a href="form.html" class="nav-cta">Plan My Trip</a>
+    </div>
+</nav>
+
+<div class="post-page" id="postPage">
+    <div style="text-align:center; padding:60px 0; color:rgba(var(--white-rgb),0.4);">Loading post...</div>
+</div>
+
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-logo">✈ SmartTripPlanner</div>
+        <p>Your AI-powered travel companion. Build your dream trip in seconds.</p>
+        <div class="footer-bottom">© 2026 SmartTripPlanner.in — All Rights Reserved</div>
+    </div>
+</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getFirestore, collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA-9y06D-vMg4kP9RQ91Ms_OPfrd9Ap_EE",
+  authDomain: "travel-ai-app-ae087.firebaseapp.com",
+  projectId: "travel-ai-app-ae087",
+  storageBucket: "travel-ai-app-ae087.firebasestorage.app",
+  messagingSenderId: "484864841789",
+  appId: "1:484864841789:web:9a71aa69bd9ce5866e7254"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+const ADMIN_EMAILS = ["shubhambhatt2004@gmail.com"];
+
+window.toggleTheme = function() {
+    document.documentElement.classList.toggle('light-theme');
+    localStorage.setItem('theme', document.documentElement.classList.contains('light-theme') ? 'light' : 'dark');
+};
+
+const cursor = document.getElementById('cursor');
+const follower = document.getElementById('cursorFollower');
+document.addEventListener('mousemove', (e) => {
+    cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px';
+    setTimeout(() => { follower.style.left = e.clientX + 'px'; follower.style.top = e.clientY + 'px'; }, 80);
+});
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        document.getElementById('authBtn').textContent = `Sign Out (${(user.displayName||'User').split(' ')[0]})`;
+        document.getElementById('navDashboard').style.display = 'inline-block';
+        document.getElementById('navProfile').style.display = 'inline-block';
+        if (ADMIN_EMAILS.includes(user.email)) document.getElementById('navAdmin').style.display = 'inline-block';
+    } else {
+        document.getElementById('authBtn').textContent = 'Sign In';
+    }
+});
+document.getElementById('authBtn').addEventListener('click', () => {
+    const u = auth.currentUser;
+    if (u) signOut(auth); else signInWithPopup(auth, provider);
+});
+
+const catMap = {
+    destinations: { label: '🗺 Destinations', cls: 'cat-destinations' },
+    tips:         { label: '💡 Travel Tips', cls: 'cat-tips' },
+    budget:       { label: '💰 Budget Travel', cls: 'cat-budget' },
+    guides:       { label: '📖 City Guides', cls: 'cat-guides' },
+    ai:           { label: '🤖 AI & Tech', cls: 'cat-ai' },
+};
+const defaultEmoji = { destinations:'🌍', tips:'💡', budget:'💰', guides:'🏙', ai:'🤖' };
+
+const slug = new URLSearchParams(window.location.search).get('slug');
+const container = document.getElementById('postPage');
+
+if (!slug) {
+    showNotFound();
+} else {
+    loadPost(slug);
+}
+
+async function loadPost(slug) {
+    // Try Firestore first
+    const snap = await getDocs(query(collection(db, 'blogPosts'), where('slug', '==', slug))).catch(() => null);
+    let post = snap?.docs[0] ? { id: snap.docs[0].id, ...snap.docs[0].data() } : null;
+
+    // Fallback to sample posts
+    if (!post) post = getSamplePost(slug);
+
+    if (!post) { showNotFound(); return; }
+
+    // Update meta
+    document.getElementById('pageTitle').textContent = `${post.title} — TravelAI Blog`;
+    document.getElementById('metaDesc').content = post.excerpt || post.title;
+
+    // Load related posts
+    const relatedSnap = await getDocs(
+        query(collection(db, 'blogPosts'), where('category', '==', post.category), limit(5))
+    ).catch(() => null);
+    let related = relatedSnap?.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => p.slug !== slug).slice(0, 4) || [];
+    if (!related.length) related = getSamplePosts().filter(p => p.category === post.category && p.slug !== slug).slice(0, 4);
+
+    renderPost(post, related);
+}
+
+function renderPost(post, related) {
+    const cat = catMap[post.category] || { label: '📝 General', cls: 'cat-ai' };
+    const emoji = defaultEmoji[post.category] || '📝';
+    const date = post.createdAt?.toDate
+        ? post.createdAt.toDate().toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'})
+        : (post.date || '');
+    const readTime = post.readTime || estimateReadTime(post.content || '');
+
+    const imgHtml = post.image
+        ? `<div class="post-cover"><img src="${post.image}" alt="${post.title}" onerror="this.parentElement.innerHTML='<span style=font-size:5rem>${emoji}</span>'"></div>`
+        : `<div class="post-cover"><span style="font-size:5rem">${emoji}</span></div>`;
+
+    const bodyHtml = markdownToHtml(post.content || '');
+
+    const relatedHtml = related.length ? `
+        <div class="related-section">
+            <h3>More from our Blog</h3>
+            <div class="related-grid">
+                ${related.map(r => {
+                    const rc = catMap[r.category] || { label: '📝 General' };
+                    return `<a class="related-card" href="blog-post.html?slug=${r.slug}">
+                        <div class="related-card-cat">${rc.label}</div>
+                        <div class="related-card-title">${r.title}</div>
+                    </a>`;
+                }).join('')}
+            </div>
+        </div>` : '';
+
+    container.innerHTML = `
+        <a href="blog.html" class="post-back">← Back to Blog</a>
+        <span class="post-category ${cat.cls}">${cat.label}</span>
+        <h1 class="post-title">${post.title}</h1>
+        <div class="post-meta">
+            <div class="post-meta-item">📅 <span>${date}</span></div>
+            <div class="post-meta-item">⏱ <span>${readTime} min read</span></div>
+            <div class="post-meta-item">✍️ <span>TravelAI Team</span></div>
+        </div>
+        ${imgHtml}
+        <div class="post-body">${bodyHtml}</div>
+        <div class="post-share">
+            <span>Share this post:</span>
+            <button class="share-btn" onclick="sharePost('twitter')">𝕏 Twitter</button>
+            <button class="share-btn" onclick="sharePost('whatsapp')">📱 WhatsApp</button>
+            <button class="share-btn" onclick="sharePost('copy')">🔗 Copy Link</button>
+        </div>
+        <div class="post-cta">
+            <h3>Ready to Plan This Trip?</h3>
+            <p>Use our AI travel planner to build a complete itinerary, budget breakdown, and more — in seconds.</p>
+            <a href="form.html"><button class="btn-primary">Plan My Trip Now →</button></a>
+        </div>
+        ${relatedHtml}
+    `;
+}
+
+function showNotFound() {
+    container.innerHTML = `
+        <div class="post-not-found">
+            <div style="font-size:3rem; margin-bottom:16px;">🔍</div>
+            <h2>Post Not Found</h2>
+            <p>The blog post you're looking for doesn't exist or has been removed.</p>
+            <br>
+            <a href="blog.html" class="btn-primary" style="display:inline-flex; align-items:center; gap:8px; text-decoration:none; padding:12px 28px; border-radius:50px;">← Back to Blog</a>
+        </div>`;
+}
+
+window.sharePost = function(platform) {
+    const url = window.location.href;
+    const title = document.querySelector('.post-title')?.textContent || 'TravelAI Blog';
+    if (platform === 'twitter') {
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank');
+    } else if (platform === 'whatsapp') {
+        window.open(`https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`, '_blank');
+    } else if (platform === 'copy') {
+        navigator.clipboard.writeText(url).then(() => alert('Link copied to clipboard!'));
+    }
+};
+
+function estimateReadTime(text) {
+    return Math.max(1, Math.ceil(text.split(' ').length / 200));
+}
+
+// Simple markdown-to-HTML converter
+function markdownToHtml(md) {
+    return md
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/`(.+?)`/g, '<code>$1</code>')
+        .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+        .replace(/^---$/gm, '<hr>')
+        .replace(/^\- (.+)$/gm, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>\n?)+/g, s => `<ul>${s}</ul>`)
+        .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+        .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>')
+        .split('\n\n')
+        .map(block => {
+            if (/^<(h[23]|ul|ol|blockquote|hr)/.test(block.trim())) return block;
+            if (!block.trim()) return '';
+            return `<p>${block.replace(/\n/g, ' ')}</p>`;
+        })
+        .join('\n');
+}
+
+function getSamplePost(slug) {
+    return getSamplePosts().find(p => p.slug === slug) || null;
+}
+
+function getSamplePosts() {
+    return [
+        {
+            slug: 'top-10-destinations-india-2026',
+            title: 'Top 10 Destinations in India for 2026',
+            category: 'destinations',
+            excerpt: 'From the Himalayas to the backwaters of Kerala — these are the must-visit spots this year.',
+            date: 'March 2026',
+            readTime: 5,
+            content: `## India's Most Breathtaking Destinations This Year
+
+India is a land of infinite diversity — from snow-capped peaks to tropical beaches, from ancient temples to bustling metros. Here are the top 10 destinations you must visit in 2026.
+
+## 1. Rajasthan — The Land of Kings
+
+*The golden sands of the Thar Desert and majestic forts await you.*
+
+Rajasthan is a timeless destination that never loses its magic. Visit Jaipur for its iconic Pink City architecture, Jodhpur for the Blue City's labyrinthine streets, and Jaisalmer for a desert camp under the stars.
+
+**Best time to visit:** October to March
+
+## 2. Kerala Backwaters
+
+Glide through the serene backwaters on a traditional houseboat. The lush greenery, coconut palms, and village life make this one of India's most unique experiences.
+
+**Best time to visit:** September to March
+
+## 3. Ladakh — The Last Shangri-La
+
+High-altitude monasteries, magnetic hills, and the crystal-clear Pangong Lake. Ladakh is bucket-list worthy.
+
+**Best time to visit:** June to September
+
+## 4. Goa — More Than Just Beaches
+
+Beyond the famous beaches, Goa has colonial Portuguese architecture, spice plantations, and a vibrant food scene.
+
+**Best time to visit:** November to February
+
+## 5. Varanasi — The Spiritual Capital
+
+One of the world's oldest continuously inhabited cities. The ghats at sunrise are an experience that will stay with you forever.
+
+> "To visit Varanasi is to confront the entirety of human existence."
+
+---
+
+**Ready to plan your India trip?** Use our AI travel planner to get a custom itinerary in seconds.`
+        },
+        {
+            slug: 'budget-europe-trip-under-1-lakh',
+            title: 'How to Do Europe Under ₹1 Lakh',
+            category: 'budget',
+            excerpt: 'Yes it\'s possible. We break down flights, hostels, rail passes, and free attractions.',
+            date: 'February 2026',
+            readTime: 7,
+            content: `## Europe on a Budget: The Complete ₹1 Lakh Guide
+
+Most people think Europe is out of reach on an Indian budget. But with smart planning, you can experience 4-5 European countries for under ₹1 lakh (excluding visa fees).
+
+## The Budget Breakdown
+
+**Flights:** ₹35,000–45,000 (round trip, book 3+ months early)
+**Accommodation:** ₹800–1,200/night in hostels = ₹16,000–24,000 for 20 nights
+**Food:** ₹800–1,200/day = ₹16,000–24,000
+**Transport:** Eurail pass or budget buses = ₹8,000–12,000
+**Activities:** Most major attractions offer free entry or discounts
+
+## Best Countries for Budget Travelers
+
+- **Portugal** — cheapest in Western Europe
+- **Czech Republic** — stunning Prague at half the cost of Paris
+- **Hungary** — Budapest is phenomenal value
+- **Poland** — Krakow and Warsaw for almost nothing
+- **Romania** — the hidden gem of Eastern Europe
+
+## Pro Tips
+
+1. **Fly into one city, out of another** to avoid backtracking
+2. **Book hostels with free breakfast** — saves ₹400–600/day
+3. **City museum passes** often include free public transport
+4. **Cook one meal a day** in the hostel kitchen
+5. **Travel by night bus** to save on accommodation
+
+> The key is flexibility. The more rigid your plans, the more you'll pay.`
+        },
+        {
+            slug: 'ai-travel-planning-guide',
+            title: 'How AI Is Changing the Way We Travel',
+            category: 'ai',
+            excerpt: 'From personalized itineraries to real-time budget tracking — AI makes travel smarter.',
+            date: 'January 2026',
+            readTime: 4,
+            content: `## The AI Revolution in Travel Planning
+
+Travel planning used to mean hours of research across dozens of tabs — flights on one site, hotels on another, itinerary ideas from blogs, visa info from government websites. AI is changing all of that.
+
+## What AI Can Do For Travelers Today
+
+**1. Personalized Itineraries in Seconds**
+
+Instead of reading 20 blog posts and stitching together a plan, AI can generate a complete day-by-day itinerary tailored to your specific travel style, budget, and interests.
+
+**2. Real-Time Budget Estimation**
+
+AI can factor in current flight prices, seasonal hotel rates, local food costs, and activity fees to give you a realistic budget breakdown before you book anything.
+
+**3. Visa & Documentation Guidance**
+
+Instant answers to "do I need a visa?" with processing times, costs, and official links — no more navigating confusing government websites.
+
+**4. Local Insights Beyond the Tourist Trail**
+
+AI trained on thousands of travel reviews can surface authentic local experiences that don't appear in mainstream travel guides.
+
+## The Future: Your AI Travel Companion
+
+The next generation of AI travel tools will:
+- Monitor prices and alert you when to book
+- Adapt your itinerary in real-time based on weather
+- Suggest alternatives when attractions are closed or crowded
+- Learn your preferences over time for increasingly personalized recommendations
+
+**Try it yourself** — generate a complete AI travel plan in under 30 seconds.`
+        },
+        {
+            slug: 'goa-complete-travel-guide',
+            title: 'Goa Complete Travel Guide 2026',
+            category: 'guides',
+            excerpt: 'Everything you need — North vs South Goa, best beaches, nightlife, food, and hidden gems.',
+            date: 'December 2025',
+            readTime: 8,
+            content: `## Goa: India's Beach Paradise
+
+Goa is India's most popular tourist destination for good reason — it has something for everyone. Whether you're a party-goer, a history buff, a foodie, or a beach bum, Goa delivers.
+
+## North Goa vs South Goa
+
+**North Goa** is where the action is. Baga, Calangute, and Anjuna beaches are packed with beach shacks, water sports, and nightlife. It's louder, more crowded, and more budget-friendly.
+
+**South Goa** is for those seeking peace. Palolem, Agonda, and Butterfly Beach are quieter, cleaner, and more upscale. The vibe is laid-back and the beaches are stunning.
+
+## Top Beaches
+
+- **Baga** — Best for nightlife and water sports
+- **Anjuna** — Famous Wednesday flea market
+- **Palolem** — Most scenic in South Goa
+- **Vagator** — Great sunsets and electronic music scene
+- **Agonda** — Quiet, pristine, perfect for couples
+
+## Must-Eat in Goa
+
+1. Fish curry rice — the Goan staple
+2. Prawn balchão — fiery and tangy
+3. Bebinca — traditional Goan dessert
+4. Xacuti — rich, aromatic curry
+5. Feni — local cashew or coconut spirit
+
+## Getting Around
+
+Rent a scooter (₹300–400/day) — it's the best way to explore. Taxis are expensive but convenient for nights out.
+
+## Budget Tips
+
+- Stay in North Goa for cheaper options
+- Eat at local restaurants away from the beach — 60% cheaper
+- Visit during shoulder season (Oct or Mar) for lower rates
+
+> Goa isn't just a destination — it's a state of mind.`
+        },
+        {
+            slug: 'packing-tips-for-long-trips',
+            title: '15 Packing Tips That Will Change Your Travel Life',
+            category: 'tips',
+            excerpt: 'Pack smarter, not heavier. The essential packing list for any trip length, any destination.',
+            date: 'November 2025',
+            readTime: 5,
+            content: `## Pack Smart, Travel Light
+
+Overpacking is the #1 rookie mistake. Here are 15 tips that seasoned travelers swear by.
+
+## The Golden Rules
+
+**1. Lay everything out, then remove half**
+
+Before you close your bag, take out 50% of what you packed. You will not wear most of it.
+
+**2. Roll, don't fold**
+
+Rolling clothes saves up to 30% more space and reduces wrinkles.
+
+**3. One bag rule**
+
+If you can't carry it yourself for 20 minutes, it's too heavy. Use a carry-on only whenever possible.
+
+**4. Wear your heaviest items on the plane**
+
+Shoes, jackets, and heavy jeans — wear them, don't pack them.
+
+**5. Pack versatile, neutral-colored clothing**
+
+Dark jeans, white/grey tops, and one statement piece goes a long way. Avoid packing for every possible scenario.
+
+## What You Always Forget
+
+- A power bank (lifesaver)
+- A small padlock for hostel lockers
+- Photocopies of your passport and visa
+- A light scarf (versatile: cold flights, temple cover-ups, beach mat)
+- Reusable water bottle
+
+## Toiletries: The Minimal Kit
+
+- Solid shampoo bar (no spillage, no liquid rules)
+- SPF 50+ sunscreen — buy locally
+- Microfiber towel
+- 3-in-1 soap/shampoo/conditioner for short trips
+
+## Tech Essentials
+
+- Universal travel adapter
+- 3-in-1 charging cable
+- Noise-cancelling earbuds
+- Offline downloaded maps (Google Maps or Maps.me)
+
+> The best suitcase is the one that comes home with room to spare for souvenirs.`
+        },
+        {
+            slug: 'solo-travel-safety-guide',
+            title: 'Solo Travel Safety: The Ultimate Guide',
+            category: 'tips',
+            excerpt: 'Everything first-time solo travelers need to stay safe, confident, and have the trip of their life.',
+            date: 'October 2025',
+            readTime: 6,
+            content: `## Solo Travel: Liberating, Empowering, Safe
+
+Solo travel is one of the most transformative experiences you can have. And with the right precautions, it's safer than most people think.
+
+## Before You Leave
+
+**Share your itinerary** with someone at home — hotel names, flight numbers, and a rough daily plan.
+
+**Make digital and physical copies** of your passport, visa, travel insurance, and emergency contacts.
+
+**Get travel insurance** — non-negotiable. Medical emergencies abroad can cost lakhs.
+
+**Research your destination** — know the areas to avoid, the local scam tactics, and the emergency numbers.
+
+## On the Ground
+
+**Trust your gut.** If a situation feels wrong, leave. Your instincts are calibrated to protect you.
+
+**Stay connected** — a local SIM card is cheap and keeps you reachable.
+
+**Blend in** — dress like locals, keep expensive jewelry at home, don't flash your phone.
+
+**First nights in a new city** — book accommodation in advance and arrive in daylight.
+
+## Meeting People Safely
+
+- Hostels are great for meeting other travelers
+- Day trips and group activities are safe ways to socialize
+- Let someone know where you're going before meeting someone new
+
+## Digital Safety
+
+- Use a VPN on public WiFi
+- Keep important documents in cloud storage
+- Enable location sharing with a trusted contact
+
+> Solo travel doesn't mean alone. You'll meet more people than you ever imagined.`
+        }
+    ];
+}
+</script>
+
+</body>
+</html>

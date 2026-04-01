@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Trips — TravelAI</title>
+    <meta name="description" content="TravelAI is your personal AI travel planner. Instantly generate custom day-by-day itineraries, flight estimates, hotel recommendations, and budget breakdowns in seconds.">
+    <meta name="keywords" content="AI travel planner, itinerary generator, travel AI, vacation planner, custom trip planner, Gemini AI travel">
+    <meta name="author" content="TravelAI">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://amazing-travel-123.netlify.app/"> <meta property="og:title" content="TravelAI — Your AI Travel Planner">
+    <meta property="og:description" content="Instantly generate custom day-by-day itineraries, flight estimates, and budget breakdowns.">
+    <meta property="og:image" content="https://placehold.co/1200x630/1a2235/d4a76a?text=TravelAI+Smart+Planner"> <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TravelAI — Your AI Travel Planner">
+    <meta name="twitter:description" content="Instantly generate custom day-by-day itineraries in seconds.">
+    <meta name="twitter:image" content="https://placehold.co/1200x630/1a2235/d4a76a?text=TravelAI+Smart+Planner">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') document.documentElement.classList.add('light-theme');
+        })();
+    </script>
+    <style>
+        .trip-actions { display: flex; gap: 8px; margin-top: auto; flex-wrap: wrap; }
+        .trip-style-badge { display: inline-block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(212,167,106,0.1); border: 1px solid rgba(212,167,106,0.2); color: var(--gold); padding: 3px 10px; border-radius: 20px; }
+        .search-bar { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px 18px; font-size: 14px; color: var(--white); font-family: var(--font-sans); width: 300px; transition: all 0.3s; }
+        .search-bar:focus { outline: none; border-color: rgba(212,167,106,0.4); }
+        .search-bar::placeholder { color: rgba(var(--white-rgb), 0.25); }
+        .filter-row { display: flex; gap: 12px; margin-bottom: 28px; align-items: center; flex-wrap: wrap; }
+        .filter-chip { padding: 6px 16px; border-radius: 50px; border: 1px solid var(--glass-border); background: var(--glass); font-size: 12px; cursor: pointer; transition: all 0.3s; color: rgba(var(--white-rgb), 0.6); }
+        .filter-chip.active { background: rgba(212,167,106,0.15); border-color: rgba(212,167,106,0.4); color: var(--gold); }
+        .delete-btn { background: none; border: 1px solid rgba(239,68,68,0.2); color: rgba(239,68,68,0.6); padding: 8px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; transition: all 0.3s; }
+        .delete-btn:hover { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.5); color: #ef4444; }
+        .profile-bar { display: flex; align-items: center; gap: 16px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 20px 28px; margin-bottom: 32px; }
+        .profile-avatar { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), #c8941a); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 600; color: #0a0f1a; flex-shrink: 0; overflow: hidden; }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-name { font-family: var(--font-serif); font-size: 22px; color: var(--white); }
+        .profile-email { font-size: 13px; color: rgba(var(--white-rgb), 0.4); }
+    </style>
+</head>
+<body class="result-body">
+
+<nav class="result-nav">
+    <a href="index.html" class="nav-logo">✈ TravelAI</a>
+    <div class="result-nav-actions">
+        <button class="btn-outline btn-sm theme-toggle-btn" onclick="toggleTheme()">
+            <span class="light-icon">☀️ Light Mode</span><span class="dark-icon">🌙 Dark Mode</span>
+        </button>
+        <a href="form.html"><button class="btn-primary btn-sm">+ Plan New Trip</button></a>
+        <button class="btn-outline btn-sm" id="authBtn">Sign Out</button>
+    </div>
+</nav>
+
+<div class="dashboard-container">
+
+    <!-- Profile Bar -->
+    <div class="profile-bar" id="profileBar" style="display:none;">
+        <div class="profile-avatar" id="profileAvatar">👤</div>
+        <div>
+            <div class="profile-name" id="profileName">Loading...</div>
+            <div class="profile-email" id="profileEmail"></div>
+        </div>
+        <div style="margin-left: auto; text-align: right;">
+            <div style="font-size: 12px; color: rgba(var(--white-rgb),0.4); margin-bottom: 4px;">Member since</div>
+            <div style="font-size: 14px; color: var(--white);" id="memberSince">—</div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="dash-stats" id="dashStats" style="display:none;">
+        <div class="dash-stat">
+            <div class="dash-stat-num" id="statTrips">0</div>
+            <div class="dash-stat-label">Trips Saved</div>
+        </div>
+        <div class="dash-stat">
+            <div class="dash-stat-num" id="statDays">0</div>
+            <div class="dash-stat-label">Total Days Planned</div>
+        </div>
+        <div class="dash-stat">
+            <div class="dash-stat-num" id="statDestinations">0</div>
+            <div class="dash-stat-label">Destinations</div>
+        </div>
+    </div>
+
+    <div class="dash-header">
+        <h1>My Saved Trips</h1>
+        <input type="text" class="search-bar" id="searchBar" placeholder="🔍 Search destinations..." oninput="filterTrips(this.value)">
+    </div>
+
+    <!-- Filter Chips -->
+    <div class="filter-row" id="filterRow" style="display:none;">
+        <span style="font-size: 12px; color: rgba(var(--white-rgb),0.4);">Filter:</span>
+        <div class="filter-chip active" onclick="setFilter('all', this)">All</div>
+        <div class="filter-chip" onclick="setFilter('budget', this)">🎒 Budget</div>
+        <div class="filter-chip" onclick="setFilter('mid', this)">🏙️ Mid-Range</div>
+        <div class="filter-chip" onclick="setFilter('luxury', this)">💎 Luxury</div>
+        <div class="filter-chip" onclick="setFilter('adventure', this)">🧗 Adventure</div>
+        <div class="filter-chip" onclick="setFilter('relax', this)">🌴 Relax</div>
+    </div>
+
+    <div id="loadingIndicator" style="color: var(--gold); padding: 40px 0;">Loading your itineraries...</div>
+    <div class="trips-grid" id="tripsGrid" style="display: none;"></div>
+</div>
+
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-logo">✈ TravelAI</div>
+        <p>Your AI-powered travel companion.</p>
+    </div>
+</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getFirestore, collection, query, where, getDocs, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyA-9y06D-vMg4kP9RQ91Ms_OPfrd9Ap_EE",
+    authDomain: "travel-ai-app-ae087.firebaseapp.com",
+    projectId: "travel-ai-app-ae087"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+window.toggleTheme = function() {
+    document.documentElement.classList.toggle('light-theme');
+    localStorage.setItem('theme', document.documentElement.classList.contains('light-theme') ? 'light' : 'dark');
+}
+
+let allTrips = [];
+let currentFilter = 'all';
+
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        document.getElementById('authBtn').addEventListener('click', () => { signOut(auth).then(() => window.location.href = 'index.html'); });
+
+        // Profile
+        document.getElementById('profileBar').style.display = 'flex';
+        document.getElementById('profileName').textContent = user.displayName || 'Traveler';
+        document.getElementById('profileEmail').textContent = user.email;
+        const avatarEl = document.getElementById('profileAvatar');
+        if(user.photoURL) avatarEl.innerHTML = `<img src="${user.photoURL}" alt="avatar">`;
+        else avatarEl.textContent = (user.displayName || 'T').charAt(0).toUpperCase();
+
+        const created = user.metadata?.creationTime;
+        if(created) document.getElementById('memberSince').textContent = new Date(created).toLocaleDateString('en-US', {month:'long', year:'numeric'});
+
+        loadUserTrips(user.uid);
+    } else {
+        window.location.href = 'index.html';
+    }
+});
+
+async function loadUserTrips(userId) {
+    const tripsGrid = document.getElementById('tripsGrid');
+    const loader = document.getElementById('loadingIndicator');
+    try {
+        const q = query(collection(db, "trips"), where("userId", "==", userId), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+
+        loader.style.display = 'none';
+        tripsGrid.style.display = 'grid';
+        document.getElementById('filterRow').style.display = 'flex';
+        document.getElementById('dashStats').style.display = 'flex';
+
+        if (querySnapshot.empty) {
+            tripsGrid.innerHTML = `
+            <div class="empty-state">
+                <div style="font-size: 64px; margin-bottom: 20px;">🧳</div>
+                <h3 style="font-family: var(--font-serif); font-size: 28px; font-weight: 300; margin-bottom: 10px;">No trips saved yet.</h3>
+                <p style="font-size: 14px; margin-bottom: 24px; color: rgba(var(--white-rgb),0.4);">Start planning your dream trip and save it here!</p>
+                <a href="form.html"><button class="btn-primary">Plan My First Trip ✨</button></a>
+            </div>`;
+            document.getElementById('statTrips').textContent = '0';
+            return;
+        }
+
+        allTrips = [];
+        let totalDays = 0;
+        const destinations = new Set();
+
+        querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            data._id = docSnap.id;
+            allTrips.push(data);
+            totalDays += parseInt(data.days) || 0;
+            destinations.add(data.destination);
+        });
+
+        document.getElementById('statTrips').textContent = allTrips.length;
+        document.getElementById('statDays').textContent = totalDays;
+        document.getElementById('statDestinations').textContent = destinations.size;
+
+        renderTrips(allTrips);
+
+    } catch (error) {
+        console.error(error);
+        loader.textContent = "Failed to load trips.";
+    }
+}
+
+function renderTrips(trips) {
+    const tripsGrid = document.getElementById('tripsGrid');
+    tripsGrid.innerHTML = '';
+
+    if(trips.length === 0) {
+        tripsGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+            <div style="font-size:40px;margin-bottom:12px;">🔍</div>
+            <p>No trips match your filter.</p>
+        </div>`;
+        return;
+    }
+
+    trips.forEach((data) => {
+        const card = document.createElement('div');
+        card.className = 'trip-card';
+        card.dataset.style = data.style || 'budget';
+        card.dataset.dest = (data.destination || '').toLowerCase();
+
+        const styleEmoji = { budget:'🎒', mid:'🏙️', luxury:'💎', adventure:'🧗', relax:'🌴' }[data.style] || '✈️';
+        const createdDate = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleDateString('en-US', {day:'numeric',month:'short',year:'numeric'}) : 'Saved trip';
+
+        card.innerHTML = `
+            <div class="trip-dest">${data.destination}</div>
+            <div class="trip-route">✈ ${data.from} → ${data.destination}</div>
+            <div class="trip-date">Saved: ${createdDate}</div>
+            <div class="trip-meta">
+                <span>📅 ${data.days} Days</span>
+                <span>💰 ₹${parseInt(data.budget).toLocaleString('en-IN')}</span>
+                <span>${styleEmoji} ${(data.style||'budget').charAt(0).toUpperCase()+(data.style||'budget').slice(1)}</span>
+                ${data.pace ? `<span>⚡ ${data.pace.charAt(0).toUpperCase()+data.pace.slice(1)} Pace</span>` : ''}
+            </div>
+            <div class="trip-actions">
+                <button class="btn-primary btn-sm view-btn" style="flex:1;">View ✈</button>
+                <button class="btn-outline btn-sm share-btn" style="flex:1;">🔗 Share</button>
+                <button class="delete-btn del-btn">🗑</button>
+            </div>
+        `;
+
+        // View
+        card.querySelector('.view-btn').addEventListener('click', () => {
+            localStorage.setItem("tripData", JSON.stringify(data.tripData));
+            localStorage.setItem("destination", data.destination);
+            localStorage.setItem("from", data.from);
+            localStorage.setItem("days", data.days);
+            localStorage.setItem("budget", data.budget);
+            localStorage.setItem("style", data.style);
+            localStorage.setItem("pace", data.pace || 'normal');
+            localStorage.setItem("travelers", data.travelers || 'solo');
+            localStorage.setItem("date", data.travelDate);
+            localStorage.setItem("hotelReq", "yes");
+            localStorage.setItem("flightReq", "yes");
+            window.location.href = "result.html";
+        });
+
+        // Share
+        const shareBtn = card.querySelector('.share-btn');
+        shareBtn.addEventListener('click', () => {
+            const shareUrl = `${window.location.origin}/share.html?id=${data._id}`;
+            navigator.clipboard.writeText(shareUrl);
+            shareBtn.textContent = "Copied! ✔️";
+            setTimeout(() => shareBtn.textContent = "🔗 Share", 2000);
+        });
+
+        // Delete
+        card.querySelector('.del-btn').addEventListener('click', async () => {
+            if(!confirm(`Delete trip to ${data.destination}? This cannot be undone.`)) return;
+            try {
+                await deleteDoc(doc(db, "trips", data._id));
+                card.style.opacity = '0'; card.style.transform = 'scale(0.9)'; card.style.transition = '0.3s';
+                setTimeout(() => { card.remove(); allTrips = allTrips.filter(t => t._id !== data._id); document.getElementById('statTrips').textContent = allTrips.length; }, 300);
+            } catch(e) { alert("Could not delete trip."); }
+        });
+
+        tripsGrid.appendChild(card);
+    });
+}
+
+window.filterTrips = function(searchVal) {
+    const filtered = allTrips.filter(t => {
+        const matchSearch = !searchVal || t.destination.toLowerCase().includes(searchVal.toLowerCase()) || t.from.toLowerCase().includes(searchVal.toLowerCase());
+        const matchFilter = currentFilter === 'all' || t.style === currentFilter;
+        return matchSearch && matchFilter;
+    });
+    renderTrips(filtered);
+}
+
+window.setFilter = function(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    filterTrips(document.getElementById('searchBar').value);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Trip Plan — TravelAI</title>
+    <meta name="description" content="TravelAI is your personal AI travel planner. Instantly generate custom day-by-day itineraries, flight estimates, hotel recommendations, and budget breakdowns in seconds.">
+    <meta name="keywords" content="AI travel planner, itinerary generator, travel AI, vacation planner, custom trip planner, Gemini AI travel">
+    <meta name="author" content="TravelAI">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://amazing-travel-123.netlify.app/"> <meta property="og:title" content="TravelAI — Your AI Travel Planner">
+    <meta property="og:description" content="Instantly generate custom day-by-day itineraries, flight estimates, and budget breakdowns.">
+    <meta property="og:image" content="https://placehold.co/1200x630/1a2235/d4a76a?text=TravelAI+Smart+Planner"> <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TravelAI — Your AI Travel Planner">
+    <meta name="twitter:description" content="Instantly generate custom day-by-day itineraries in seconds.">
+    <meta name="twitter:image" content="https://placehold.co/1200x630/1a2235/d4a76a?text=TravelAI+Smart+Planner">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDkD0iyaPkulI8IosMnbhKQgBQ3PO29JkQ"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') document.documentElement.classList.add('light-theme');
+        })();
+    </script>
+    <style>
+        /* ── WEATHER SCROLLBAR ── */
+        .weather-grid::-webkit-scrollbar { display: none; }
+        .weather-grid { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* ── PDF MODE — literal hex colors (no CSS vars) for html2canvas compatibility ── */
+        .pdf-mode { background-color: #0a0f1a !important; }
+        .pdf-mode .result-hero { height: 160px !important; min-height: 160px !important; }
+        .pdf-mode .section-block { background-color: #0a0f1a !important; padding: 24px 32px !important; }
+        .pdf-mode .summary-section { background-color: #111827 !important; padding: 20px 32px !important; }
+        .pdf-mode * { color: #f5f0e8 !important; }
+        /* Gold-colored elements */
+        .pdf-mode .sum-val, .pdf-mode .tier-price, .pdf-mode .hotel-price,
+        .pdf-mode .day-number-badge, .pdf-mode .flight-badge, .pdf-mode .place-chip,
+        .pdf-mode .section-title-row h2, .pdf-mode .nearby-name,
+        .pdf-mode .budget-item-val, .pdf-mode .rh-badge,
+        .pdf-mode .currency-amount { color: #d4a76a !important; }
+        /* Card backgrounds */
+        .pdf-mode .sum-card, .pdf-mode .day-card, .pdf-mode .hotel-card,
+        .pdf-mode .flight-card, .pdf-mode .budget-tier, .pdf-mode .time-card,
+        .pdf-mode .pack-item, .pdf-mode .day-detail-item, .pdf-mode .visa-card,
+        .pdf-mode .nearby-card, .pdf-mode .currency-card, .pdf-mode .currency-item,
+        .pdf-mode .budget-item, .pdf-mode .checklist-item {
+            background-color: rgba(255,255,255,0.05) !important;
+            border-color: rgba(255,255,255,0.1) !important;
+        }
+        .pdf-mode .day-card { background-color: #111827 !important; }
+        .pdf-mode .day-number-badge { background-color: rgba(212,167,106,0.12) !important; border-color: rgba(212,167,106,0.3) !important; }
+        /* Fix grids for A4 */
+        .pdf-mode .summary-grid { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 12px !important; }
+        .pdf-mode .budget-tiers { grid-template-columns: repeat(3, 1fr) !important; }
+        .pdf-mode .budget-breakdown-grid { grid-template-columns: repeat(5, 1fr) !important; }
+        .pdf-mode .best-time-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        .pdf-mode .visa-card { grid-template-columns: repeat(3, 1fr) !important; }
+        .pdf-mode .nearby-grid { grid-template-columns: repeat(3, 1fr) !important; }
+        .pdf-mode .day-details { grid-template-columns: repeat(2, 1fr) !important; }
+        .pdf-mode .flights-grid { grid-template-columns: 1fr 1fr !important; }
+        .pdf-mode .hotel-grid { grid-template-columns: 1fr 1fr !important; }
+        .pdf-mode .pack-category.active { grid-template-columns: repeat(3, 1fr) !important; }
+        /* Hide heavy/interactive elements in PDF */
+        .pdf-mode .map-box { display: none !important; }
+        .pdf-mode .day-images-grid { display: none !important; }
+        .pdf-mode .day-note-area { display: none !important; }
+        .pdf-mode [data-html2canvas-ignore] { display: none !important; }
+        /* Page breaks */
+        .pdf-mode .day-card, .pdf-mode .section-block { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 6px !important; }
+        /* Light theme pdf mode */
+        html.light-theme .pdf-mode { background-color: #f8fafc !important; }
+        html.light-theme .pdf-mode .section-block { background-color: #f8fafc !important; }
+        html.light-theme .pdf-mode .summary-section { background-color: #f1f5f9 !important; }
+        html.light-theme .pdf-mode .day-card { background-color: #ffffff !important; }
+        html.light-theme .pdf-mode * { color: #0f172a !important; }
+        html.light-theme .pdf-mode .sum-val, html.light-theme .pdf-mode .tier-price,
+        html.light-theme .pdf-mode .day-number-badge, html.light-theme .pdf-mode .section-title-row h2,
+        html.light-theme .pdf-mode .place-chip, html.light-theme .pdf-mode .nearby-name,
+        html.light-theme .pdf-mode .budget-item-val { color: #c8941a !important; }
+        html.light-theme .pdf-mode .sum-card, html.light-theme .pdf-mode .budget-tier,
+        html.light-theme .pdf-mode .time-card, html.light-theme .pdf-mode .day-detail-item {
+            background-color: rgba(0,0,0,0.03) !important; border-color: rgba(0,0,0,0.1) !important;
+        }
+
+        /* ── BUDGET ESTIMATE ── */
+        .budget-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px; }
+        .budget-tier { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 24px; text-align: center; transition: var(--transition); }
+        .budget-tier:hover { border-color: rgba(212,167,106,0.3); transform: translateY(-3px); }
+        .budget-tier.recommended { border-color: rgba(212,167,106,0.5); background: rgba(212,167,106,0.06); position: relative; }
+        .budget-tier.recommended::before { content: '★ Best Match'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #0a0f1a; font-size: 10px; font-weight: 700; padding: 3px 12px; border-radius: 20px; letter-spacing: 0.1em; }
+        .tier-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(var(--white-rgb), 0.4); margin-bottom: 10px; }
+        .tier-price { font-family: var(--font-serif); font-size: 36px; color: var(--gold); font-weight: 600; margin-bottom: 8px; }
+        .tier-sub { font-size: 12px; color: rgba(var(--white-rgb), 0.4); }
+        .budget-breakdown-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+        .budget-item { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 16px 12px; text-align: center; }
+        .budget-item-icon { font-size: 22px; margin-bottom: 8px; }
+        .budget-item-label { font-size: 11px; color: rgba(var(--white-rgb), 0.4); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .budget-item-val { font-size: 16px; font-weight: 600; color: var(--gold); }
+
+        /* ── BEST TIME ── */
+        .best-time-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        .time-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 20px; }
+        .time-card-icon { font-size: 28px; margin-bottom: 10px; }
+        .time-card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(var(--white-rgb), 0.4); margin-bottom: 6px; }
+        .time-card-val { font-size: 15px; color: var(--white); font-weight: 500; line-height: 1.4; }
+
+        /* ── VISA INFO ── */
+        .visa-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 32px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .visa-item { }
+        .visa-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(var(--white-rgb), 0.4); margin-bottom: 6px; }
+        .visa-val { font-size: 16px; color: var(--white); font-weight: 500; }
+        .visa-badge-required { display: inline-flex; align-items: center; gap: 6px; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .visa-badge-free { display: inline-flex; align-items: center; gap: 6px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+        /* ── NEARBY PLACES ── */
+        .nearby-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .nearby-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 20px; transition: var(--transition); cursor: pointer; }
+        .nearby-card:hover { border-color: rgba(212,167,106,0.3); transform: translateY(-3px); }
+        .nearby-name { font-family: var(--font-serif); font-size: 20px; color: var(--gold); margin-bottom: 6px; }
+        .nearby-meta { font-size: 13px; color: rgba(var(--white-rgb), 0.5); }
+
+        /* ── EXPENSE TRACKER ── */
+        .expense-tracker { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 28px; }
+        .expense-input-row { display: flex; gap: 12px; margin-bottom: 20px; }
+        .expense-input-row input, .expense-input-row select { flex: 1; background: var(--dark2); border: 1px solid var(--glass-border); border-radius: 10px; padding: 10px 14px; font-size: 14px; color: var(--white); font-family: var(--font-sans); }
+        .expense-input-row input:focus, .expense-input-row select:focus { outline: none; border-color: rgba(212,167,106,0.4); }
+        .expense-input-row select option { background: var(--dark2); }
+        .expense-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; margin-bottom: 16px; }
+        .expense-row { display: flex; justify-content: space-between; align-items: center; background: rgba(var(--glass-white-rgb), 0.03); border: 1px solid var(--glass-border); border-radius: 10px; padding: 10px 14px; font-size: 13px; }
+        .expense-row-cat { color: var(--gold); font-size: 11px; }
+        .expense-row-amt { color: var(--white); font-weight: 600; }
+        .expense-row-del { color: rgba(var(--white-rgb), 0.3); cursor: pointer; font-size: 16px; }
+        .expense-row-del:hover { color: #ef4444; }
+        .expense-total-bar { display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid var(--glass-border); }
+        .expense-total-label { font-size: 13px; color: rgba(var(--white-rgb), 0.5); }
+        .expense-total-val { font-family: var(--font-serif); font-size: 28px; color: var(--gold); }
+
+        /* ── CURRENCY CONVERTER ── */
+        .currency-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 28px; }
+        .currency-row { display: flex; gap: 16px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .currency-row input { background: var(--dark2); border: 1px solid var(--glass-border); border-radius: 10px; padding: 12px 16px; font-size: 18px; color: var(--gold); font-family: var(--font-serif); width: 160px; font-weight: 600; }
+        .currency-row input:focus { outline: none; border-color: rgba(212,167,106,0.4); }
+        .currency-rates-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .currency-item { background: rgba(var(--glass-white-rgb), 0.03); border: 1px solid var(--glass-border); border-radius: 10px; padding: 14px; text-align: center; }
+        .currency-flag { font-size: 22px; margin-bottom: 4px; }
+        .currency-code { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(var(--white-rgb), 0.4); margin-bottom: 4px; }
+        .currency-amount { font-size: 16px; font-weight: 600; color: var(--white); }
+
+        /* ── AI CHATBOT ── */
+        .chatbot-fab { position: fixed; bottom: 32px; right: 32px; z-index: 999; }
+        .chatbot-btn { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), #c8941a); border: none; font-size: 26px; cursor: pointer; box-shadow: 0 8px 32px rgba(212,167,106,0.5); transition: var(--transition); display: flex; align-items: center; justify-content: center; }
+        .chatbot-btn:hover { transform: scale(1.1); box-shadow: 0 12px 40px rgba(212,167,106,0.6); }
+        .chatbot-window { position: fixed; bottom: 110px; right: 32px; width: 360px; background: var(--dark2); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow); z-index: 999; display: none; flex-direction: column; overflow: hidden; max-height: 500px; }
+        .chatbot-window.open { display: flex; }
+        .chatbot-header { padding: 16px 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; background: rgba(212,167,106,0.08); }
+        .chatbot-title { font-family: var(--font-serif); font-size: 18px; color: var(--gold); }
+        .chatbot-close { background: none; border: none; color: rgba(var(--white-rgb), 0.4); font-size: 20px; cursor: pointer; }
+        .chatbot-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; min-height: 200px; max-height: 300px; }
+        .chat-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.5; }
+        .chat-msg.ai { background: rgba(212,167,106,0.1); border: 1px solid rgba(212,167,106,0.2); color: var(--white); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .chat-msg.user { background: linear-gradient(135deg, var(--gold), #c8941a); color: #0a0f1a; align-self: flex-end; font-weight: 500; border-bottom-right-radius: 4px; }
+        .chatbot-input-row { padding: 12px 16px; border-top: 1px solid var(--glass-border); display: flex; gap: 8px; }
+        .chatbot-input-row input { flex: 1; background: var(--dark3); border: 1px solid var(--glass-border); border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--white); font-family: var(--font-sans); }
+        .chatbot-input-row input:focus { outline: none; border-color: rgba(212,167,106,0.4); }
+        .chatbot-send { background: var(--gold); border: none; border-radius: 10px; width: 38px; height: 38px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+        /* ── DAY NOTES ── */
+        .day-note-area { width: 100%; background: rgba(var(--glass-white-rgb), 0.03); border: 1px solid var(--glass-border); border-radius: 10px; padding: 12px 16px; font-size: 13px; color: var(--white); font-family: var(--font-sans); resize: vertical; min-height: 70px; margin-top: 16px; transition: var(--transition); }
+        .day-note-area:focus { outline: none; border-color: rgba(212,167,106,0.4); }
+        .day-note-area::placeholder { color: rgba(var(--white-rgb), 0.25); }
+
+        /* ── EMAIL SECTION ── */
+        .email-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .email-row input { flex: 1; min-width: 220px; background: var(--dark2); border: 1px solid var(--glass-border); border-radius: 10px; padding: 12px 16px; font-size: 14px; color: var(--white); font-family: var(--font-sans); }
+        .email-row input:focus { outline: none; border-color: rgba(212,167,106,0.4); }
+
+        /* ── PACKING CATEGORIES ── */
+        .packing-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .pack-tab { padding: 6px 18px; border-radius: 50px; border: 1px solid var(--glass-border); background: var(--glass); font-size: 12px; cursor: pointer; transition: var(--transition); color: rgba(var(--white-rgb), 0.6); }
+        .pack-tab.active { background: rgba(212,167,106,0.15); border-color: rgba(212,167,106,0.5); color: var(--gold); }
+        .pack-category { display: none; }
+        .pack-category.active { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+        /* ── CHECKLIST ── */
+        .checklist-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .checklist-item { display: flex; align-items: center; gap: 10px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 10px; padding: 12px 14px; font-size: 13px; cursor: pointer; transition: var(--transition); color: var(--white); }
+        .checklist-item:has(input:checked) { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.3); color: rgba(var(--white-rgb), 0.4); text-decoration: line-through; }
+        .checklist-item input[type=checkbox] { width: 16px; height: 16px; accent-color: #10b981; flex-shrink: 0; }
+
+        /* ── RESPONSIVE ADDITIONS ── */
+        @media (max-width: 1024px) {
+            .budget-tiers { grid-template-columns: 1fr; }
+            .budget-breakdown-grid { grid-template-columns: repeat(3, 1fr); }
+            .best-time-grid { grid-template-columns: repeat(2, 1fr); }
+            .visa-card { grid-template-columns: 1fr 1fr; }
+            .nearby-grid { grid-template-columns: 1fr 1fr; }
+            .currency-rates-grid { grid-template-columns: repeat(2, 1fr); }
+            .pack-category.active { grid-template-columns: repeat(2, 1fr); }
+            .checklist-grid { grid-template-columns: 1fr; }
+        }
+        /* ── RESULT PAGE MOBILE RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .result-nav { padding: 10px 14px !important; flex-wrap: wrap !important; gap: 8px !important; }
+            .result-nav-actions { flex-wrap: wrap !important; gap: 5px !important; width: 100% !important; justify-content: flex-end; }
+            .result-nav-actions button { font-size: 11px !important; padding: 7px 10px !important; }
+            .result-nav-actions a button { font-size: 11px !important; padding: 7px 10px !important; }
+            .result-hero { min-height: 260px !important; height: auto !important; padding: 80px 20px 28px !important; }
+            #heroTitle { font-size: 26px !important; line-height: 1.2 !important; }
+            .rh-meta { flex-direction: column !important; gap: 5px !important; }
+            .rh-meta span { font-size: 13px !important; }
+            .rh-badge { font-size: 10px !important; padding: 4px 10px !important; }
+            .summary-section { padding: 20px 14px !important; }
+            .section-block { padding: 30px 16px !important; }
+            .section-title-row h2 { font-size: 22px !important; }
+            .budget-tiers { grid-template-columns: 1fr !important; gap: 12px; }
+            .tier-price { font-size: 28px !important; }
+            .budget-breakdown-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .best-time-grid { grid-template-columns: 1fr 1fr !important; }
+            .visa-card { grid-template-columns: 1fr !important; }
+            .nearby-grid { grid-template-columns: 1fr !important; }
+            .currency-row { flex-direction: column !important; gap: 12px; }
+            .currency-row input { width: 100% !important; }
+            .currency-rates-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .expense-input-row { flex-direction: column !important; }
+            .expense-input-row input,
+            .expense-input-row select { flex: none !important; width: 100% !important; }
+            .expense-input-row button { width: 100% !important; }
+            .pack-category.active { grid-template-columns: 1fr 1fr !important; }
+            .pack-item { font-size: 12px !important; padding: 10px 12px !important; }
+            .packing-tabs { gap: 5px !important; }
+            .pack-tab { padding: 5px 10px !important; font-size: 11px !important; }
+            .checklist-grid { grid-template-columns: 1fr !important; }
+            .email-row { flex-direction: column !important; }
+            .email-row input { width: 100% !important; min-width: unset !important; }
+            .email-row button { width: 100% !important; justify-content: center !important; }
+            .day-details { grid-template-columns: 1fr !important; }
+            .flights-grid { grid-template-columns: 1fr !important; }
+            .hotel-grid { grid-template-columns: 1fr !important; }
+            .chatbot-fab { bottom: 16px !important; right: 12px !important; }
+            .chatbot-window { right: 8px !important; width: calc(100vw - 16px) !important; }
+            .chatbot-btn { width: 50px !important; height: 50px !important; font-size: 22px !important; }
+            .day-images-grid { grid-template-columns: 1fr !important; height: auto !important; }
+            .day-img-item { height: 160px !important; }
+        }
+        @media (max-width: 480px) {
+            #heroTitle { font-size: 22px !important; }
+            .result-nav .nav-logo { font-size: 18px !important; }
+            .budget-breakdown-grid { grid-template-columns: 1fr 1fr !important; }
+            .best-time-grid { grid-template-columns: 1fr !important; }
+            .pack-category.active { grid-template-columns: 1fr !important; }
+            .summary-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+            .sum-card { padding: 12px 10px !important; gap: 10px !important; }
+            .sum-val { font-size: 13px !important; }
+            .section-block { padding: 24px 12px !important; }
+        }
+    </style>
+</head>
+<body class="result-body">
+
+<!-- ── MAP FULLSCREEN MODAL ── -->
+<div id="mapFullscreenModal" class="map-fullscreen-modal" style="display:none;" data-html2canvas-ignore>
+    <div class="map-modal-inner">
+        <div class="map-modal-header">
+            <div>
+                <h3 id="mapModalTitle" style="font-family:var(--font-serif);font-size:22px;color:var(--gold);margin:0 0 4px;">Day Route</h3>
+                <div id="mapModalMeta" style="font-size:13px;color:rgba(var(--white-rgb),0.5);"></div>
+            </div>
+            <button class="btn-outline btn-sm" onclick="closeMapModal()" style="flex-shrink:0;">✕ Close</button>
+        </div>
+        <div id="mapModalMap" style="width:100%;height:calc(100vh - 120px);border-radius:12px;overflow:hidden;"></div>
+    </div>
+</div>
+
+<!-- ── USAGE LIMIT POPUP ── -->
+<div id="usageLimitPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;backdrop-filter:blur(8px);align-items:center;justify-content:center;" data-html2canvas-ignore>
+    <div style="background:var(--dark2);border:1px solid rgba(212,167,106,0.3);border-radius:var(--radius-lg);padding:48px 40px;text-align:center;max-width:420px;width:90%;box-shadow:var(--shadow);">
+        <div style="font-size:48px;margin-bottom:16px;">⏳</div>
+        <h2 style="font-family:var(--font-serif);font-size:28px;font-weight:300;color:var(--white);margin-bottom:12px;">Daily Limit Reached</h2>
+        <p style="font-size:14px;color:rgba(var(--white-rgb),0.6);line-height:1.6;margin-bottom:28px;" id="usageLimitMsg">You've used all your free itineraries for today. Sign in or upgrade to continue.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+            <button class="btn-primary" onclick="document.getElementById('usageLimitPopup').style.display='none';document.getElementById('authBtn').click()">Sign In for More ✨</button>
+            <a href="profile.html#upgrade"><button class="btn-outline">Upgrade Plan 👑</button></a>
+            <button class="btn-outline" onclick="document.getElementById('usageLimitPopup').style.display='none'">Maybe Later</button>
+        </div>
+    </div>
+</div>
+
+<div class="chatbot-fab" data-html2canvas-ignore>
+    <div class="chatbot-window" id="chatbotWindow">
+        <div class="chatbot-header">
+            <span class="chatbot-title">🤖 TravelAI Assistant</span>
+            <button class="chatbot-close" onclick="toggleChat()">✕</button>
+        </div>
+        <div class="chatbot-messages" id="chatMessages">
+            <div class="chat-msg ai">Hey there! ✈️ I'm your AI travel assistant. Ask me anything about your trip — visa rules, packing tips, local customs, weather, safety, and more!</div>
+        </div>
+        <div class="chatbot-input-row">
+            <input type="text" id="chatInput" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter') sendChat()">
+            <button class="chatbot-send" onclick="sendChat()">➤</button>
+        </div>
+    </div>
+    <button class="chatbot-btn" onclick="toggleChat()" title="AI Travel Assistant">🤖</button>
+</div>
+
+<nav class="result-nav" id="topNav" data-html2canvas-ignore>
+    <a href="index.html" class="nav-logo">✈ TravelAI</a>
+    <div class="result-nav-actions">
+        <button class="btn-outline btn-sm theme-toggle-btn" onclick="toggleTheme()">
+            <span class="light-icon">☀️</span><span class="dark-icon">🌙</span>
+        </button>
+        <button class="btn-outline btn-sm" onclick="exportToPDF()" id="pdfBtn">📥 PDF</button>
+        <a href="form.html"><button class="btn-outline btn-sm">✨ New Trip</button></a>
+        <a href="blog.html" style="font-size:13px;color:rgba(var(--white-rgb),0.6);" class="nav-text-link">Blog</a>
+        <a href="dashboard.html" id="navDashboard" style="display:none;" class="nav-text-link">Dashboard</a>
+        <a href="profile.html" id="navProfile" style="display:none;" class="nav-text-link">Profile</a>
+        <button class="btn-outline btn-sm" id="authBtn">Sign In</button>
+        <div style="position:relative;display:inline-block;">
+            <button class="btn-primary btn-sm" id="saveTripBtn" style="display:none;">Save Trip 💾</button>
+            <button class="btn-outline btn-sm" id="shareTripBtn" style="display:none;position:absolute;top:45px;right:0;width:150px;background:var(--dark2);white-space:nowrap;">🔗 Copy Share Link</button>
+        </div>
+    </div>
+</nav>
+
+<div id="pdf-content">
+
+    <div class="result-hero" id="resultHero">
+        <div class="result-hero-overlay"></div>
+        <div class="result-hero-content">
+            <div class="rh-badge">✦ AI Generated Plan</div>
+            <h1 id="heroTitle">Your Trip to <span id="heroDestination">—</span></h1>
+            <div class="rh-meta" id="rhMeta"></div>
+        </div>
+    </div>
+
+    <div class="summary-section">
+        <div class="summary-grid" id="summaryGrid">
+            <div class="sum-card"><div class="sum-icon">📍</div><div><div class="sum-label">Destination</div><div class="sum-val" id="sumDest">—</div></div></div>
+            <div class="sum-card"><div class="sum-icon">📅</div><div><div class="sum-label">Duration</div><div class="sum-val" id="sumDays">—</div></div></div>
+            <div class="sum-card"><div class="sum-icon">💰</div><div><div class="sum-label">Est. Cost</div><div class="sum-val" id="sumCost">—</div></div></div>
+            <div class="sum-card"><div class="sum-icon">✈️</div><div><div class="sum-label">From</div><div class="sum-val" id="sumFrom">—</div></div></div>
+            <div class="sum-card"><div class="sum-icon">🎨</div><div><div class="sum-label">Style</div><div class="sum-val" id="sumStyle">—</div></div></div>
+            <div class="sum-card"><div class="sum-icon">👥</div><div><div class="sum-label">Travelers</div><div class="sum-val" id="sumTravelers">—</div></div></div>
+        </div>
+    </div>
+
+    <div class="section-block" id="weatherSection" style="display:none; padding-top: 40px; padding-bottom: 20px;">
+        <div class="section-title-row" style="margin-bottom: 20px;">
+            <h2 style="font-size: 24px;">🌤️ Weather for Your Travel Dates</h2>
+            <div class="section-sub">Forecast for <span id="weatherDestName" style="color:var(--gold)"></span> <span id="weatherDateRange" style="color:rgba(var(--white-rgb),0.5);font-size:12px;"></span></div>
+        </div>
+        <div class="weather-grid" id="weatherGrid" style="display: flex; gap: 14px; overflow-x: auto; padding-bottom: 12px; flex-wrap: nowrap;"></div>
+        <div id="weatherNotice" style="display:none;margin-top:12px;font-size:12px;color:rgba(var(--white-rgb),0.4);font-style:italic;">* Forecast shown for nearest available dates. Open-Meteo provides up to 16 days ahead.</div>
+    </div>
+
+    <div class="section-block" id="flightSection" style="display:none">
+        <div class="section-title-row">
+            <h2>✈️ Estimated Flights</h2>
+            <div class="section-sub">3 curated options — cheapest, fastest &amp; best value. Verify live prices on Skyscanner.</div>
+        </div>
+        <div class="flights-grid" id="flightsGrid"></div>
+    </div>
+
+    <div class="section-block" id="hotelSection" style="display:none">
+        <div class="section-title-row">
+            <h2>🏨 Hotel Options</h2>
+            <div class="section-sub">Budget · Mid-Range · Luxury — pick what suits your style.</div>
+        </div>
+        <div class="hotel-grid" id="hotelsGrid"></div>
+    </div>
+
+    <div class="section-block">
+        <div class="section-title-row">
+            <h2>🗓 Your Day-by-Day Itinerary</h2>
+            <div class="section-sub">Hyper-personalized by AI based on your interests & pace</div>
+        </div>
+        <div id="itinerary-container" class="itinerary-container"></div>
+    </div>
+
+    <div class="section-block" id="budgetSection" style="display:none;">
+        <div class="section-title-row">
+            <h2>💰 Trip Budget Estimate</h2>
+            <div class="section-sub">Complete cost breakdown for your trip to <span id="budgetDestName" style="color:var(--gold)"></span></div>
+        </div>
+        <div class="budget-tiers" id="budgetTiers"></div>
+        <div style="margin-bottom: 24px;">
+            <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(var(--white-rgb),0.4); margin-bottom: 14px;">Cost Breakdown</div>
+            <div class="budget-breakdown-grid" id="budgetBreakdown"></div>
+        </div>
+    </div>
+
+    <div class="section-block" id="bestTimeSection" style="display:none;">
+        <div class="section-title-row">
+            <h2>📅 Best Time to Visit</h2>
+            <div class="section-sub">Seasonal guide for <span id="bestTimeDest" style="color:var(--gold)"></span></div>
+        </div>
+        <div class="best-time-grid" id="bestTimeGrid"></div>
+    </div>
+
+    <div class="section-block" id="visaSection" style="display:none;">
+        <div class="section-title-row">
+            <h2>🛂 Visa Information</h2>
+            <div class="section-sub">For Indian passport holders traveling to <span id="visaDest" style="color:var(--gold)"></span></div>
+        </div>
+        <div class="visa-card" id="visaCard"></div>
+    </div>
+
+    <div class="section-block" id="nearbySection" style="display:none;">
+        <div class="section-title-row">
+            <h2>📍 Nearby Places to Explore</h2>
+            <div class="section-sub">Day trip options from <span id="nearbyDest" style="color:var(--gold)"></span></div>
+        </div>
+        <div class="nearby-grid" id="nearbyGrid"></div>
+    </div>
+
+    <div class="section-block">
+        <div class="section-title-row">
+            <h2>💱 Currency Converter</h2>
+            <div class="section-sub">Live exchange rates from Indian Rupee (INR)</div>
+        </div>
+        <div class="currency-card">
+            <div class="currency-row">
+                <div>
+                    <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:rgba(var(--white-rgb),0.4); margin-bottom:6px;">Amount in ₹ INR</div>
+                    <input type="number" id="currencyInput" value="10000" oninput="updateCurrency()">
+                </div>
+                <div style="font-size: 28px; color: rgba(var(--white-rgb),0.2); margin-top: 20px;">→</div>
+                <div style="font-size: 13px; color: rgba(var(--white-rgb),0.4); padding-top: 22px;">Live rates loaded from exchangerate-api.com</div>
+            </div>
+            <div class="currency-rates-grid" id="currencyGrid">
+                <div style="color: rgba(var(--white-rgb),0.4); font-size:13px; grid-column: 1/-1;">Loading exchange rates...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-block" id="packingSection">
+        <div class="section-title-row">
+            <h2>🎒 Smart Packing Checklist</h2>
+            <div class="section-sub">AI-curated for your trip style and destination</div>
+        </div>
+        <div class="packing-tabs" id="packingTabs">
+            <div class="pack-tab active" onclick="switchPackTab('documents', this)">📄 Documents</div>
+            <div class="pack-tab" onclick="switchPackTab('clothes', this)">👔 Clothes</div>
+            <div class="pack-tab" onclick="switchPackTab('essentials', this)">🧴 Essentials</div>
+            <div class="pack-tab" onclick="switchPackTab('tech', this)">📱 Tech</div>
+            <div class="pack-tab" onclick="switchPackTab('tips', this)">💡 Local Tips</div>
+        </div>
+        <div id="packCatDocuments" class="pack-category active" style="display:grid;"></div>
+        <div id="packCatClothes" class="pack-category"></div>
+        <div id="packCatEssentials" class="pack-category"></div>
+        <div id="packCatTech" class="pack-category"></div>
+        <div id="packCatTips" class="pack-category"></div>
+    </div>
+
+    <div class="section-block">
+        <div class="section-title-row">
+            <h2>✅ Trip Preparation Checklist</h2>
+            <div class="section-sub">Track your pre-departure tasks</div>
+        </div>
+        <div class="checklist-grid" id="tripChecklist"></div>
+    </div>
+
+    <div class="section-block" data-html2canvas-ignore>
+        <div class="section-title-row">
+            <h2>🧾 Expense Tracker</h2>
+            <div class="section-sub">Log your actual spending during the trip</div>
+        </div>
+        <div class="expense-tracker">
+            <div class="expense-input-row">
+                <select id="expenseDay">
+                    </select>
+                <select id="expenseCat">
+                    <option value="🍴 Food">🍴 Food</option>
+                    <option value="🚕 Transport">🚕 Transport</option>
+                    <option value="🏨 Hotel">🏨 Hotel</option>
+                    <option value="🎟️ Activities">🎟️ Activities</option>
+                    <option value="🛍️ Shopping">🛍️ Shopping</option>
+                    <option value="💊 Medicine">💊 Medicine</option>
+                    <option value="🔵 Other">🔵 Other</option>
+                </select>
+                <input type="text" id="expenseDesc" placeholder="Description...">
+                <input type="number" id="expenseAmt" placeholder="₹ Amount">
+                <button class="btn-primary btn-sm" onclick="addExpense()">+ Add</button>
+            </div>
+            <div class="expense-list" id="expenseList">
+                <div style="text-align:center; padding: 20px; color: rgba(var(--white-rgb),0.3); font-size:13px;">No expenses logged yet. Start tracking your spending!</div>
+            </div>
+            <div class="expense-total-bar">
+                <span class="expense-total-label">Total Spent</span>
+                <span class="expense-total-val" id="expenseTotal">₹0</span>
+            </div>
+        </div>
+    </div>
+
+<div class="section-block" data-html2canvas-ignore>
+        <div class="section-title-row">
+            <h2>📧 Email My Itinerary</h2>
+            <div class="section-sub">Get a copy sent to your inbox</div>
+        </div>
+        <div class="email-row">
+            <input type="email" id="emailInput" placeholder="Enter your email address...">
+            <button class="btn-primary" onclick="emailItinerary()">Send Itinerary 📨</button>
+        </div>
+        <div id="emailStatus" style="margin-top: 12px; font-size: 13px;"></div>
+    </div>
+
+    <div class="section-block" data-html2canvas-ignore>
+        <div class="section-title-row">
+            <h2>📤 Export & Share</h2>
+            <div class="section-sub">Save, share, or download your trip plan</div>
+        </div>
+        <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+            <button class="btn-primary" onclick="exportToPDF()">📥 Download PDF</button>
+            <button class="btn-outline" id="shareExportBtn" style="display:none;" onclick="copyShareLink()">🔗 Copy Share Link</button>
+            <a href="form.html"><button class="btn-outline">✨ Plan New Trip</button></a>
+            <a href="dashboard.html"><button class="btn-outline" id="dashboardBtnBottom" style="display:none;">📋 My Dashboard</button></a>
+        </div>
+    </div>
+
+</div><footer class="footer" id="pdfFooter">
+    <div class="footer-inner">
+        <div class="footer-logo">✈ TravelAI</div>
+        <p>Generated by AI — always verify flights & hotel prices before booking.</p>
+    </div>
+</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyA-9y06D-vMg4kP9RQ91Ms_OPfrd9Ap_EE",
+    authDomain: "travel-ai-app-ae087.firebaseapp.com",
+    projectId: "travel-ai-app-ae087",
+    storageBucket: "travel-ai-app-ae087.firebasestorage.app",
+    messagingSenderId: "484864841789",
+    appId: "1:484864841789:web:9a71aa69bd9ce5866e7254"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+window.mapsArray = [];
+
+// ── THEME ──
+window.toggleTheme = function() {
+    document.documentElement.classList.toggle('light-theme');
+    localStorage.setItem('theme', document.documentElement.classList.contains('light-theme') ? 'light' : 'dark');
+    if (window.mapsArray) {
+        const newStyle = document.documentElement.classList.contains('light-theme') ? [] : mapDarkStyle;
+        window.mapsArray.forEach(map => map.setOptions({ styles: newStyle }));
+    }
+}
+
+// ── PDF EXPORT — Uses email template design ──
+window.exportToPDF = function() {
+    const btn = document.getElementById('pdfBtn');
+    btn.textContent = "⏳ Generating...";
+    btn.disabled = true;
+
+    const tripStyle = (style || 'budget').charAt(0).toUpperCase() + (style || 'budget').slice(1);
+    const estCost = tripData ? tripData.totalEstimatedCost : ('₹' + parseInt(budget).toLocaleString('en-IN'));
+
+    // ── Build day cards (same design as email template) ──
+    const dayCardsHtml = (tripData?.itinerary || []).map(day => `
+      <div style="background:#1a2235;border:1px solid rgba(212,167,106,0.18);border-radius:12px;overflow:hidden;margin-bottom:16px;page-break-inside:avoid;">
+        <div style="padding:14px 20px;background:rgba(212,167,106,0.08);border-bottom:1px solid rgba(212,167,106,0.15);display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <span style="font-family:Georgia,serif;font-size:17px;color:#d4a76a;font-weight:600;">Day ${day.day}</span>
+            ${day.theme ? `<span style="font-size:12px;color:rgba(212,167,106,0.65);margin-left:10px;">— ${day.theme}</span>` : ''}
+          </div>
+          <span style="font-size:13px;color:#d4a76a;font-weight:600;">${day.cost || ''}</span>
+        </div>
+        <div style="padding:12px 20px 8px;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(245,240,232,0.35);margin-bottom:8px;font-family:Arial,sans-serif;">📍 Places to Visit</div>
+          <div style="margin-bottom:4px;">${(day.places||[]).map(p=>`<span style="display:inline-block;background:rgba(212,167,106,0.1);border:1px solid rgba(212,167,106,0.22);color:#d4a76a;padding:3px 11px;border-radius:20px;font-size:12px;margin:2px 3px 2px 0;font-family:Arial,sans-serif;">${p}</span>`).join('')}</div>
+        </div>
+        <div style="padding:8px 20px 14px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:${day.note ? '8px' : '0'};">
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(245,240,232,0.38);margin-bottom:5px;font-family:Arial,sans-serif;">🍴 Food</div>
+              <div style="font-size:13px;color:#f5f0e8;line-height:1.55;font-family:Arial,sans-serif;">${day.food||'—'}</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(245,240,232,0.38);margin-bottom:5px;font-family:Arial,sans-serif;">🚕 Transport</div>
+              <div style="font-size:13px;color:#f5f0e8;line-height:1.55;font-family:Arial,sans-serif;">${day.transport||'—'}</div>
+            </div>
+          </div>
+          ${day.note ? `<div style="background:rgba(212,167,106,0.06);border:1px solid rgba(212,167,106,0.15);border-radius:8px;padding:9px 13px;font-size:12px;color:rgba(245,240,232,0.7);line-height:1.5;font-family:Arial,sans-serif;">💡 <strong style="color:#d4a76a;">Pro Tip:</strong> ${day.note}</div>` : ''}
+        </div>
+      </div>`).join('');
+
+    // ── Build budget section if available ──
+    const bd = tripData?.budget_breakdown;
+    const budgetHtml = bd ? `
+      <div style="page-break-inside:avoid;margin-bottom:24px;">
+        <h2 style="font-family:Georgia,serif;font-size:20px;font-weight:400;color:#f5f0e8;margin:0 0 4px;">💰 Budget Estimate</h2>
+        <p style="font-size:11px;color:rgba(245,240,232,0.38);margin:0 0 16px;font-family:Arial,sans-serif;">Full cost breakdown for your trip</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
+          ${[['🎒 Budget',bd.budget_total],['⚖️ Mid-Range',bd.midrange_total],['👑 Luxury',bd.luxury_total]].map(([label,price])=>`
+          <div style="background:#1a2235;border:1px solid rgba(212,167,106,0.15);border-radius:10px;padding:18px;text-align:center;">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:rgba(245,240,232,0.38);margin-bottom:8px;font-family:Arial,sans-serif;">${label}</div>
+            <div style="font-family:Georgia,serif;font-size:26px;color:#d4a76a;font-weight:600;">${price||'—'}</div>
+          </div>`).join('')}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+          ${[['✈️','Flights',bd.flights],['🏨','Hotels',bd.hotels],['🍴','Food',bd.food],['🚕','Transport',bd.transport],['🎟️','Activities',bd.activities]].map(([icon,label,val])=>`
+          <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:18px;margin-bottom:6px;">${icon}</div>
+            <div style="font-size:10px;color:rgba(245,240,232,0.38);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;font-family:Arial,sans-serif;">${label}</div>
+            <div style="font-size:14px;font-weight:600;color:#d4a76a;font-family:Arial,sans-serif;">${val||'—'}</div>
+          </div>`).join('')}
+        </div>
+      </div>` : '';
+
+    // ── Build best time section if available ──
+    const bt = tripData?.best_time;
+    const bestTimeHtml = bt ? `
+      <div style="page-break-inside:avoid;margin-bottom:24px;">
+        <h2 style="font-family:Georgia,serif;font-size:20px;font-weight:400;color:#f5f0e8;margin:0 0 4px;">📅 Best Time to Visit</h2>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px;">
+          ${[['🗓','Best Months',bt.best_months],['🌤️','Weather',bt.weather_summary],['🔥','Peak Season',bt.peak_season],['💸','Cheapest Months',bt.cheapest_months]].map(([icon,label,val])=>`
+          <div style="background:#1a2235;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:16px;display:flex;gap:12px;align-items:flex-start;">
+            <div style="font-size:22px;">${icon}</div>
+            <div>
+              <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(245,240,232,0.38);margin-bottom:4px;font-family:Arial,sans-serif;">${label}</div>
+              <div style="font-size:14px;color:#f5f0e8;font-weight:500;font-family:Arial,sans-serif;">${val||'—'}</div>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>` : '';
+
+    // ── Full PDF HTML template ──
+    const htmlContent = `<div style="background:#0a0f1a;color:#f5f0e8;font-family:Georgia,serif;margin:0;padding:0;width:100%;">
+
+      <!-- HEADER -->
+      <div style="background:linear-gradient(135deg,#111827 0%,#1a2235 100%);padding:40px 48px 30px;border-bottom:2px solid rgba(212,167,106,0.3);">
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.18em;color:rgba(212,167,106,0.6);margin-bottom:12px;font-family:Arial,sans-serif;">✦ AI Generated Travel Plan · TravelAI</div>
+        <h1 style="font-family:Georgia,serif;color:#f5f0e8;font-size:38px;font-weight:300;margin:0 0 10px;line-height:1.15;">Your Trip to ${destination}</h1>
+        <p style="color:rgba(245,240,232,0.48);font-size:13px;margin:0;font-family:Arial,sans-serif;">${days} Days &nbsp;·&nbsp; ${from} → ${destination} &nbsp;·&nbsp; ${tripStyle} Style &nbsp;·&nbsp; ${travelDateStr}</p>
+      </div>
+
+      <!-- SUMMARY STRIP -->
+      <div style="background:#111827;padding:22px 48px;border-bottom:1px solid rgba(255,255,255,0.06);">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;">
+          ${[['📍','Destination',destination],['📅','Duration',days+' Days'],['💰','Est. Budget',estCost],['✈️','From',from],['🎨','Style',tripStyle]].map(([icon,label,val],i)=>`
+          <div style="text-align:center;padding:0 8px;${i>0?'border-left:1px solid rgba(255,255,255,0.07);':''}">
+            <div style="font-size:16px;margin-bottom:5px;">${icon}</div>
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(245,240,232,0.36);margin-bottom:5px;font-family:Arial,sans-serif;">${label}</div>
+            <div style="font-size:14px;font-weight:700;color:#d4a76a;font-family:Arial,sans-serif;">${val}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- ITINERARY SECTION -->
+      <div style="padding:32px 48px 16px;">
+        <h2 style="font-family:Georgia,serif;font-size:22px;font-weight:400;color:#f5f0e8;margin:0 0 4px;">🗓 Day-by-Day Itinerary</h2>
+        <p style="font-size:11px;color:rgba(245,240,232,0.38);margin:0 0 22px;font-family:Arial,sans-serif;">Curated by TravelAI based on your preferences</p>
+        ${dayCardsHtml}
+      </div>
+
+      <!-- BUDGET SECTION -->
+      ${bd ? `<div style="padding:8px 48px 24px;">${budgetHtml}</div>` : ''}
+
+      <!-- BEST TIME SECTION -->
+      ${bt ? `<div style="padding:8px 48px 24px;">${bestTimeHtml}</div>` : ''}
+
+      <!-- FOOTER -->
+      <div style="padding:20px 48px 26px;background:#050a12;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
+        <div style="font-family:Georgia,serif;font-size:18px;color:rgba(212,167,106,0.7);margin-bottom:6px;">✈ TravelAI</div>
+        <p style="color:rgba(245,240,232,0.22);font-size:11px;margin:0;line-height:1.7;font-family:Arial,sans-serif;">
+          Generated by <strong style="color:rgba(212,167,106,0.5);">TravelAI</strong> — Powered by SmartTripPlanner AI<br>
+          Flight &amp; hotel prices are estimates only. Always verify before booking.
+        </p>
+      </div>
+    </div>`;
+
+    // ── Use from(htmlString) — most reliable approach, no off-screen positioning issues ──
+    const opt = {
+        margin: [0.4, 0.35, 0.4, 0.35],
+        filename: `TravelAI_${destination}_${days}Days.pdf`,
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#0a0f1a',
+            logging: false,
+            letterRendering: true
+        },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'], before: '.pdf-page-break', avoid: '.pdf-no-break' }
+    };
+
+    html2pdf()
+        .set(opt)
+        .from(htmlContent)
+        .save()
+        .then(() => {
+            btn.textContent = "📥 PDF";
+            btn.disabled = false;
+        })
+        .catch(err => {
+            console.error("PDF Error:", err);
+            btn.textContent = "📥 PDF";
+            btn.disabled = false;
+            alert("PDF generation failed. Please try again.");
+        });
+}
+
+// ── LOAD LOCAL DATA ──
+const tripDataRaw = localStorage.getItem("tripData");
+let tripData = null;
+try { tripData = JSON.parse(tripDataRaw); } catch(e) {}
+
+const destination = localStorage.getItem("destination") || "Your Destination";
+const from = localStorage.getItem("from") || "Home";
+const days = parseInt(localStorage.getItem("days")) || 3;
+const budget = localStorage.getItem("budget") || "0";
+const style = localStorage.getItem("style") || "budget";
+const pace = localStorage.getItem("pace") || "normal";
+const travelers = localStorage.getItem("travelers") || "solo";
+const showFlight = localStorage.getItem("flightReq") === "yes";
+const showHotel = localStorage.getItem("hotelReq") === "yes";
+const travelDateStr = localStorage.getItem("date") || new Date(Date.now() + 86400000 * 14).toISOString().split('T')[0];
+const travelDateObj = new Date(travelDateStr);
+const returnDateObj = new Date(travelDateObj);
+returnDateObj.setDate(travelDateObj.getDate() + days);
+const returnDateStr = returnDateObj.toISOString().split('T')[0];
+
+const mapDarkStyle = [
+    { elementType: "geometry", stylers: [{ color: "#1a1a2e" }] },
+    { elementType: "labels.text.fill", stylers: [{ color: "#d4a76a" }] },
+    { featureType: "water", elementType: "geometry", stylers: [{ color: "#0e1f3d" }] },
+    { featureType: "road", elementType: "geometry", stylers: [{ color: "#2d2d4e" }] },
+    { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }
+];
+
+// ── LINKS ──
+const originCode = tripData?.meta?.originCode || "BOM";
+const destCode = tripData?.meta?.destCode || "BKK";
+const formattedDep = travelDateStr.replace(/-/g, '').substring(2);
+const formattedRet = returnDateStr.replace(/-/g, '').substring(2);
+const skyscannerLink = `https://www.skyscanner.co.in/transport/flights/${originCode.toLowerCase()}/${destCode.toLowerCase()}/${formattedDep}/${formattedRet}/`;
+const bookingLink = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(destination)}`;
+
+// ── SET DOM ──
+document.getElementById("heroDestination").textContent = destination;
+document.getElementById("rhMeta").innerHTML = `<span>📅 ${days} Days</span> <span>✈ ${from} → ${destination}</span> <span>💰 ${tripData ? tripData.totalEstimatedCost : '₹'+parseInt(budget).toLocaleString('en-IN')}</span> <span>⚡ ${pace.charAt(0).toUpperCase()+pace.slice(1)} Pace</span>`;
+document.getElementById("sumDest").textContent = destination;
+document.getElementById("sumDays").textContent = days + " Days";
+document.getElementById("sumFrom").textContent = from;
+document.getElementById("sumStyle").textContent = style.charAt(0).toUpperCase() + style.slice(1);
+document.getElementById("sumTravelers").textContent = travelers.charAt(0).toUpperCase() + travelers.slice(1);
+document.getElementById("sumCost").textContent = tripData ? tripData.totalEstimatedCost : "₹" + parseInt(budget).toLocaleString('en-IN');
+
+// Fill expense day selector
+const expDaySelect = document.getElementById('expenseDay');
+for(let i=1;i<=days;i++) expDaySelect.innerHTML += `<option value="Day ${i}">Day ${i}</option>`;
+
+// ── AUTH ──
+const authBtn = document.getElementById('authBtn');
+const saveTripBtn = document.getElementById('saveTripBtn');
+const shareTripBtn = document.getElementById('shareTripBtn');
+const navDashboard = document.getElementById('navDashboard');
+let currentUser = null;
+let savedTripId = null;
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        const firstName = (user.displayName || 'User').split(' ')[0];
+        authBtn.textContent = `Sign Out (${firstName})`;
+        navDashboard.style.display = 'inline-block';
+        const navProfile = document.getElementById('navProfile');
+        if (navProfile) navProfile.style.display = 'inline-block';
+        const dashBtn = document.getElementById('dashboardBtnBottom');
+        if (dashBtn) dashBtn.style.display = 'inline-flex';
+        if (!savedTripId) saveTripBtn.style.display = 'inline-flex';
+    } else {
+        currentUser = null;
+        authBtn.textContent = 'Sign In';
+        navDashboard.style.display = 'none';
+        const navProfile = document.getElementById('navProfile');
+        if (navProfile) navProfile.style.display = 'none';
+        saveTripBtn.style.display = 'none';
+        shareTripBtn.style.display = 'none';
+    }
+});
+
+authBtn.addEventListener('click', () => {
+    if (currentUser) signOut(auth).then(() => alert("Signed out."));
+    else signInWithPopup(auth, provider).catch(err => alert("Login failed: " + err.message));
+});
+
+saveTripBtn.addEventListener('click', async () => {
+    if (!currentUser || !tripData) return;
+    saveTripBtn.textContent = "Saving..."; saveTripBtn.disabled = true;
+    try {
+        const docRef = await addDoc(collection(db, "trips"), {
+            userId: currentUser.uid, userEmail: currentUser.email, userName: currentUser.displayName,
+            destination, from, days, budget, style, pace, travelDate: travelDateStr, tripData,
+            createdAt: serverTimestamp()
+        });
+        savedTripId = docRef.id;
+        saveTripBtn.textContent = "Saved! ✔️"; saveTripBtn.style.background = "#10b981"; saveTripBtn.style.borderColor = "#10b981";
+        shareTripBtn.style.display = "inline-flex";
+        const shareExportBtn = document.getElementById('shareExportBtn');
+        if(shareExportBtn) shareExportBtn.style.display = 'inline-flex';
+        shareTripBtn.onclick = () => {
+            const shareUrl = `${window.location.origin}/share.html?id=${savedTripId}`;
+            navigator.clipboard.writeText(shareUrl);
+            shareTripBtn.textContent = "Copied! ✔️";
+            setTimeout(() => shareTripBtn.textContent = "🔗 Copy Share Link", 2000);
+        };
+    } catch(e) { saveTripBtn.textContent = "Error Saving"; saveTripBtn.disabled = false; }
+});
+
+window.copyShareLink = function() {
+    if(savedTripId) {
+        const shareUrl = `${window.location.origin}/share.html?id=${savedTripId}`;
+        navigator.clipboard.writeText(shareUrl);
+        alert("Share link copied to clipboard!");
+    } else alert("Save your trip first to get a share link!");
+}
+
+// ── HERO IMAGE (UPDATED CALL TO RENDER) ──
+fetchRealImage(`${destination} landmark wide landscape`, destination, 'place').then(imgUrl => {
+    const hero = document.getElementById("resultHero");
+    hero.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.65)), url('${imgUrl}')`;
+    hero.style.backgroundSize = "cover"; hero.style.backgroundPosition = "center";
+});
+
+// ── WEATHER — Shows weather for actual travel dates ──
+async function loadWeather() {
+    try {
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(destination)}&count=1&format=json`);
+        const geoData = await geoRes.json();
+        if (!geoData.results?.length) return;
+        const { latitude, longitude, name } = geoData.results[0];
+        document.getElementById('weatherDestName').textContent = name;
+
+        // Open-Meteo forecast range: today + 16 days
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const maxForecastDate = new Date(today);
+        maxForecastDate.setDate(today.getDate() + 15);
+
+        const travelStart = new Date(travelDateStr + 'T00:00:00');
+        const travelEnd   = new Date(returnDateStr  + 'T00:00:00');
+
+        // Determine which date range we can actually fetch
+        let fetchStart = travelStart >= today ? travelStart : today;
+        let fetchEnd   = travelEnd <= maxForecastDate ? travelEnd : maxForecastDate;
+
+        let isFallback = false;
+        if (fetchStart > maxForecastDate) {
+            // Trip is too far in the future — show next 5 days as preview
+            fetchStart = today;
+            fetchEnd   = new Date(today);
+            fetchEnd.setDate(today.getDate() + Math.min(days - 1, 4));
+            isFallback = true;
+        }
+
+        const startStr = fetchStart.toISOString().split('T')[0];
+        const endStr   = fetchEnd.toISOString().split('T')[0];
+
+        // Update the subtitle
+        const rangeEl = document.getElementById('weatherDateRange');
+        if (rangeEl) rangeEl.textContent = isFallback ? `(showing preview — trip is ${Math.round((travelStart - today) / 86400000)} days away)` : `(${startStr} → ${endStr})`;
+        if (isFallback) { const n = document.getElementById('weatherNotice'); if(n) n.style.display = 'block'; }
+
+        const weatherRes = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
+            `&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto` +
+            `&start_date=${startStr}&end_date=${endStr}`
+        );
+        const weatherData = await weatherRes.json();
+
+        if (!weatherData.daily?.time?.length) return;
+
+        document.getElementById('weatherSection').style.display = 'block';
+        const wg = document.getElementById('weatherGrid');
+        wg.innerHTML = '';
+
+        const wmoCodes = {
+            0:"☀️ Clear", 1:"🌤️ Mostly Clear", 2:"⛅ Partly Cloudy", 3:"☁️ Overcast",
+            45:"🌫️ Foggy", 48:"🌫️ Icy Fog", 51:"🌦️ Light Drizzle", 53:"🌧️ Drizzle",
+            61:"🌧️ Light Rain", 63:"🌧️ Moderate Rain", 65:"🌧️ Heavy Rain",
+            71:"❄️ Light Snow", 73:"❄️ Snow", 80:"🌦️ Showers", 95:"🌩️ Thunderstorm"
+        };
+
+        weatherData.daily.time.forEach((dateStr, i) => {
+            const dateObj = new Date(dateStr + 'T00:00:00');
+            const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+            const dateDisplay = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const max  = Math.round(weatherData.daily.temperature_2m_max[i]);
+            const min  = Math.round(weatherData.daily.temperature_2m_min[i]);
+            const code = weatherData.daily.weathercode[i];
+            const condition = wmoCodes[code] || "☁️ Cloudy";
+            const [emoji, ...textParts] = condition.split(' ');
+            const text = textParts.join(' ');
+
+            wg.innerHTML += `
+            <div class="weather-card">
+                <div class="wc-day">${dayName}</div>
+                <div class="wc-date">${dateDisplay}</div>
+                <div class="wc-icon">${emoji}</div>
+                <div class="wc-desc">${text}</div>
+                <div class="wc-temps">
+                    <span class="wc-high">↑${max}°</span>
+                    <span class="wc-low">↓${min}°</span>
+                </div>
+            </div>`;
+        });
+    } catch(e) { console.warn("Weather load failed:", e); }
+}
+
+// ── FLIGHT RENDER — 3 options with category labels ──
+if (showFlight && tripData?.flights) {
+    document.getElementById("flightSection").style.display = "block";
+    const fg = document.getElementById("flightsGrid");
+    const flightCategoryColors = {
+        cheapest:   { bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.25)',  badge: '#10b981' },
+        fastest:    { bg: 'rgba(59,130,246,0.08)',   border: 'rgba(59,130,246,0.25)',  badge: '#3b82f6' },
+        best_value: { bg: 'rgba(212,167,106,0.08)',  border: 'rgba(212,167,106,0.25)', badge: '#d4a76a' }
+    };
+    tripData.flights.slice(0, 3).forEach(f => {
+        const cat = flightCategoryColors[f.category] || flightCategoryColors.best_value;
+        const label = f.categoryLabel || (f.category === 'cheapest' ? '💸 Cheapest' : f.category === 'fastest' ? '⚡ Fastest' : '⭐ Best Value');
+        let html = `
+        <div class="flight-card" style="display:flex;flex-direction:column;gap:14px;background:${cat.bg};border-color:${cat.border};">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--glass-border);padding-bottom:12px;flex-wrap:wrap;gap:8px;">
+                <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${cat.badge};background:rgba(255,255,255,0.05);border:1px solid ${cat.border};padding:3px 10px;border-radius:20px;">${label}</span>
+                <span style="color:var(--gold);font-weight:700;font-family:var(--font-serif);font-size:24px;">${f.price} <small style="font-size:12px;color:rgba(var(--white-rgb),0.4);font-family:var(--font-sans);font-weight:400;">Round Trip</small></span>
+            </div>
+            <div>
+                <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">✈ Outbound</div>
+                <div class="flight-airline">${f.airline} <span style="font-size:11px;color:rgba(var(--white-rgb),0.4);">(${f.code})</span></div>
+                <div class="flight-time">${f.outbound?.time || '—'}</div>
+                <div class="flight-meta"><span>${f.outbound?.duration || ''}</span> <span class="flight-badge">${f.outbound?.stops || ''}</span></div>
+            </div>`;
+        if (f.inbound) html += `
+            <div style="border-top:1px dashed var(--glass-border);padding-top:12px;">
+                <div style="font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">✈ Return</div>
+                <div class="flight-airline">${f.airline}</div>
+                <div class="flight-time">${f.inbound.time}</div>
+                <div class="flight-meta"><span>${f.inbound.duration}</span> <span class="flight-badge">${f.inbound.stops}</span></div>
+            </div>`;
+        html += `<a href="${skyscannerLink}" target="_blank" style="margin-top:auto;padding-top:8px;" data-html2canvas-ignore><button class="btn-primary btn-sm" style="width:100%;justify-content:center;">Book on Skyscanner ✈️</button></a></div>`;
+        fg.innerHTML += html;
+    });
+}
+
+// ── HOTEL RENDER — 3 tiers: Budget / Mid-Range / Luxury ──
+if (showHotel && tripData?.hotels) {
+    document.getElementById("hotelSection").style.display = "block";
+    const hg = document.getElementById("hotelsGrid");
+    const nights = Math.max(1, days - 1);
+    const hotelCategoryStyles = {
+        budget:  { color: '#10b981', bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.25)'  },
+        mid:     { color: '#3b82f6', bg: 'rgba(59,130,246,0.08)',  border: 'rgba(59,130,246,0.25)'  },
+        luxury:  { color: '#d4a76a', bg: 'rgba(212,167,106,0.08)', border: 'rgba(212,167,106,0.3)'  }
+    };
+    tripData.hotels.slice(0, 3).forEach((h, idx) => {
+        const cardId = `hotel-img-${idx}`;
+        const cat   = hotelCategoryStyles[h.category] || hotelCategoryStyles.mid;
+        const label = h.categoryLabel || (h.category === 'budget' ? '🎒 Budget Stay' : h.category === 'luxury' ? '👑 Luxury' : '🏙️ Mid-Range');
+        const amenitiesHtml = (h.amenities || []).map(a =>
+            `<span style="font-size:10px;background:var(--glass);border:1px solid var(--glass-border);padding:2px 8px;border-radius:20px;color:rgba(var(--white-rgb),0.6);">${a}</span>`
+        ).join('');
+        hg.innerHTML += `
+        <div class="hotel-card" style="border-color:${cat.border};">
+            <div class="hotel-img" id="${cardId}" style="background-color:var(--dark3);background-size:cover;background-position:center;position:relative;">
+                <div class="hotel-badge">${h.rating}</div>
+                <span style="position:absolute;top:12px;left:12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${cat.color};background:${cat.bg};border:1px solid ${cat.border};padding:3px 10px;border-radius:20px;">${label}</span>
+            </div>
+            <div class="hotel-info">
+                <h5 style="color:var(--white);font-size:17px;margin-bottom:6px;line-height:1.3;">${h.name}</h5>
+                <div class="hotel-desc" style="margin-bottom:8px;">📍 ${h.address}</div>
+                ${amenitiesHtml ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;">${amenitiesHtml}</div>` : ''}
+                <div class="hotel-price" style="color:${cat.color};margin-bottom:2px;">${h.price}</div>
+                <div style="font-size:11px;color:rgba(var(--white-rgb),0.4);margin-bottom:12px;">Per night · ${nights} nights est.</div>
+                <a href="${bookingLink}" target="_blank" data-html2canvas-ignore>
+                    <button class="btn-outline btn-sm" style="width:100%;">View on Booking.com 🏨</button>
+                </a>
+            </div>
+        </div>`;
+        fetchRealImage(`${h.name} ${destination} hotel`, h.name, 'hotel').then(imgUrl => {
+            const node = document.getElementById(cardId);
+            if (node) node.style.backgroundImage = `url('${imgUrl}')`;
+        });
+    });
+}
+
+// ── ITINERARY RENDER (UPDATED API CALL TO RENDER) ──
+async function renderItinerary() {
+    if(!tripData?.itinerary) return;
+    const container = document.getElementById("itinerary-container");
+    for (let index = 0; index < tripData.itinerary.length; index++) {
+        const day = tripData.itinerary[index];
+        const card = document.createElement("div");
+        card.className = "day-card";
+        const placeChips = day.places.map(p => `<span class="place-chip">${p.trim()}</span>`).join("");
+        const savedNote = localStorage.getItem(`note_day_${index}`) || '';
+        let imagesGridHtml = '<div class="day-images-grid">';
+        for(let j=0; j<Math.min(3, day.imageSearchQueries.length); j++) {
+            imagesGridHtml += `<div class="day-img-item" id="img-node-${index}-${j}" style="background-color:var(--dark3);background-size:cover;background-position:center;"><div class="day-img-caption" style="opacity:0;transition:opacity 0.5s;">${day.imageSearchQueries[j]}</div></div>`;
+        }
+        imagesGridHtml += '</div>';
+
+        card.innerHTML = `
+            <div class="day-header-wrap">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div class="day-number-badge">Day ${day.day}</div>
+                        ${day.city ? `<span style="font-size:11px;color:rgba(var(--white-rgb),0.5);background:var(--glass);border:1px solid var(--glass-border);padding:3px 10px;border-radius:20px;">📍 ${day.city}</span>` : ''}
+                    </div>
+                    ${day.theme ? `<span style="font-size:12px;color:var(--gold);background:rgba(212,167,106,0.08);border:1px solid rgba(212,167,106,0.2);padding:4px 12px;border-radius:20px;">${day.theme}</span>` : ''}
+                </div>
+                ${imagesGridHtml}
+            </div>
+            <div class="day-body">
+                <div class="day-places-row">${placeChips}</div>
+                <div class="day-details">
+                    <div class="day-detail-item"><div class="dd-icon">🍴</div><div><strong>Food Recommendations</strong><p>${day.food}</p></div></div>
+                    <div class="day-detail-item"><div class="dd-icon">🚕</div><div><strong>Transport</strong><p>${day.transport}</p></div></div>
+                    <div class="day-detail-item"><div class="dd-icon">💰</div><div><strong>Daily Cost</strong><p>${day.cost}</p></div></div>
+                    ${day.note ? `<div class="day-detail-item"><div class="dd-icon">💡</div><div><strong>Pro Tip</strong><p>${day.note}</p></div></div>` : ''}
+                </div>
+                <div class="map-wrapper">
+                    <div class="map-toolbar">
+                        <div class="map-route-label">🗺️ <span id="routeLabel${index}">Day ${day.day} Route</span></div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span class="map-distance-badge" id="mapDist${index}" style="display:none;"></span>
+                            <button class="btn-outline btn-sm map-maximize-btn" onclick="maximizeMap(${index})" title="Full Screen Map">⤢ Maximize</button>
+                        </div>
+                    </div>
+                    <div id="map${index}" class="map-box"></div>
+                </div>
+                <div>
+                    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(var(--white-rgb),0.35);margin-bottom:6px;">📝 Your Notes for Day ${day.day}</div>
+                    <textarea class="day-note-area" placeholder="Add your personal notes, reminders, or changes for this day..." onchange="saveDayNote(${index}, this.value)">${savedNote}</textarea>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+
+        // MAP — Hotel → Places → Hotel routing
+        if (day.places.length > 0) {
+            const isLight = document.documentElement.classList.contains('light-theme');
+            const mapEl = document.getElementById(`map${index}`);
+            const map = new google.maps.Map(mapEl, {
+                zoom: 12,
+                styles: isLight ? [] : mapDarkStyle,
+                disableDefaultUI: false,
+                zoomControl: true,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: false
+            });
+            // Store map data for maximize
+            window.mapsArray.push(map);
+            window.mapsData = window.mapsData || [];
+            window.mapsData[index] = { day: day, mapInstance: map };
+
+            const hotelName = tripData?.hotels?.[0]?.name || (destination + ' City Center');
+            const hotelAddress = tripData?.hotels?.[0]?.address || destination;
+
+            const directionsService  = new google.maps.DirectionsService();
+            const directionsRenderer = new google.maps.DirectionsRenderer({
+                map,
+                suppressMarkers: false,
+                polylineOptions: { strokeColor: '#d4a76a', strokeWeight: 4, strokeOpacity: 0.9 }
+            });
+
+            // Build full route: Hotel → Place1 → Place2 → ... → Hotel
+            const allStops = [hotelAddress + ', ' + destination, ...day.places.map(p => p + ', ' + destination), hotelAddress + ', ' + destination];
+            const routeOrigin = allStops[0];
+            const routeDest   = allStops[allStops.length - 1];
+            const routeWaypoints = allStops.slice(1, -1).map(loc => ({ location: loc, stopover: true }));
+
+            directionsService.route({
+                origin: routeOrigin,
+                destination: routeDest,
+                waypoints: routeWaypoints,
+                travelMode: google.maps.TravelMode.DRIVING,
+                optimizeWaypoints: false
+            }, (response, status) => {
+                if (status === 'OK') {
+                    directionsRenderer.setDirections(response);
+                    // Calculate total distance & time
+                    let totalDist = 0, totalTime = 0;
+                    response.routes[0].legs.forEach(leg => {
+                        totalDist += leg.distance?.value || 0;
+                        totalTime += leg.duration?.value || 0;
+                    });
+                    const distKm   = (totalDist / 1000).toFixed(1);
+                    const timeMins = Math.round(totalTime / 60);
+                    const distBadge = document.getElementById(`mapDist${index}`);
+                    if (distBadge) {
+                        distBadge.style.display = 'inline-flex';
+                        distBadge.textContent = `🛣️ ${distKm} km · ⏱ ${timeMins} min`;
+                    }
+                    const routeLabel = document.getElementById(`routeLabel${index}`);
+                    if (routeLabel) {
+                        const stops = [hotelName.split(' ')[0], ...day.places, '↩ Hotel'];
+                        routeLabel.textContent = stops.join(' → ');
+                    }
+                    // Store for maximize
+                    if (window.mapsData[index]) window.mapsData[index].directionsResponse = response;
+                } else {
+                    // Fallback: drop individual markers
+                    day.places.forEach(p => dropMarker(map, p));
+                }
+            });
+        }
+
+        // IMAGES
+        for(let j=0; j<Math.min(3, day.imageSearchQueries.length); j++) {
+            const shortName = day.imageSearchQueries[j].split(' ')[0];
+            fetchRealImage(day.imageSearchQueries[j] + ` ${destination}`, shortName, 'place').then(imgUrl => {
+                const node = document.getElementById(`img-node-${index}-${j}`);
+                if(node) { node.style.backgroundImage = `url('${imgUrl}')`; node.querySelector('.day-img-caption').style.opacity = '1'; }
+            });
+        }
+    }
+}
+
+function dropMarker(mapTarget, placeName) {
+    fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(placeName + ', ' + destination)}&key=AIzaSyDkD0iyaPkulI8IosMnbhKQgBQ3PO29JkQ`)
+        .then(r => r.json()).then(data => {
+            if (data.results?.length > 0) {
+                const loc = data.results[0].geometry.location;
+                mapTarget.setCenter(loc);
+                new google.maps.Marker({ position: loc, map: mapTarget, title: placeName });
+            }
+        }).catch(() => {});
+}
+
+// ── BUDGET SECTION (Phase 2) ──
+function renderBudget() {
+    const bd = tripData?.budget_breakdown;
+    if(!bd) return;
+    document.getElementById('budgetSection').style.display = 'block';
+    document.getElementById('budgetDestName').textContent = destination;
+
+    const userStyle = style || 'budget';
+    const tiers = [
+        { label: 'Budget', emoji: '🎒', price: bd.budget_total, sub: 'Hostels, street food, public transit', cls: userStyle==='budget'?'recommended':'' },
+        { label: 'Mid-Range', emoji: '🏙️', price: bd.midrange_total, sub: '3-star hotels, restaurants, taxi', cls: userStyle==='mid'?'recommended':'' },
+        { label: 'Luxury', emoji: '💎', price: bd.luxury_total, sub: '5-star, fine dining, private transfers', cls: userStyle==='luxury'?'recommended':'' }
+    ];
+    const tiersEl = document.getElementById('budgetTiers');
+    tiers.forEach(t => {
+        tiersEl.innerHTML += `
+        <div class="budget-tier ${t.cls}">
+            <div class="tier-label">${t.emoji} ${t.label}</div>
+            <div class="tier-price">${t.price}</div>
+            <div class="tier-sub">${t.sub}</div>
+        </div>`;
+    });
+
+    const breakdownItems = [
+        { icon:'✈️', label:'Flights', val: bd.flights },
+        { icon:'🏨', label:'Hotels', val: bd.hotels },
+        { icon:'🍴', label:'Food', val: bd.food },
+        { icon:'🚕', label:'Transport', val: bd.transport },
+        { icon:'🎟️', label:'Activities', val: bd.activities }
+    ];
+    const bdEl = document.getElementById('budgetBreakdown');
+    breakdownItems.forEach(item => {
+        bdEl.innerHTML += `
+        <div class="budget-item">
+            <div class="budget-item-icon">${item.icon}</div>
+            <div class="budget-item-label">${item.label}</div>
+            <div class="budget-item-val">${item.val || '—'}</div>
+        </div>`;
+    });
+}
+
+// ── BEST TIME (Phase 2) ──
+function renderBestTime() {
+    const bt = tripData?.best_time;
+    if(!bt) return;
+    document.getElementById('bestTimeSection').style.display = 'block';
+    document.getElementById('bestTimeDest').textContent = destination;
+    const grid = document.getElementById('bestTimeGrid');
+    const cards = [
+        { icon:'🌟', label:'Best Months', val: bt.best_months },
+        { icon:'🌡️', label:'Weather', val: bt.weather_summary },
+        { icon:'🏖️', label:'Peak Season', val: bt.peak_season },
+        { icon:'💸', label:'Cheapest Months', val: bt.cheapest_months }
+    ];
+    cards.forEach(c => {
+        grid.innerHTML += `
+        <div class="time-card">
+            <div class="time-card-icon">${c.icon}</div>
+            <div class="time-card-label">${c.label}</div>
+            <div class="time-card-val">${c.val || '—'}</div>
+        </div>`;
+    });
+}
+
+// ── VISA INFO (Phase 2) ──
+function renderVisa() {
+    const vi = tripData?.visa_info;
+    if(!vi) return;
+    document.getElementById('visaSection').style.display = 'block';
+    document.getElementById('visaDest').textContent = destination;
+    const badge = vi.required
+        ? `<span class="visa-badge-required">🚨 Visa Required</span>`
+        : `<span class="visa-badge-free">✅ Visa Free / On Arrival</span>`;
+    document.getElementById('visaCard').innerHTML = `
+        <div class="visa-item" style="grid-column: 1/-1;">${badge}<br><br><span class="visa-val" style="font-size:20px;font-family:var(--font-serif);">${vi.type}</span></div>
+        <div class="visa-item"><div class="visa-label">Processing Time</div><div class="visa-val">⏱ ${vi.processing_time}</div></div>
+        <div class="visa-item"><div class="visa-label">Approx. Cost</div><div class="visa-val">💰 ${vi.cost_approx}</div></div>
+        <div class="visa-item"><div class="visa-label">Validity</div><div class="visa-val">📅 ${vi.validity}</div></div>
+        ${vi.notes ? `<div class="visa-item" style="grid-column:1/-1;"><div class="visa-label">Important Notes</div><div class="visa-val" style="font-size:14px;color:rgba(var(--white-rgb),0.7);">💡 ${vi.notes}</div></div>` : ''}
+        ${vi.website && vi.website !== 'https://evisa.gov.example.com' ? `<div class="visa-item" style="grid-column:1/-1;"><a href="${vi.website}" target="_blank"><button class="btn-outline btn-sm">🔗 Official Visa Website</button></a></div>` : ''}
+    `;
+}
+
+// ── NEARBY PLACES (Phase 4 - UPDATED API CALL TO RENDER) ──
+async function renderNearby() {
+    const aiNearby = tripData?.nearby_places;
+    const grid = document.getElementById('nearbyGrid');
+    const section = document.getElementById('nearbySection');
+    document.getElementById('nearbyDest').textContent = destination;
+
+    if(aiNearby && aiNearby.length > 0) {
+        section.style.display = 'block';
+        aiNearby.forEach(p => {
+            grid.innerHTML += `
+            <div class="nearby-card">
+                <div class="nearby-name">${p.name}</div>
+                <div class="nearby-meta">📏 ${p.distance} away &nbsp;·&nbsp; ${p.type}</div>
+            </div>`;
+        });
+    }
+    // Also try Google Places API via our backend
+    try {
+        const res = await fetch(`https://ai-travel-planner-gmmc.onrender.com/nearby-places?destination=${encodeURIComponent(destination)}`);
+        const data = await res.json();
+        if(data.places?.length > 0) {
+            section.style.display = 'block';
+            if(!aiNearby || aiNearby.length === 0) {
+                data.places.forEach(p => {
+                    grid.innerHTML += `
+                    <div class="nearby-card">
+                        <div class="nearby-name">${p.name}</div>
+                        <div class="nearby-meta">⭐ ${p.rating || '—'} &nbsp;·&nbsp; 📍 ${p.vicinity}</div>
+                    </div>`;
+                });
+            }
+        }
+    } catch(e) {}
+}
+
+// ── PACKING LIST (Enhanced) ──
+function renderPacking() {
+    const pl = tripData?.packing_list;
+    if(!pl) {
+        // Default packing list
+        renderDefaultPacking();
+        return;
+    }
+    const categoryMap = {
+        documents: { id: 'packCatDocuments', items: pl.documents },
+        clothes:   { id: 'packCatClothes',   items: pl.clothes },
+        essentials:{ id: 'packCatEssentials', items: pl.essentials },
+        tech:      { id: 'packCatTech',       items: pl.tech },
+        tips:      { id: 'packCatTips',       items: pl.local_tips }
+    };
+    Object.entries(categoryMap).forEach(([key, val]) => {
+        const el = document.getElementById(val.id);
+        el.className = 'pack-category' + (key === 'documents' ? ' active' : '');
+        el.style.display = key === 'documents' ? 'grid' : 'none';
+        (val.items || []).forEach(item => {
+            el.innerHTML += `<label class="pack-item"><input type="checkbox"> ${item}</label>`;
+        });
+    });
+}
+
+function renderDefaultPacking() {
+    const defaults = {
+        documents: ["🪪 Passport / ID", "🛂 Visa Copy", "✈️ Flight Tickets", "🏨 Hotel Booking", "💊 Travel Insurance"],
+        clothes: ["👔 Clothes (3-4 sets)", "👟 Comfortable Shoes", "🧢 Cap / Hat", "🧥 Light Jacket", "👙 Swimwear"],
+        essentials: ["🧴 Sunscreen SPF 50", "🦟 Insect Repellent", "💊 Basic Medicines", "🧼 Hand Sanitizer", "🪥 Toiletries"],
+        tech: ["📱 Charger", "🔋 Power Bank", "🔌 Universal Adapter", "📸 Camera", "🎧 Earphones"],
+        tips: ["📴 Download offline maps", "💵 Keep local currency", "📷 Scan all documents", "🏥 Note local hospital numbers", "📞 Save hotel address"]
+    };
+    Object.entries(defaults).forEach(([key, items]) => {
+        const idMap = { documents:'packCatDocuments', clothes:'packCatClothes', essentials:'packCatEssentials', tech:'packCatTech', tips:'packCatTips' };
+        const el = document.getElementById(idMap[key]);
+        el.className = 'pack-category' + (key === 'documents' ? ' active' : '');
+        el.style.display = key === 'documents' ? 'grid' : 'none';
+        items.forEach(item => { el.innerHTML += `<label class="pack-item"><input type="checkbox"> ${item}</label>`; });
+    });
+}
+
+// ── TRIP CHECKLIST ──
+function renderChecklist() {
+    const checkItems = [
+        "✈️ Book flights", "🏨 Book hotel", "🛂 Apply for visa", "💊 Travel insurance",
+        "💉 Check vaccinations", "💳 Notify bank for travel", "📱 Buy travel SIM or roaming plan",
+        "🗺️ Download offline maps", "💵 Exchange currency", "📸 Backup phone photos",
+        "🧳 Pack luggage", "🔑 Arrange house-sitting", "📧 Email itinerary to family",
+        "🔋 Charge all devices"
+    ];
+    const grid = document.getElementById('tripChecklist');
+    checkItems.forEach(item => {
+        grid.innerHTML += `<label class="checklist-item"><input type="checkbox"> ${item}</label>`;
+    });
+}
+
+// ── CURRENCY CONVERTER (UPDATED API CALL TO RENDER) ──
+let currencyRates = {};
+async function loadCurrency() {
+    try {
+        const res = await fetch('https://ai-travel-planner-gmmc.onrender.com/currency');
+        const data = await res.json();
+        currencyRates = data.rates;
+        updateCurrency();
+    } catch(e) {
+        currencyRates = { USD: 0.012, EUR: 0.011, GBP: 0.0095, JPY: 1.78, AED: 0.044, SGD: 0.016, THB: 0.42, AUD: 0.018 };
+        updateCurrency();
+    }
+}
+
+window.updateCurrency = function() {
+    const amount = parseFloat(document.getElementById('currencyInput').value) || 0;
+    const currencies = [
+        { code:'USD', flag:'🇺🇸', name:'US Dollar' },
+        { code:'EUR', flag:'🇪🇺', name:'Euro' },
+        { code:'GBP', flag:'🇬🇧', name:'British Pound' },
+        { code:'JPY', flag:'🇯🇵', name:'Japanese Yen' },
+        { code:'AED', flag:'🇦🇪', name:'UAE Dirham' },
+        { code:'SGD', flag:'🇸🇬', name:'Singapore Dollar' },
+        { code:'THB', flag:'🇹🇭', name:'Thai Baht' },
+        { code:'AUD', flag:'🇦🇺', name:'Australian Dollar' }
+    ];
+    const grid = document.getElementById('currencyGrid');
+    grid.innerHTML = '';
+    currencies.forEach(c => {
+        const val = currencyRates[c.code] ? (amount * currencyRates[c.code]).toFixed(2) : '—';
+        grid.innerHTML += `
+        <div class="currency-item">
+            <div class="currency-flag">${c.flag}</div>
+            <div class="currency-code">${c.code}</div>
+            <div class="currency-amount">${val}</div>
+            <div style="font-size:10px;color:rgba(var(--white-rgb),0.3);margin-top:2px;">${c.name}</div>
+        </div>`;
+    });
+}
+
+// ── EXPENSE TRACKER ──
+let expenses = JSON.parse(localStorage.getItem(`expenses_${destination}`) || '[]');
+
+function renderExpenses() {
+    const list = document.getElementById('expenseList');
+    const total = expenses.reduce((s, e) => s + e.amount, 0);
+    document.getElementById('expenseTotal').textContent = '₹' + total.toLocaleString('en-IN');
+    if(expenses.length === 0) {
+        list.innerHTML = `<div style="text-align:center;padding:20px;color:rgba(var(--white-rgb),0.3);font-size:13px;">No expenses logged yet. Start tracking your spending!</div>`;
+        return;
+    }
+    list.innerHTML = '';
+    expenses.forEach((exp, i) => {
+        list.innerHTML += `
+        <div class="expense-row">
+            <span>
+                <span class="expense-row-cat">${exp.day} · ${exp.category}</span>
+                <span style="display:block;font-size:13px;color:var(--white);margin-top:2px;">${exp.description}</span>
+            </span>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <span class="expense-row-amt">₹${exp.amount.toLocaleString('en-IN')}</span>
+                <span class="expense-row-del" onclick="deleteExpense(${i})">✕</span>
+            </div>
+        </div>`;
+    });
+}
+
+window.addExpense = function() {
+    const day = document.getElementById('expenseDay').value;
+    const cat = document.getElementById('expenseCat').value;
+    const desc = document.getElementById('expenseDesc').value.trim();
+    const amt = parseFloat(document.getElementById('expenseAmt').value);
+    if(!desc || !amt || amt <= 0) { alert("Please enter a description and valid amount."); return; }
+    expenses.push({ day, category: cat, description: desc, amount: amt, date: new Date().toLocaleDateString() });
+    localStorage.setItem(`expenses_${destination}`, JSON.stringify(expenses));
+    document.getElementById('expenseDesc').value = '';
+    document.getElementById('expenseAmt').value = '';
+    renderExpenses();
+}
+
+window.deleteExpense = function(i) {
+    expenses.splice(i, 1);
+    localStorage.setItem(`expenses_${destination}`, JSON.stringify(expenses));
+    renderExpenses();
+}
+// ── EMAIL ITINERARY (REAL BACKEND API) ──
+window.emailItinerary = async function() {
+    const email = document.getElementById('emailInput').value.trim();
+    const status = document.getElementById('emailStatus');
+    if(!email) { status.innerHTML = '<span style="color:#ef4444;">Please enter a valid email address.</span>'; return; }
+    
+    status.innerHTML = '<span style="color:var(--gold);">Sending securely...</span>';
+    
+    try {
+        const res = await fetch('https://ai-travel-planner-gmmc.onrender.com/email-itinerary', { 
+            method: 'POST', 
+            headers: {'Content-Type':'application/json'}, 
+            body: JSON.stringify({
+                email,
+                destination,
+                days,
+                from,
+                style,
+                budget,
+                travelDate: travelDateStr,
+                itinerary: tripData?.itinerary || [],
+                totalCost: tripData?.totalEstimatedCost || ('₹' + parseInt(budget).toLocaleString('en-IN'))
+            })
+        });
+        const data = await res.json();
+        
+        if(data.success) {
+            status.innerHTML = '<span style="color:#10b981;">✅ Itinerary sent! Check your inbox.</span>';
+        } else {
+            status.innerHTML = '<span style="color:#ef4444;">Email failed to send.</span>';
+        }
+    } catch(e) { 
+        status.innerHTML = '<span style="color:#ef4444;">Email service unavailable.</span>'; 
+    }
+}
+
+// ── DAY NOTES ──
+window.saveDayNote = function(index, value) {
+    localStorage.setItem(`note_day_${index}`, value);
+}
+
+// ── CHATBOT (UPDATED API CALL TO RENDER) ──
+window.toggleChat = function() {
+    const win = document.getElementById('chatbotWindow');
+    win.classList.toggle('open');
+}
+
+window.sendChat = async function() {
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if(!msg) return;
+    const messages = document.getElementById('chatMessages');
+    messages.innerHTML += `<div class="chat-msg user">${msg}</div>`;
+    input.value = '';
+    messages.scrollTop = messages.scrollHeight;
+    const thinking = document.createElement('div');
+    thinking.className = 'chat-msg ai';
+    thinking.textContent = '✦ Thinking...';
+    messages.appendChild(thinking);
+    try {
+        const res = await fetch('https://ai-travel-planner-gmmc.onrender.com/chat', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ message: msg, destination, context: `User has ${days}-day ${style} trip to ${destination}.` })
+        });
+        const data = await res.json();
+        thinking.textContent = data.reply || "Sorry, I couldn't get an answer right now.";
+    } catch(e) { thinking.textContent = "Chat service unavailable."; }
+    messages.scrollTop = messages.scrollHeight;
+}
+
+// ── PACKING TAB SWITCH ──
+window.switchPackTab = function(cat, btn) {
+    document.querySelectorAll('.pack-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.pack-category').forEach(c => { c.style.display = 'none'; c.classList.remove('active'); });
+    const idMap = { documents:'packCatDocuments', clothes:'packCatClothes', essentials:'packCatEssentials', tech:'packCatTech', tips:'packCatTips' };
+    const el = document.getElementById(idMap[cat]);
+    if(el) { el.style.display = 'grid'; el.classList.add('active'); }
+}
+
+// ── IMAGE FETCH HELPER (UPDATED API CALL TO RENDER) ──
+async function fetchRealImage(query, fallbackText, type = 'place') {
+    try {
+        const res = await fetch(`https://ai-travel-planner-gmmc.onrender.com/get-image?query=${encodeURIComponent(query)}&type=${type}`);
+        const data = await res.json();
+        if (data.imageUrl) return data.imageUrl;
+    } catch(e) {}
+    return `https://placehold.co/800x600/1a2235/d4a76a?text=${encodeURIComponent(fallbackText)}`;
+}
+
+// ── MAP MAXIMIZE / FULLSCREEN ──
+window.mapsData = window.mapsData || [];
+let fullscreenMapInstance = null;
+let fullscreenDirRenderer = null;
+
+window.maximizeMap = function(index) {
+    const data = window.mapsData[index];
+    if (!data) return;
+    const modal = document.getElementById('mapFullscreenModal');
+    const modalMapEl = document.getElementById('mapModalMap');
+    const titleEl = document.getElementById('mapModalTitle');
+    const metaEl  = document.getElementById('mapModalMeta');
+
+    const day = data.day;
+    titleEl.textContent = `Day ${day.day} — ${day.theme || 'Route'}`;
+
+    // Build route label
+    const hotelName = tripData?.hotels?.[0]?.name || destination;
+    const stops = [hotelName, ...day.places, '↩ ' + hotelName.split(' ')[0]];
+    metaEl.textContent = stops.join(' → ');
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    // Give DOM time to paint the modal before initializing map
+    setTimeout(() => {
+        const isLight = document.documentElement.classList.contains('light-theme');
+        fullscreenMapInstance = new google.maps.Map(modalMapEl, {
+            zoom: 12,
+            styles: isLight ? [] : mapDarkStyle,
+            disableDefaultUI: false,
+            zoomControl: true,
+            mapTypeControl: true,
+            streetViewControl: false,
+            fullscreenControl: false
+        });
+
+        if (data.directionsResponse) {
+            fullscreenDirRenderer = new google.maps.DirectionsRenderer({
+                map: fullscreenMapInstance,
+                polylineOptions: { strokeColor: '#d4a76a', strokeWeight: 5, strokeOpacity: 0.95 }
+            });
+            fullscreenDirRenderer.setDirections(data.directionsResponse);
+        } else {
+            day.places.forEach(p => dropMarker(fullscreenMapInstance, p));
+        }
+    }, 120);
+};
+
+window.closeMapModal = function() {
+    const modal = document.getElementById('mapFullscreenModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+    if (fullscreenMapInstance) { fullscreenMapInstance = null; }
+    if (fullscreenDirRenderer) { fullscreenDirRenderer.setMap(null); fullscreenDirRenderer = null; }
+};
+
+// Close modal on Escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') window.closeMapModal(); });
+
+// ── USAGE LIMIT CHECK (show popup if limit hit) ──
+window.checkUsageLimit = async function() {
+    const today = new Date().toISOString().split('T')[0];
+    if (currentUser) {
+        // Logged-in: Firestore-based (handled in form.html before generation)
+        return true;
+    }
+    // Anonymous: localStorage
+    const storedDate  = localStorage.getItem('usage_date');
+    const storedCount = parseInt(localStorage.getItem('usage_count') || '0');
+    if (storedDate === today && storedCount >= 2) {
+        const popup = document.getElementById('usageLimitPopup');
+        document.getElementById('usageLimitMsg').textContent =
+            `You've used ${storedCount}/2 free itineraries today. Sign in to get 10/day, or upgrade for unlimited access.`;
+        popup.style.display = 'flex';
+        return false;
+    }
+    return true;
+};
+
+// ── INIT ──
+loadWeather();
+renderItinerary();
+renderBudget();
+renderBestTime();
+renderVisa();
+renderNearby();
+renderPacking();
+renderChecklist();
+renderExpenses();
+loadCurrency();
+</script>
+</body>
+</html>

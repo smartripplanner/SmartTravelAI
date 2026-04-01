@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel — TravelAI</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') document.documentElement.classList.add('light-theme');
+        })();
+    </script>
+    <style>
+        .admin-page { min-height: 100vh; padding: 100px 24px 60px; max-width: 1200px; margin: 0 auto; }
+        .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; }
+        .admin-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; color: var(--white); }
+        .admin-header p { color: rgba(var(--white-rgb),0.5); font-size: 0.9rem; margin-top: 4px; }
+        .admin-tabs { display: flex; gap: 4px; background: var(--glass-white); border: 1px solid var(--border); border-radius: 14px; padding: 6px; margin-bottom: 32px; width: fit-content; flex-wrap: wrap; }
+        .admin-tab { padding: 8px 20px; border-radius: 10px; border: none; background: transparent; color: rgba(var(--white-rgb),0.6); font-size: 0.88rem; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .admin-tab.active { background: var(--gold); color: var(--dark); font-weight: 600; }
+        .admin-panel { display: none; }
+        .admin-panel.active { display: block; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 36px; }
+        .stat-box { background: var(--glass-white); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+        .stat-box .snum { font-family: 'Cormorant Garamond', serif; font-size: 2.4rem; font-weight: 600; color: var(--gold); line-height: 1; }
+        .stat-box .slabel { font-size: 0.8rem; color: rgba(var(--white-rgb),0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px; }
+        .stat-box .schange { font-size: 0.8rem; margin-top: 8px; }
+        .schange.up { color: #4ade80; }
+        .schange.down { color: #f87171; }
+        .admin-table-wrap { background: var(--glass-white); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .admin-table-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+        .admin-table-header h3 { font-size: 1rem; font-weight: 500; color: var(--white); }
+        .admin-search { padding: 8px 14px; background: rgba(var(--white-rgb),0.05); border: 1px solid var(--border); border-radius: 8px; color: var(--white); font-size: 0.85rem; width: 220px; outline: none; }
+        .admin-search::placeholder { color: rgba(var(--white-rgb),0.35); }
+        table { width: 100%; border-collapse: collapse; }
+        thead th { padding: 12px 16px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(var(--white-rgb),0.45); border-bottom: 1px solid var(--border); font-weight: 500; }
+        tbody tr { border-bottom: 1px solid rgba(var(--white-rgb),0.05); transition: background 0.15s; }
+        tbody tr:hover { background: rgba(var(--white-rgb),0.04); }
+        tbody tr:last-child { border-bottom: none; }
+        td { padding: 13px 16px; font-size: 0.88rem; color: rgba(var(--white-rgb),0.8); vertical-align: middle; }
+        .td-name { font-weight: 500; color: var(--white); }
+        .td-email { color: rgba(var(--white-rgb),0.55); font-size: 0.82rem; }
+        .badge-sm { display: inline-flex; padding: 3px 10px; border-radius: 50px; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+        .badge-free { background: rgba(100,100,100,0.25); color: rgba(var(--white-rgb),0.6); }
+        .badge-pro { background: rgba(212,167,106,0.2); color: var(--gold); }
+        .badge-admin { background: rgba(239,68,68,0.2); color: #f87171; }
+        .tbl-action { padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: rgba(var(--white-rgb),0.7); font-size: 0.78rem; cursor: pointer; transition: all 0.2s; margin-right: 4px; }
+        .tbl-action:hover { border-color: var(--gold); color: var(--gold); }
+        .tbl-action.danger:hover { border-color: #ef4444; color: #ef4444; }
+        .blog-editor { background: var(--glass-white); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 24px; }
+        .blog-editor h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--white); margin-bottom: 20px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 0.8rem; color: rgba(var(--white-rgb),0.55); text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-group input, .form-group textarea, .form-group select {
+            padding: 10px 14px; background: rgba(var(--white-rgb),0.05); border: 1px solid var(--border);
+            border-radius: 10px; color: var(--white); font-size: 0.9rem; outline: none; font-family: 'DM Sans', sans-serif;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--gold); }
+        .form-group textarea { resize: vertical; min-height: 120px; }
+        .form-group select option { background: #1a2235; }
+        .blog-posts-list { display: flex; flex-direction: column; gap: 12px; }
+        .blog-post-row { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: var(--glass-white); border: 1px solid var(--border); border-radius: 12px; }
+        .blog-post-row-info { flex: 1; min-width: 0; }
+        .blog-post-row-title { font-weight: 500; color: var(--white); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .blog-post-row-meta { font-size: 0.78rem; color: rgba(var(--white-rgb),0.45); margin-top: 3px; }
+        .destinations-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .dest-card-admin { background: var(--glass-white); border: 1px solid var(--border); border-radius: 12px; padding: 18px; display: flex; align-items: center; gap: 12px; }
+        .dest-emoji { font-size: 1.8rem; flex-shrink: 0; }
+        .dest-name { font-weight: 500; color: var(--white); font-size: 0.9rem; }
+        .dest-count { font-size: 0.78rem; color: rgba(var(--white-rgb),0.45); margin-top: 3px; }
+        .access-denied { text-align: center; padding: 80px 20px; }
+        .access-denied h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: #f87171; margin-bottom: 12px; }
+        .access-denied p { color: rgba(var(--white-rgb),0.6); }
+        .loading-admin { text-align: center; padding: 80px 20px; color: rgba(var(--white-rgb),0.5); }
+        .chart-bar-wrap { display: flex; align-items: flex-end; gap: 8px; height: 140px; padding: 16px 0; }
+        .chart-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+        .chart-bar { width: 100%; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, var(--gold), rgba(212,167,106,0.4)); min-height: 4px; transition: height 0.6s ease; }
+        .chart-bar-label { font-size: 0.7rem; color: rgba(var(--white-rgb),0.4); }
+        .chart-bar-val { font-size: 0.72rem; color: var(--gold); }
+        @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) {
+            .admin-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .destinations-grid { grid-template-columns: 1fr 1fr; }
+            table { display: block; overflow-x: auto; }
+        }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .destinations-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="cursorFollower"></div>
+
+<nav class="navbar scrolled" id="navbar">
+    <a href="index.html" class="nav-logo">✈ TravelAI</a>
+    <div class="nav-links">
+        <button class="btn-outline btn-sm theme-toggle-btn" onclick="toggleTheme()" style="padding: 8px 16px; border-radius: 50px;">
+            <span class="light-icon">☀️</span><span class="dark-icon">🌙</span>
+        </button>
+        <a href="dashboard.html" id="navDashboard" style="display:none; font-weight:500; color:var(--gold);">Dashboard</a>
+        <a href="profile.html" id="navProfile" style="display:none; color:var(--gold);">Profile</a>
+        <a href="admin.html" style="font-size:12px; color:rgba(var(--white-rgb),0.5);">Admin</a>
+        <button class="btn-outline btn-sm" id="authBtn">Sign In</button>
+        <a href="form.html" class="nav-cta">Plan My Trip</a>
+    </div>
+</nav>
+
+<!-- Loading -->
+<div class="admin-page loading-admin" id="loadingState">
+    <p>Verifying admin access...</p>
+</div>
+
+<!-- Access Denied -->
+<div class="admin-page access-denied" id="accessDenied" style="display:none;">
+    <div style="font-size:3rem; margin-bottom:16px;">🚫</div>
+    <h2>Access Denied</h2>
+    <p>You don't have admin privileges. If you believe this is an error, contact the administrator.</p>
+    <br>
+    <a href="index.html" class="btn-primary" style="display:inline-flex; align-items:center; gap:8px; text-decoration:none; padding:12px 28px; border-radius:50px;">← Back to Home</a>
+</div>
+
+<!-- Admin Panel -->
+<div class="admin-page" id="adminPanel" style="display:none;">
+
+    <div class="admin-header">
+        <div>
+            <h1>🛡 Admin Panel</h1>
+            <p id="adminWelcome">Welcome back, Admin</p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn-outline btn-sm" onclick="refreshAll()">↻ Refresh</button>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchTab('overview', this)">📊 Overview</button>
+        <button class="admin-tab" onclick="switchTab('users', this)">👥 Users</button>
+        <button class="admin-tab" onclick="switchTab('trips', this)">✈️ Trips</button>
+        <button class="admin-tab" onclick="switchTab('blog', this)">📝 Blog</button>
+        <button class="admin-tab" onclick="switchTab('destinations', this)">🗺 Destinations</button>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div class="admin-panel active" id="tab-overview">
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="snum" id="ovTotalUsers">—</div>
+                <div class="slabel">Total Users</div>
+                <div class="schange up" id="ovUsersChange">Loading...</div>
+            </div>
+            <div class="stat-box">
+                <div class="snum" id="ovTotalTrips">—</div>
+                <div class="slabel">Total Trips</div>
+                <div class="schange up" id="ovTripsChange">Loading...</div>
+            </div>
+            <div class="stat-box">
+                <div class="snum" id="ovTodayTrips">—</div>
+                <div class="slabel">Trips Today</div>
+                <div class="schange" id="ovTodayChange">Loading...</div>
+            </div>
+            <div class="stat-box">
+                <div class="snum" id="ovBlogPosts">—</div>
+                <div class="slabel">Blog Posts</div>
+                <div class="schange up">↑ Published</div>
+            </div>
+        </div>
+
+        <!-- Trip Chart -->
+        <div class="admin-table-wrap" style="margin-bottom:24px;">
+            <div class="admin-table-header">
+                <h3>Trips — Last 7 Days</h3>
+            </div>
+            <div style="padding: 16px 20px 20px;">
+                <div class="chart-bar-wrap" id="chartWrap">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Destinations -->
+        <div class="admin-table-wrap">
+            <div class="admin-table-header"><h3>Top Destinations</h3></div>
+            <div style="padding:16px;">
+                <div id="topDestinations" style="display:flex; flex-direction:column; gap:8px;">
+                    <p style="color:rgba(var(--white-rgb),0.4); font-size:0.85rem;">Loading...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- USERS TAB -->
+    <div class="admin-panel" id="tab-users">
+        <div class="admin-table-wrap">
+            <div class="admin-table-header">
+                <h3>All Users <span id="userCount" style="color:var(--gold); margin-left:8px;"></span></h3>
+                <input type="text" class="admin-search" placeholder="Search by email..." id="userSearch" oninput="filterUsers()">
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Plan</th>
+                        <th>Trips</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <tr><td colspan="6" style="text-align:center; color:rgba(var(--white-rgb),0.4);">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TRIPS TAB -->
+    <div class="admin-panel" id="tab-trips">
+        <div class="admin-table-wrap">
+            <div class="admin-table-header">
+                <h3>All Trips <span id="tripCount" style="color:var(--gold); margin-left:8px;"></span></h3>
+                <input type="text" class="admin-search" placeholder="Search by destination..." id="tripSearch" oninput="filterTrips()">
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Destination</th>
+                        <th>Days</th>
+                        <th>Budget</th>
+                        <th>User</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tripsTableBody">
+                    <tr><td colspan="6" style="text-align:center; color:rgba(var(--white-rgb),0.4);">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- BLOG TAB -->
+    <div class="admin-panel" id="tab-blog">
+        <!-- New Post Editor -->
+        <div class="blog-editor">
+            <h3>✏️ New Blog Post</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="blogTitle" placeholder="10 Best Places to Visit in Rajasthan">
+                </div>
+                <div class="form-group">
+                    <label>Slug (URL)</label>
+                    <input type="text" id="blogSlug" placeholder="best-places-rajasthan">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="blogCategory">
+                        <option value="destinations">Destinations</option>
+                        <option value="tips">Travel Tips</option>
+                        <option value="budget">Budget Travel</option>
+                        <option value="guides">City Guides</option>
+                        <option value="ai">AI & Tech</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cover Image URL</label>
+                    <input type="text" id="blogImage" placeholder="https://...">
+                </div>
+            </div>
+            <div class="form-group" style="margin-bottom:16px;">
+                <label>Excerpt (shown in listing)</label>
+                <input type="text" id="blogExcerpt" placeholder="A short description for the blog card...">
+            </div>
+            <div class="form-group" style="margin-bottom:20px;">
+                <label>Content (Markdown supported)</label>
+                <textarea id="blogContent" style="min-height:200px;" placeholder="Write your blog post content here...&#10;&#10;## Heading&#10;&#10;Paragraph text here..."></textarea>
+            </div>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <button class="btn-primary" onclick="publishBlogPost()" style="padding:10px 24px;">Publish Post →</button>
+                <button class="btn-outline" onclick="previewBlogPost()" style="padding:10px 24px;">Preview</button>
+            </div>
+        </div>
+
+        <!-- Existing Posts -->
+        <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.3rem; color:var(--white); margin-bottom:16px;">Published Posts</h3>
+        <div class="blog-posts-list" id="blogPostsList">
+            <p style="color:rgba(var(--white-rgb),0.4); font-size:0.85rem;">Loading posts...</p>
+        </div>
+    </div>
+
+    <!-- DESTINATIONS TAB -->
+    <div class="admin-panel" id="tab-destinations">
+        <div style="margin-bottom:24px;">
+            <div class="blog-editor">
+                <h3>🗺 Add Featured Destination</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Destination Name</label>
+                        <input type="text" id="destName" placeholder="Goa, India">
+                    </div>
+                    <div class="form-group">
+                        <label>Emoji</label>
+                        <input type="text" id="destEmoji" placeholder="🏖" maxlength="4">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="destDesc" placeholder="Sun, sand & beaches">
+                    </div>
+                    <div class="form-group">
+                        <label>Best Season</label>
+                        <input type="text" id="destSeason" placeholder="Oct – Mar">
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="addFeaturedDestination()" style="padding:10px 24px; margin-top:4px;">Add Destination</button>
+            </div>
+        </div>
+        <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.3rem; color:var(--white); margin-bottom:16px;">Featured Destinations</h3>
+        <div class="destinations-grid" id="destinationsGrid">
+            <p style="color:rgba(var(--white-rgb),0.4); font-size:0.85rem;">Loading...</p>
+        </div>
+    </div>
+
+</div>
+
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-logo">✈ SmartTripPlanner</div>
+        <p>Your AI-powered travel companion.</p>
+        <div class="footer-bottom">© 2026 SmartTripPlanner.in — All Rights Reserved</div>
+    </div>
+</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getFirestore, collection, query, orderBy, getDocs, doc, deleteDoc, addDoc, serverTimestamp, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA-9y06D-vMg4kP9RQ91Ms_OPfrd9Ap_EE",
+  authDomain: "travel-ai-app-ae087.firebaseapp.com",
+  projectId: "travel-ai-app-ae087",
+  storageBucket: "travel-ai-app-ae087.firebasestorage.app",
+  messagingSenderId: "484864841789",
+  appId: "1:484864841789:web:9a71aa69bd9ce5866e7254"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+const ADMIN_EMAILS = ["shubhambhatt2004@gmail.com"];
+
+window.toggleTheme = function() {
+    document.documentElement.classList.toggle('light-theme');
+    localStorage.setItem('theme', document.documentElement.classList.contains('light-theme') ? 'light' : 'dark');
+};
+
+const cursor = document.getElementById('cursor');
+const follower = document.getElementById('cursorFollower');
+document.addEventListener('mousemove', (e) => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    setTimeout(() => { follower.style.left = e.clientX + 'px'; follower.style.top = e.clientY + 'px'; }, 80);
+});
+
+let allUsers = [];
+let allTrips = [];
+
+onAuthStateChanged(auth, async (user) => {
+    document.getElementById('loadingState').style.display = 'none';
+    if (!user || !ADMIN_EMAILS.includes(user.email)) {
+        document.getElementById('accessDenied').style.display = 'block';
+        return;
+    }
+    document.getElementById('adminPanel').style.display = 'block';
+    document.getElementById('navDashboard').style.display = 'inline-block';
+    document.getElementById('navProfile').style.display = 'inline-block';
+    document.getElementById('authBtn').textContent = `Sign Out (${(user.displayName||'Admin').split(' ')[0]})`;
+    document.getElementById('adminWelcome').textContent = `Welcome back, ${user.displayName?.split(' ')[0] || 'Admin'} 👋`;
+    await loadAll();
+});
+
+document.getElementById('authBtn').addEventListener('click', () => {
+    const u = auth.currentUser;
+    if (u) signOut(auth).then(() => window.location.href = 'index.html');
+    else signInWithPopup(auth, provider);
+});
+
+async function loadAll() {
+    await Promise.all([loadTrips(), loadBlogPosts(), loadDestinations()]);
+    buildOverview();
+}
+
+window.refreshAll = loadAll;
+
+// --- TRIPS ---
+async function loadTrips() {
+    const snap = await getDocs(query(collection(db, 'trips'), orderBy('createdAt', 'desc'))).catch(() => null);
+    allTrips = snap?.docs.map(d => ({ id: d.id, ...d.data() })) || [];
+    document.getElementById('tripCount').textContent = `(${allTrips.length})`;
+    renderTripsTable(allTrips);
+}
+
+function renderTripsTable(trips) {
+    const tbody = document.getElementById('tripsTableBody');
+    if (!trips.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:rgba(var(--white-rgb),0.4); padding:24px;">No trips found.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = trips.slice(0, 100).map(t => {
+        const date = t.createdAt?.toDate ? t.createdAt.toDate().toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : '—';
+        const email = t.userEmail || t.userId?.slice(0,12) || '—';
+        return `<tr>
+            <td class="td-name">${t.destination || '—'}</td>
+            <td>${t.days || '—'}</td>
+            <td>${t.budget || '—'}</td>
+            <td><span class="td-email">${email}</span></td>
+            <td>${date}</td>
+            <td>
+                <button class="tbl-action" onclick="window.open('result.html?id=${t.id}','_blank')">View</button>
+                <button class="tbl-action danger" onclick="adminDeleteTrip('${t.id}')">Delete</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+window.adminDeleteTrip = async function(id) {
+    if (!confirm('Delete this trip?')) return;
+    await deleteDoc(doc(db, 'trips', id)).catch(() => alert('Failed'));
+    await loadTrips();
+    buildOverview();
+};
+
+window.filterTrips = function() {
+    const q = document.getElementById('tripSearch').value.toLowerCase();
+    renderTripsTable(allTrips.filter(t => (t.destination||'').toLowerCase().includes(q)));
+};
+
+// --- OVERVIEW ---
+function buildOverview() {
+    const today = new Date().toISOString().split('T')[0];
+    const todayTrips = allTrips.filter(t => {
+        if (!t.createdAt?.toDate) return false;
+        return t.createdAt.toDate().toISOString().startsWith(today);
+    });
+
+    document.getElementById('ovTotalTrips').textContent = allTrips.length;
+    document.getElementById('ovTodayTrips').textContent = todayTrips.length;
+    document.getElementById('ovTripsChange').textContent = `↑ +${todayTrips.length} today`;
+    document.getElementById('ovTripsChange').className = 'schange up';
+
+    // Chart: last 7 days
+    const days7 = [];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const ds = d.toISOString().split('T')[0];
+        const count = allTrips.filter(t => t.createdAt?.toDate && t.createdAt.toDate().toISOString().startsWith(ds)).length;
+        days7.push({ label: d.toLocaleDateString('en-IN', {weekday:'short'}), count });
+    }
+    const maxCount = Math.max(...days7.map(d => d.count), 1);
+    document.getElementById('chartWrap').innerHTML = days7.map(d => `
+        <div class="chart-bar-col">
+            <div class="chart-bar-val">${d.count}</div>
+            <div class="chart-bar" style="height:${Math.max(8, (d.count/maxCount)*100)}px"></div>
+            <div class="chart-bar-label">${d.label}</div>
+        </div>`).join('');
+
+    // Top destinations
+    const destMap = {};
+    allTrips.forEach(t => { if (t.destination) destMap[t.destination] = (destMap[t.destination]||0)+1; });
+    const sorted = Object.entries(destMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const emojis = ['🏆','🥈','🥉','4️⃣','5️⃣','6️⃣'];
+    document.getElementById('topDestinations').innerHTML = sorted.length
+        ? sorted.map(([dest, count], i) => `
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(var(--white-rgb),0.05);">
+                <span style="color:var(--white); font-size:0.9rem;">${emojis[i]} ${dest}</span>
+                <span style="color:var(--gold); font-size:0.85rem; font-weight:500;">${count} trip${count>1?'s':''}</span>
+            </div>`).join('')
+        : '<p style="color:rgba(var(--white-rgb),0.4); font-size:0.85rem;">No data yet.</p>';
+
+    // User count placeholder (Firestore doesn't have a direct user count without admin SDK)
+    document.getElementById('ovTotalUsers').textContent = '—';
+    document.getElementById('ovUsersChange').textContent = 'Sign-in via Firebase Auth';
+}
+
+// --- BLOG ---
+async function loadBlogPosts() {
+    const snap = await getDocs(query(collection(db, 'blogPosts'), orderBy('createdAt', 'desc'))).catch(() => null);
+    const posts = snap?.docs.map(d => ({ id: d.id, ...d.data() })) || [];
+    document.getElementById('ovBlogPosts').textContent = posts.length;
+    renderBlogPosts(posts);
+}
+
+function renderBlogPosts(posts) {
+    const container = document.getElementById('blogPostsList');
+    if (!posts.length) {
+        container.innerHTML = '<p style="color:rgba(var(--white-rgb),0.4); font-size:0.85rem;">No posts yet. Write your first one above!</p>';
+        return;
+    }
+    container.innerHTML = posts.map(p => {
+        const date = p.createdAt?.toDate ? p.createdAt.toDate().toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : '—';
+        return `<div class="blog-post-row">
+            <div style="font-size:1.5rem">${p.category === 'destinations' ? '🗺' : p.category === 'tips' ? '💡' : p.category === 'budget' ? '💰' : '📝'}</div>
+            <div class="blog-post-row-info">
+                <div class="blog-post-row-title">${p.title || '—'}</div>
+                <div class="blog-post-row-meta">${p.category || 'General'} · ${date} · <a href="blog-post.html?slug=${p.slug}" target="_blank" style="color:var(--gold); text-decoration:none;">/blog/${p.slug}</a></div>
+            </div>
+            <div style="display:flex; gap:8px; flex-shrink:0;">
+                <button class="tbl-action" onclick="window.open('blog-post.html?slug=${p.slug}','_blank')">View</button>
+                <button class="tbl-action danger" onclick="deleteBlogPost('${p.id}')">Delete</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+window.publishBlogPost = async function() {
+    const title = document.getElementById('blogTitle').value.trim();
+    const slug = document.getElementById('blogSlug').value.trim().replace(/\s+/g,'-').toLowerCase();
+    const category = document.getElementById('blogCategory').value;
+    const image = document.getElementById('blogImage').value.trim();
+    const excerpt = document.getElementById('blogExcerpt').value.trim();
+    const content = document.getElementById('blogContent').value.trim();
+
+    if (!title || !slug || !content) { alert('Title, slug, and content are required.'); return; }
+
+    try {
+        await addDoc(collection(db, 'blogPosts'), { title, slug, category, image, excerpt, content, createdAt: serverTimestamp() });
+        alert('Post published!');
+        ['blogTitle','blogSlug','blogImage','blogExcerpt','blogContent'].forEach(id => document.getElementById(id).value = '');
+        await loadBlogPosts();
+    } catch(e) { alert('Failed to publish: ' + e.message); }
+};
+
+window.deleteBlogPost = async function(id) {
+    if (!confirm('Delete this post?')) return;
+    await deleteDoc(doc(db, 'blogPosts', id)).catch(() => alert('Failed'));
+    await loadBlogPosts();
+};
+
+window.previewBlogPost = function() {
+    const slug = document.getElementById('blogSlug').value.trim();
+    if (slug) window.open(`blog-post.html?slug=${slug}`, '_blank');
+    else alert('Enter a slug first.');
+};
+
+// --- DESTINATIONS ---
+async function loadDestinations() {
+    const snap = await getDocs(collection(db, 'featuredDestinations')).catch(() => null);
+    const dests = snap?.docs.map(d => ({ id: d.id, ...d.data() })) || [];
+    const grid = document.getElementById('destinationsGrid');
+    if (!dests.length) {
+        grid.innerHTML = '<p style="color:rgba(var(--white-rgb),0.4); font-size:0.85rem;">No featured destinations yet.</p>';
+        return;
+    }
+    grid.innerHTML = dests.map(d => `
+        <div class="dest-card-admin">
+            <div class="dest-emoji">${d.emoji || '🌍'}</div>
+            <div style="flex:1; min-width:0;">
+                <div class="dest-name">${d.name}</div>
+                <div class="dest-count">${d.description || ''} · ${d.season || ''}</div>
+            </div>
+            <button class="tbl-action danger" onclick="deleteDestination('${d.id}')" style="flex-shrink:0;">✕</button>
+        </div>`).join('');
+}
+
+window.addFeaturedDestination = async function() {
+    const name = document.getElementById('destName').value.trim();
+    const emoji = document.getElementById('destEmoji').value.trim() || '🌍';
+    const description = document.getElementById('destDesc').value.trim();
+    const season = document.getElementById('destSeason').value.trim();
+    if (!name) { alert('Destination name is required.'); return; }
+    await addDoc(collection(db, 'featuredDestinations'), { name, emoji, description, season, createdAt: serverTimestamp() }).catch(e => alert('Failed: ' + e.message));
+    ['destName','destEmoji','destDesc','destSeason'].forEach(id => document.getElementById(id).value = '');
+    await loadDestinations();
+};
+
+window.deleteDestination = async function(id) {
+    if (!confirm('Remove this destination?')) return;
+    await deleteDoc(doc(db, 'featuredDestinations', id)).catch(() => alert('Failed'));
+    await loadDestinations();
+};
+
+// --- TABS ---
+window.switchTab = function(tabName, btn) {
+    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tabName).classList.add('active');
+    btn.classList.add('active');
+};
+</script>
+
+</body>
+</html>

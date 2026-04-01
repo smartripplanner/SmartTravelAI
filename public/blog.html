@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Blog — TravelAI | Tips, Guides & Destination Inspiration</title>
+    <meta name="description" content="Explore travel tips, destination guides, budget hacks, and AI travel insights from the TravelAI blog.">
+    <meta name="keywords" content="travel blog, travel tips, destination guides, budget travel, AI travel, itinerary ideas">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') document.documentElement.classList.add('light-theme');
+        })();
+    </script>
+    <style>
+        .blog-page { max-width: 1100px; margin: 0 auto; padding: 100px 24px 80px; }
+        .blog-hero { text-align: center; margin-bottom: 60px; }
+        .blog-hero .section-tag { margin: 0 auto 16px; }
+        .blog-hero h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 5vw, 3.2rem); color: var(--white); margin-bottom: 16px; line-height: 1.2; }
+        .blog-hero p { color: rgba(var(--white-rgb),0.6); max-width: 520px; margin: 0 auto 32px; font-size: 1rem; }
+        .blog-filters { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 48px; }
+        .blog-filter-btn { padding: 7px 18px; border-radius: 50px; border: 1px solid var(--border); background: transparent; color: rgba(var(--white-rgb),0.65); font-size: 0.82rem; cursor: pointer; transition: all 0.2s; }
+        .blog-filter-btn.active, .blog-filter-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(212,167,106,0.1); }
+        .blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .blog-card { background: var(--glass-white); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; transition: transform 0.3s, border-color 0.3s; cursor: pointer; text-decoration: none; display: flex; flex-direction: column; }
+        .blog-card:hover { transform: translateY(-6px); border-color: var(--gold); }
+        .blog-card-img { width: 100%; height: 200px; object-fit: cover; background: rgba(var(--white-rgb),0.05); display: flex; align-items: center; justify-content: center; font-size: 3rem; overflow: hidden; }
+        .blog-card-img img { width: 100%; height: 100%; object-fit: cover; }
+        .blog-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+        .blog-card-cat { display: inline-flex; align-items: center; gap: 5px; padding: 3px 11px; border-radius: 50px; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        .cat-destinations { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .cat-tips { background: rgba(234,179,8,0.15); color: #facc15; }
+        .cat-budget { background: rgba(34,197,94,0.15); color: #4ade80; }
+        .cat-guides { background: rgba(168,85,247,0.15); color: #c084fc; }
+        .cat-ai { background: rgba(212,167,106,0.15); color: var(--gold); }
+        .blog-card-title { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; color: var(--white); line-height: 1.3; margin-bottom: 10px; }
+        .blog-card-excerpt { font-size: 0.85rem; color: rgba(var(--white-rgb),0.55); line-height: 1.6; flex: 1; }
+        .blog-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(var(--white-rgb),0.08); }
+        .blog-card-date { font-size: 0.75rem; color: rgba(var(--white-rgb),0.4); }
+        .blog-card-read { font-size: 0.78rem; color: var(--gold); font-weight: 500; }
+        .blog-empty { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: rgba(var(--white-rgb),0.4); }
+        .blog-empty h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--white); margin-bottom: 8px; }
+        .blog-skeleton { background: var(--glass-white); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; }
+        .skeleton-img { height: 200px; background: linear-gradient(90deg, rgba(var(--white-rgb),0.05) 25%, rgba(var(--white-rgb),0.1) 50%, rgba(var(--white-rgb),0.05) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        .skeleton-body { padding: 20px; }
+        .skeleton-line { height: 12px; border-radius: 6px; background: linear-gradient(90deg, rgba(var(--white-rgb),0.05) 25%, rgba(var(--white-rgb),0.1) 50%, rgba(var(--white-rgb),0.05) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; margin-bottom: 10px; }
+        .skeleton-line.short { width: 60%; }
+        .skeleton-line.medium { width: 80%; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        .blog-newsletter { background: var(--glass-white); border: 1px solid var(--border); border-radius: 20px; padding: 48px 40px; text-align: center; margin-top: 60px; }
+        .blog-newsletter h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; color: var(--white); margin-bottom: 10px; }
+        .blog-newsletter p { color: rgba(var(--white-rgb),0.6); margin-bottom: 24px; }
+        .newsletter-form { display: flex; gap: 10px; max-width: 440px; margin: 0 auto; }
+        .newsletter-form input { flex: 1; padding: 12px 16px; background: rgba(var(--white-rgb),0.07); border: 1px solid var(--border); border-radius: 50px; color: var(--white); font-size: 0.9rem; outline: none; }
+        .newsletter-form input::placeholder { color: rgba(var(--white-rgb),0.35); }
+        .newsletter-form input:focus { border-color: var(--gold); }
+        @media (max-width: 1024px) { .blog-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) {
+            .blog-grid { grid-template-columns: 1fr; }
+            .blog-newsletter { padding: 32px 20px; }
+            .newsletter-form { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="cursorFollower"></div>
+
+<nav class="navbar" id="navbar">
+    <a href="index.html" class="nav-logo">✈ TravelAI</a>
+    <div class="nav-links">
+        <button class="btn-outline btn-sm theme-toggle-btn" onclick="toggleTheme()" style="padding: 8px 16px; border-radius: 50px;">
+            <span class="light-icon">☀️</span><span class="dark-icon">🌙</span>
+        </button>
+        <a href="index.html#features">Features</a>
+        <a href="blog.html" style="font-weight:500; color:var(--gold);">Blog</a>
+        <a href="dashboard.html" id="navDashboard" style="display:none; font-weight:500; color:var(--gold);">Dashboard</a>
+        <a href="profile.html" id="navProfile" style="display:none; color:var(--gold);">Profile</a>
+        <a href="admin.html" id="navAdmin" style="display:none; font-size:12px; color:rgba(var(--white-rgb),0.5);">Admin</a>
+        <button class="btn-outline btn-sm" id="authBtn">Sign In</button>
+        <a href="form.html" class="nav-cta">Plan My Trip</a>
+    </div>
+</nav>
+
+<div class="blog-page">
+    <div class="blog-hero">
+        <div class="section-tag">✦ TravelAI Journal</div>
+        <h1>Travel Smarter.<br>Read Deeper.</h1>
+        <p>Destination guides, budget hacks, itinerary ideas, and AI-powered travel insights — all in one place.</p>
+        <a href="form.html"><button class="btn-primary" style="margin:0 auto;">Plan My Next Trip →</button></a>
+    </div>
+
+    <div class="blog-filters">
+        <button class="blog-filter-btn active" onclick="filterByCategory('all', this)">All Posts</button>
+        <button class="blog-filter-btn" onclick="filterByCategory('destinations', this)">🗺 Destinations</button>
+        <button class="blog-filter-btn" onclick="filterByCategory('tips', this)">💡 Travel Tips</button>
+        <button class="blog-filter-btn" onclick="filterByCategory('budget', this)">💰 Budget Travel</button>
+        <button class="blog-filter-btn" onclick="filterByCategory('guides', this)">📖 City Guides</button>
+        <button class="blog-filter-btn" onclick="filterByCategory('ai', this)">🤖 AI & Tech</button>
+    </div>
+
+    <div class="blog-grid" id="blogGrid">
+        <!-- Skeleton loaders -->
+        ${[1,2,3].map(() => `
+        <div class="blog-skeleton">
+            <div class="skeleton-img"></div>
+            <div class="skeleton-body">
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-line medium"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+            </div>
+        </div>`).join('')}
+    </div>
+
+    <!-- Newsletter -->
+    <div class="blog-newsletter">
+        <div style="font-size:2rem; margin-bottom:12px;">✉️</div>
+        <h3>Get Travel Inspiration Weekly</h3>
+        <p>No spam. Just the best destinations, tips, and AI travel hacks delivered to your inbox.</p>
+        <div class="newsletter-form">
+            <input type="email" id="newsletterEmail" placeholder="your@email.com">
+            <button class="btn-primary" onclick="subscribeNewsletter()" style="padding:12px 22px; white-space:nowrap;">Subscribe →</button>
+        </div>
+        <p style="margin-top:12px; font-size:0.78rem; color:rgba(var(--white-rgb),0.3);">Join 5,000+ travelers. Unsubscribe anytime.</p>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-logo">✈ SmartTripPlanner</div>
+        <p>Your AI-powered travel companion. Build your dream trip in seconds.</p>
+        <div class="footer-links" style="display:flex; gap:20px; justify-content:center; margin:12px 0; flex-wrap:wrap;">
+            <a href="index.html" style="color:rgba(var(--white-rgb),0.5); text-decoration:none; font-size:0.85rem;">Home</a>
+            <a href="blog.html" style="color:rgba(var(--white-rgb),0.5); text-decoration:none; font-size:0.85rem;">Blog</a>
+            <a href="form.html" style="color:rgba(var(--white-rgb),0.5); text-decoration:none; font-size:0.85rem;">Plan Trip</a>
+        </div>
+        <div class="footer-bottom">© 2026 SmartTripPlanner.in — All Rights Reserved</div>
+    </div>
+</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getFirestore, collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA-9y06D-vMg4kP9RQ91Ms_OPfrd9Ap_EE",
+  authDomain: "travel-ai-app-ae087.firebaseapp.com",
+  projectId: "travel-ai-app-ae087",
+  storageBucket: "travel-ai-app-ae087.firebasestorage.app",
+  messagingSenderId: "484864841789",
+  appId: "1:484864841789:web:9a71aa69bd9ce5866e7254"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+const ADMIN_EMAILS = ["shubhambhatt2004@gmail.com"];
+
+window.toggleTheme = function() {
+    document.documentElement.classList.toggle('light-theme');
+    localStorage.setItem('theme', document.documentElement.classList.contains('light-theme') ? 'light' : 'dark');
+};
+
+const cursor = document.getElementById('cursor');
+const follower = document.getElementById('cursorFollower');
+document.addEventListener('mousemove', (e) => {
+    cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px';
+    setTimeout(() => { follower.style.left = e.clientX + 'px'; follower.style.top = e.clientY + 'px'; }, 80);
+});
+window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+});
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        document.getElementById('authBtn').textContent = `Sign Out (${(user.displayName||'User').split(' ')[0]})`;
+        document.getElementById('navDashboard').style.display = 'inline-block';
+        document.getElementById('navProfile').style.display = 'inline-block';
+        if (ADMIN_EMAILS.includes(user.email)) document.getElementById('navAdmin').style.display = 'inline-block';
+    } else {
+        document.getElementById('authBtn').textContent = 'Sign In';
+    }
+});
+document.getElementById('authBtn').addEventListener('click', () => {
+    const u = auth.currentUser;
+    if (u) signOut(auth); else signInWithPopup(auth, provider);
+});
+
+// Category labels + emoji map
+const catMap = {
+    destinations: { label: '🗺 Destinations', cls: 'cat-destinations' },
+    tips:         { label: '💡 Travel Tips', cls: 'cat-tips' },
+    budget:       { label: '💰 Budget Travel', cls: 'cat-budget' },
+    guides:       { label: '📖 City Guides', cls: 'cat-guides' },
+    ai:           { label: '🤖 AI & Tech', cls: 'cat-ai' },
+};
+const defaultEmoji = { destinations:'🌍', tips:'💡', budget:'💰', guides:'🏙', ai:'🤖' };
+
+let allPosts = [];
+let currentCategory = 'all';
+
+async function loadPosts() {
+    const snap = await getDocs(query(collection(db, 'blogPosts'), orderBy('createdAt', 'desc'))).catch(() => null);
+    allPosts = snap?.docs.map(d => ({ id: d.id, ...d.data() })) || [];
+
+    // Fallback sample posts if none in DB
+    if (!allPosts.length) {
+        allPosts = getSamplePosts();
+    }
+    renderPosts(allPosts);
+}
+
+function renderPosts(posts) {
+    const grid = document.getElementById('blogGrid');
+    const filtered = currentCategory === 'all' ? posts : posts.filter(p => p.category === currentCategory);
+
+    if (!filtered.length) {
+        grid.innerHTML = `<div class="blog-empty"><h3>No posts in this category yet.</h3><p>Check back soon or <a href="form.html" style="color:var(--gold);">plan a trip</a> instead.</p></div>`;
+        return;
+    }
+
+    grid.innerHTML = filtered.map(p => {
+        const cat = catMap[p.category] || { label: '📝 General', cls: 'cat-ai' };
+        const emoji = defaultEmoji[p.category] || '📝';
+        const date = p.createdAt?.toDate ? p.createdAt.toDate().toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : (p.date || '');
+        const readTime = p.readTime || estimateReadTime(p.content || '');
+        const imgHtml = p.image
+            ? `<img src="${p.image}" alt="${p.title}" loading="lazy" onerror="this.parentElement.innerHTML='<span style=font-size:3rem>${emoji}</span>'">`
+            : `<span style="font-size:3rem">${emoji}</span>`;
+
+        return `<a class="blog-card" href="blog-post.html?slug=${p.slug}">
+            <div class="blog-card-img">${imgHtml}</div>
+            <div class="blog-card-body">
+                <span class="blog-card-cat ${cat.cls}">${cat.label}</span>
+                <div class="blog-card-title">${p.title}</div>
+                <div class="blog-card-excerpt">${p.excerpt || (p.content||'').slice(0, 120) + '...'}</div>
+                <div class="blog-card-footer">
+                    <span class="blog-card-date">${date}</span>
+                    <span class="blog-card-read">${readTime} min read →</span>
+                </div>
+            </div>
+        </a>`;
+    }).join('');
+}
+
+function estimateReadTime(text) {
+    return Math.max(1, Math.ceil(text.split(' ').length / 200));
+}
+
+window.filterByCategory = function(cat, btn) {
+    currentCategory = cat;
+    document.querySelectorAll('.blog-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderPosts(allPosts);
+};
+
+window.subscribeNewsletter = function() {
+    const email = document.getElementById('newsletterEmail').value.trim();
+    if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
+    alert(`Thanks for subscribing! We'll send travel tips to ${email}`);
+    document.getElementById('newsletterEmail').value = '';
+};
+
+function getSamplePosts() {
+    return [
+        { id:'s1', slug:'top-10-destinations-india-2026', title:'Top 10 Destinations in India for 2026', category:'destinations', excerpt:'From the Himalayas to the backwaters of Kerala — these are the must-visit spots this year.', date:'Mar 2026', readTime:5, content:'Detailed guide...' },
+        { id:'s2', slug:'budget-europe-trip-under-1-lakh', title:'How to Do Europe Under ₹1 Lakh', category:'budget', excerpt:'Yes it\'s possible. We break down flights, hostels, rail passes, and free attractions across 5 countries.', date:'Feb 2026', readTime:7, content:'Budget tips...' },
+        { id:'s3', slug:'ai-travel-planning-guide', title:'How AI Is Changing the Way We Travel', category:'ai', excerpt:'From personalized itineraries to real-time budget tracking — here\'s how AI makes travel smarter.', date:'Jan 2026', readTime:4, content:'AI travel...' },
+        { id:'s4', slug:'goa-complete-travel-guide', title:'Goa Complete Travel Guide 2026', category:'guides', excerpt:'Everything you need to know — North vs South Goa, best beaches, nightlife, food, and hidden gems.', date:'Dec 2025', readTime:8, content:'Goa guide...' },
+        { id:'s5', slug:'packing-tips-for-long-trips', title:'15 Packing Tips That Will Change Your Travel Life', category:'tips', excerpt:'Pack smarter, not heavier. The essential packing list for any trip length, any destination.', date:'Nov 2025', readTime:5, content:'Packing tips...' },
+        { id:'s6', slug:'solo-travel-safety-guide', title:'Solo Travel Safety: The Ultimate Guide', category:'tips', excerpt:'Everything first-time solo travelers need to know to stay safe, confident, and have the trip of their life.', date:'Oct 2025', readTime:6, content:'Safety guide...' },
+    ];
+}
+
+loadPosts();
+</script>
+
+</body>
+</html>
