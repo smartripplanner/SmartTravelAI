@@ -11,13 +11,17 @@ dns.setDefaultResultOrder('ipv4first');
 
 const app = express();
 
+// ── CORS — must be absolute first, before compression and body parsers ──
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+    if (req.method === 'OPTIONS') return res.sendStatus(200); // kill pre-flight immediately
+    next();
+});
+
 app.use(compression());
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
-}));
-app.options('*', cors()); // handle pre-flight OPTIONS for all routes
+app.use(cors({ origin: '*' })); // keep cors() as secondary safety net
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
