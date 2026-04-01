@@ -317,6 +317,7 @@
         <a href="blog.html" style="font-size:13px;color:rgba(var(--white-rgb),0.6);" class="nav-text-link">Blog</a>
         <a href="dashboard.html" id="navDashboard" style="display:none;" class="nav-text-link">Dashboard</a>
         <a href="profile.html" id="navProfile" style="display:none;" class="nav-text-link">Profile</a>
+        <a href="admin.html" id="navAdmin" style="display:none; font-size:12px; color:rgba(var(--white-rgb),0.5);" class="nav-text-link">Admin</a>
         <button class="btn-outline btn-sm" id="authBtn">Sign In</button>
         <div style="position:relative;display:inline-block;">
             <button class="btn-primary btn-sm" id="saveTripBtn" style="display:none;">Save Trip 💾</button>
@@ -680,37 +681,52 @@ window.exportToPDF = function() {
       </div>
     </div>`;
 
-    // ── Use from(htmlString) — most reliable approach, no off-screen positioning issues ──
+    // ── Attach real DOM element so fonts + CSS render correctly in html2canvas ──
+    const pdfContainer = document.createElement('div');
+    pdfContainer.style.cssText = [
+        'position:fixed', 'left:-9999px', 'top:0',
+        'width:794px', 'z-index:-9999',
+        'background:#0a0f1a', 'color:#f5f0e8'
+    ].join(';');
+    pdfContainer.innerHTML = htmlContent;
+    document.body.appendChild(pdfContainer);
+
     const opt = {
         margin: [0.4, 0.35, 0.4, 0.35],
         filename: `TravelAI_${destination}_${days}Days.pdf`,
-        image: { type: 'jpeg', quality: 0.95 },
+        image: { type: 'jpeg', quality: 0.92 },
         html2canvas: {
-            scale: 2,
+            scale: 1.8,
             useCORS: true,
             allowTaint: true,
             backgroundColor: '#0a0f1a',
             logging: false,
-            letterRendering: true
+            letterRendering: true,
+            windowWidth: 794
         },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['css', 'legacy'], before: '.pdf-page-break', avoid: '.pdf-no-break' }
     };
 
-    html2pdf()
-        .set(opt)
-        .from(htmlContent)
-        .save()
-        .then(() => {
-            btn.textContent = "📥 PDF";
-            btn.disabled = false;
-        })
-        .catch(err => {
-            console.error("PDF Error:", err);
-            btn.textContent = "📥 PDF";
-            btn.disabled = false;
-            alert("PDF generation failed. Please try again.");
-        });
+    // Wait 300ms so fonts & inline styles finish rendering before capture
+    setTimeout(() => {
+        html2pdf()
+            .set(opt)
+            .from(pdfContainer)
+            .save()
+            .then(() => {
+                document.body.removeChild(pdfContainer);
+                btn.textContent = "📥 PDF";
+                btn.disabled = false;
+            })
+            .catch(err => {
+                console.error("PDF Error:", err);
+                if (document.body.contains(pdfContainer)) document.body.removeChild(pdfContainer);
+                btn.textContent = "📥 PDF";
+                btn.disabled = false;
+                alert("PDF generation failed. Please try again.");
+            });
+    }, 300);
 }
 
 // ── LOAD LOCAL DATA ──
@@ -771,6 +787,8 @@ const navDashboard = document.getElementById('navDashboard');
 let currentUser = null;
 let savedTripId = null;
 
+const ADMIN_EMAILS = ["shubhambhatt2004@gmail.com"];
+
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
@@ -779,6 +797,8 @@ onAuthStateChanged(auth, (user) => {
         navDashboard.style.display = 'inline-block';
         const navProfile = document.getElementById('navProfile');
         if (navProfile) navProfile.style.display = 'inline-block';
+        const navAdmin = document.getElementById('navAdmin');
+        if (navAdmin && ADMIN_EMAILS.includes(user.email)) navAdmin.style.display = 'inline-block';
         const dashBtn = document.getElementById('dashboardBtnBottom');
         if (dashBtn) dashBtn.style.display = 'inline-flex';
         if (!savedTripId) saveTripBtn.style.display = 'inline-flex';
@@ -788,6 +808,8 @@ onAuthStateChanged(auth, (user) => {
         navDashboard.style.display = 'none';
         const navProfile = document.getElementById('navProfile');
         if (navProfile) navProfile.style.display = 'none';
+        const navAdmin = document.getElementById('navAdmin');
+        if (navAdmin) navAdmin.style.display = 'none';
         saveTripBtn.style.display = 'none';
         shareTripBtn.style.display = 'none';
     }

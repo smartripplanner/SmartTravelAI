@@ -12,7 +12,12 @@ dns.setDefaultResultOrder('ipv4first');
 const app = express();
 
 app.use(compression());
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+}));
+app.options('*', cors()); // handle pre-flight OPTIONS for all routes
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
