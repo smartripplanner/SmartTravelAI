@@ -227,6 +227,11 @@ Return ONLY this JSON (no markdown, no extra text):
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const result = await model.generateContent(prompt);
         let text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+        // Robustly extract JSON — find outermost { ... } in case Gemini adds extra text
+        const jsonStart = text.indexOf('{');
+        const jsonEnd   = text.lastIndexOf('}');
+        if (jsonStart === -1 || jsonEnd === -1) throw new Error("No JSON object found in Gemini response");
+        text = text.slice(jsonStart, jsonEnd + 1);
         const data = JSON.parse(text);
         data.meta = {
             originCode: getIATACode(from),
