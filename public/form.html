@@ -707,19 +707,37 @@
         document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', updatePreview));
 
         // ── LOADER ──
+        // Returns a stopLoader() function that the caller invokes once the API responds.
+        // Steps cycle in a 1500ms loop indefinitely — never stops until stopLoader() is called.
         function startLoader() {
-            const steps = ['ls1', 'ls2', 'ls3', 'ls4', 'ls5'];
-            const bar = document.getElementById('loaderBar');
-            let i = 0;
-            bar.style.width = '0%';
+            const stepIds = ['ls1', 'ls2', 'ls3', 'ls4', 'ls5'];
+            const bar     = document.getElementById('loaderBar');
+
+            // Reset all steps; activate the first one immediately
+            stepIds.forEach(id => document.getElementById(id)?.classList.remove('active'));
+            document.getElementById(stepIds[0])?.classList.add('active');
+
+            // Switch bar to indeterminate sliding mode (CSS handles the motion)
+            bar.style.width = '';
+            bar.classList.add('loader-bar-indeterminate');
+
+            let current = 0;
+
+            // Advance one step every 1500ms; wrap back to 0 after the last step
             const iv = setInterval(() => {
-                if (i > 0) document.getElementById(steps[i - 1])?.classList.remove('active');
-                if (i < steps.length) {
-                    document.getElementById(steps[i])?.classList.add('active');
-                    bar.style.width = ((i + 1) / steps.length * 100) + '%';
-                    i++;
-                } else clearInterval(iv);
-            }, 1400);
+                document.getElementById(stepIds[current])?.classList.remove('active');
+                current = (current + 1) % stepIds.length;
+                document.getElementById(stepIds[current])?.classList.add('active');
+            }, 1500);
+
+            // Called by the submit handler when the API fetch resolves (success or error)
+            return function stopLoader() {
+                clearInterval(iv);
+                // Flash all steps complete, fill bar to 100 %
+                stepIds.forEach(id => document.getElementById(id)?.classList.add('active'));
+                bar.classList.remove('loader-bar-indeterminate');
+                bar.style.width = '100%';
+            };
         }
 
         // ── MULTI-CITY ──
@@ -799,7 +817,7 @@
             if (!allowed) return;
 
             document.getElementById("loading").style.display = "flex";
-            startLoader();
+            const stopLoader = startLoader(); // loops until we call stopLoader()
 
             const formData = new FormData(this);
             const isMulti = document.getElementById('multiCityToggle').checked;
@@ -807,7 +825,12 @@
             // For multi-city: override destination with first city, add cities JSON
             if (isMulti) {
                 const cities = getCityRows();
-                if (cities.length === 0) { alert("Please add at least one destination city."); document.getElementById("loading").style.display = "none"; return; }
+                if (cities.length === 0) {
+                    stopLoader();
+                    alert("Please add at least one destination city.");
+                    document.getElementById("loading").style.display = "none";
+                    return;
+                }
                 formData.set('destination', cities[0].city);
                 formData.set('days', cities.reduce((s, c) => s + c.days, 0).toString());
                 formData.set('cities', JSON.stringify(cities));
@@ -823,21 +846,26 @@
                 const data = await response.json();
                 if (data.error) throw new Error(data.error);
 
-                localStorage.setItem("tripData", JSON.stringify(data));
-                localStorage.setItem("destination", formData.get("destination"));
-                localStorage.setItem("from", formData.get("from"));
-                localStorage.setItem("days", formData.get("days"));
-                localStorage.setItem("budget", formData.get("budget"));
-                localStorage.setItem("style", formData.get("style"));
-                localStorage.setItem("pace", formData.get("pace"));
-                localStorage.setItem("travelers", formData.get("travelers"));
-                localStorage.setItem("hotelReq", formData.get("hotel"));
-                localStorage.setItem("flightReq", formData.get("flight"));
-                localStorage.setItem("date", formData.get("date"));
+                // API responded successfully — stop animation, then redirect
+                stopLoader();
 
-                window.location.href = "result.html";
+                localStorage.setItem("tripData",    JSON.stringify(data));
+                localStorage.setItem("destination", formData.get("destination"));
+                localStorage.setItem("from",        formData.get("from"));
+                localStorage.setItem("days",        formData.get("days"));
+                localStorage.setItem("budget",      formData.get("budget"));
+                localStorage.setItem("style",       formData.get("style"));
+                localStorage.setItem("pace",        formData.get("pace"));
+                localStorage.setItem("travelers",   formData.get("travelers"));
+                localStorage.setItem("hotelReq",    formData.get("hotel"));
+                localStorage.setItem("flightReq",   formData.get("flight"));
+                localStorage.setItem("date",        formData.get("date"));
+
+                // Small pause so the user sees the "all steps complete" state before navigating
+                setTimeout(() => { window.location.href = "result.html"; }, 400);
             } catch (err) {
                 console.error(err);
+                stopLoader();
                 alert("Something went wrong: " + err.message + "\nPlease try again.");
                 document.getElementById("loading").style.display = "none";
             }
