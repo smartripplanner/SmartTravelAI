@@ -71,8 +71,16 @@
 
 <nav class="navbar" id="navbar">
     <a href="index.html" class="nav-logo">✈ TravelAI</a>
-    <div class="nav-links">
+    <div class="nav-right-mobile">
         <button class="btn-outline btn-sm theme-toggle-btn" onclick="toggleTheme()" style="padding: 8px 16px; border-radius: 50px;">
+            <span class="light-icon">☀️</span><span class="dark-icon">🌙</span>
+        </button>
+        <button class="hamburger" id="hamburgerBtn" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+    <div class="nav-links" id="navLinks">
+        <button class="btn-outline btn-sm theme-toggle-btn desktop-only" onclick="toggleTheme()" style="padding: 8px 16px; border-radius: 50px;">
             <span class="light-icon">☀️</span><span class="dark-icon">🌙</span>
         </button>
         <a href="index.html#features">Features</a>
@@ -81,7 +89,7 @@
         <a href="profile.html" id="navProfile" style="display:none; color:var(--gold);">Profile</a>
         <a href="admin.html" id="navAdmin" style="display:none; font-size:12px; color:rgba(var(--white-rgb),0.5);">Admin</a>
         <button class="btn-outline btn-sm" id="authBtn">Sign In</button>
-        <a href="form.html" class="nav-cta">Plan My Trip</a>
+        <a href="form.html" class="nav-cta mobile-full-width">Plan My Trip</a>
     </div>
 </nav>
 

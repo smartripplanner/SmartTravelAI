@@ -1,626 +1,848 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plan Your Trip — TravelAI</title>
-    <meta name="description" content="Plan your perfect trip with TravelAI. Get AI-generated day-by-day itineraries, hotel recommendations, flight estimates and budget breakdowns instantly.">
+    <meta name="description"
+        content="Plan your perfect trip with TravelAI. Get AI-generated day-by-day itineraries, hotel recommendations, flight estimates and budget breakdowns instantly.">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
     <script>
-        (function() {
+        (function () {
             const savedTheme = localStorage.getItem('theme') || 'dark';
             if (savedTheme === 'light') document.documentElement.classList.add('light-theme');
         })();
     </script>
     <style>
         .form-section-label {
-            font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
-            color: var(--gold); border-bottom: 1px solid rgba(212,167,106,0.15);
-            padding-bottom: 8px; margin-top: 4px; margin-bottom: -8px;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--gold);
+            border-bottom: 1px solid rgba(212, 167, 106, 0.15);
+            padding-bottom: 8px;
+            margin-top: 4px;
+            margin-bottom: -8px;
         }
+
         /* Multi-city */
-        .multicity-toggle { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
-        .multicity-switch { position: relative; width: 44px; height: 24px; }
-        .multicity-switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; inset: 0; background: var(--glass-border); border-radius: 24px; cursor: pointer; transition: 0.3s; }
-        .slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: 0.3s; }
-        input:checked + .slider { background: var(--gold); }
-        input:checked + .slider::before { transform: translateX(20px); }
-        .city-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px 16px; margin-bottom: 8px; }
-        .city-row input { background: transparent; border: none; color: var(--white); font-size: 14px; font-family: var(--font-sans); outline: none; width: 100%; }
-        .city-row input::placeholder { color: rgba(var(--white-rgb), 0.3); }
-        .city-days-input { background: var(--dark3); border: 1px solid var(--glass-border); border-radius: 8px; padding: 6px 10px; font-size: 13px; color: var(--white); width: 80px; font-family: var(--font-sans); text-align: center; }
-        .city-days-input:focus { outline: none; border-color: rgba(212,167,106,0.4); }
-        .remove-city-btn { background: none; border: 1px solid rgba(239,68,68,0.3); color: rgba(239,68,68,0.6); width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; }
-        .remove-city-btn:hover { background: rgba(239,68,68,0.1); color: #ef4444; border-color: rgba(239,68,68,0.6); }
-        .add-city-btn { display: flex; align-items: center; gap: 8px; background: rgba(212,167,106,0.08); border: 1px dashed rgba(212,167,106,0.3); color: var(--gold); padding: 10px 16px; border-radius: 12px; font-size: 13px; cursor: pointer; transition: 0.2s; width: 100%; justify-content: center; font-family: var(--font-sans); }
-        .add-city-btn:hover { background: rgba(212,167,106,0.14); border-color: rgba(212,167,106,0.5); }
+        .multicity-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        .multicity-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .multicity-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+            background: var(--glass-border);
+            border-radius: 24px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .slider::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            left: 3px;
+            top: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        input:checked+.slider {
+            background: var(--gold);
+        }
+
+        input:checked+.slider::before {
+            transform: translateX(20px);
+        }
+
+        .city-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 10px;
+            align-items: center;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+        }
+
+        .city-row input {
+            background: transparent;
+            border: none;
+            color: var(--white);
+            font-size: 14px;
+            font-family: var(--font-sans);
+            outline: none;
+            width: 100%;
+        }
+
+        .city-row input::placeholder {
+            color: rgba(var(--white-rgb), 0.3);
+        }
+
+        .city-days-input {
+            background: var(--dark3);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 13px;
+            color: var(--white);
+            width: 80px;
+            font-family: var(--font-sans);
+            text-align: center;
+        }
+
+        .city-days-input:focus {
+            outline: none;
+            border-color: rgba(212, 167, 106, 0.4);
+        }
+
+        .remove-city-btn {
+            background: none;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: rgba(239, 68, 68, 0.6);
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+
+        .remove-city-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.6);
+        }
+
+        .add-city-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(212, 167, 106, 0.08);
+            border: 1px dashed rgba(212, 167, 106, 0.3);
+            color: var(--gold);
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+            justify-content: center;
+            font-family: var(--font-sans);
+        }
+
+        .add-city-btn:hover {
+            background: rgba(212, 167, 106, 0.14);
+            border-color: rgba(212, 167, 106, 0.5);
+        }
+
         /* Usage bar */
-        .usage-bar { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-        .usage-dots { display: flex; gap: 5px; }
-        .usage-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--glass-border); transition: 0.3s; }
-        .usage-dot.used { background: var(--gold); }
+        .usage-bar {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .usage-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .usage-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--glass-border);
+            transition: 0.3s;
+        }
+
+        .usage-dot.used {
+            background: var(--gold);
+        }
+
         /* Limit popup */
-        .limit-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 9999; backdrop-filter: blur(8px); align-items: center; justify-content: center; }
-        .limit-overlay.show { display: flex; }
-        .limit-box { background: var(--dark2); border: 1px solid rgba(212,167,106,0.3); border-radius: var(--radius-lg); padding: 48px 40px; text-align: center; max-width: 420px; width: 90%; }
+        .limit-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 9999;
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .limit-overlay.show {
+            display: flex;
+        }
+
+        .limit-box {
+            background: var(--dark2);
+            border: 1px solid rgba(212, 167, 106, 0.3);
+            border-radius: var(--radius-lg);
+            padding: 48px 40px;
+            text-align: center;
+            max-width: 420px;
+            width: 90%;
+        }
+
         @media (max-width: 768px) {
-            .city-row { grid-template-columns: 1fr auto; }
-            .city-days-input { width: 60px; }
+            .city-row {
+                grid-template-columns: 1fr auto;
+            }
+
+            .city-days-input {
+                width: 60px;
+            }
         }
     </style>
 </head>
+
 <body class="form-body">
 
-<!-- Usage Limit Popup -->
-<div class="limit-overlay" id="limitOverlay">
-    <div class="limit-box">
-        <div style="font-size:52px;margin-bottom:16px;">⏳</div>
-        <h2 style="font-family:var(--font-serif);font-size:28px;font-weight:300;color:var(--white);margin-bottom:12px;">Daily Limit Reached</h2>
-        <p style="font-size:14px;color:rgba(var(--white-rgb),0.6);line-height:1.7;margin-bottom:28px;" id="limitMsg">You've used all your free itineraries for today.</p>
-        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-            <button class="btn-primary" id="limitSignInBtn">Sign In for 10/day ✨</button>
-            <a href="profile.html#upgrade"><button class="btn-outline">Upgrade 👑</button></a>
-            <button class="btn-outline" onclick="document.getElementById('limitOverlay').classList.remove('show')">Maybe Later</button>
+    <!-- Usage Limit Popup -->
+    <div class="limit-overlay" id="limitOverlay">
+        <div class="limit-box">
+            <div style="font-size:52px;margin-bottom:16px;">⏳</div>
+            <h2
+                style="font-family:var(--font-serif);font-size:28px;font-weight:300;color:var(--white);margin-bottom:12px;">
+                Daily Limit Reached</h2>
+            <p style="font-size:14px;color:rgba(var(--white-rgb),0.6);line-height:1.7;margin-bottom:28px;"
+                id="limitMsg">You've used all your free itineraries for today.</p>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                <button class="btn-primary" id="limitSignInBtn">Sign In for 10/day ✨</button>
+                <a href="profile.html#upgrade"><button class="btn-outline">Upgrade 👑</button></a>
+                <button class="btn-outline"
+                    onclick="document.getElementById('limitOverlay').classList.remove('show')">Maybe Later</button>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="loading-screen" id="loading">
-    <div class="loader-content">
-        <div class="loader-plane">✈️</div>
-        <h2 class="loader-title">Building Your Trip...</h2>
-        <div class="loader-steps">
-            <div class="loader-step active" id="ls1">🧠 Analyzing your preferences</div>
-            <div class="loader-step" id="ls2">🗺️ Fetching flights &amp; hotels</div>
-            <div class="loader-step" id="ls3">📸 Gathering place images</div>
-            <div class="loader-step" id="ls4">💰 Calculating budget breakdown</div>
-            <div class="loader-step" id="ls5">✅ Finalizing your itinerary</div>
+    <div class="loading-screen" id="loading">
+        <div class="loader-content">
+            <div class="loader-plane">✈️</div>
+            <h2 class="loader-title">Building Your Trip...</h2>
+            <div class="loader-steps">
+                <div class="loader-step active" id="ls1">🧠 Analyzing your preferences</div>
+                <div class="loader-step" id="ls2">🗺️ Fetching flights &amp; hotels</div>
+                <div class="loader-step" id="ls3">📸 Gathering place images</div>
+                <div class="loader-step" id="ls4">💰 Calculating budget breakdown</div>
+                <div class="loader-step" id="ls5">✅ Finalizing your itinerary</div>
+            </div>
+            <div class="loader-bar-wrap">
+                <div class="loader-bar" id="loaderBar"></div>
+            </div>
         </div>
-        <div class="loader-bar-wrap"><div class="loader-bar" id="loaderBar"></div></div>
     </div>
-</div>
 
-<nav class="form-nav">
-    <a href="index.html" class="nav-logo">✈ TravelAI</a>
-    <div style="display:flex;gap:16px;align-items:center;">
-        <a href="blog.html" style="font-size:13px;color:rgba(var(--white-rgb),0.6);">Blog</a>
-        <a href="dashboard.html" id="navDashboard" style="display:none;font-size:13px;color:var(--gold);">Dashboard</a>
-        <button class="btn-outline btn-sm theme-toggle-btn" onclick="toggleTheme()" style="padding:8px 14px;border-radius:50px;">
-            <span class="light-icon">☀️</span><span class="dark-icon">🌙</span>
-        </button>
-        <button class="btn-outline btn-sm" id="authBtn">Sign In</button>
-        <div class="form-nav-right">Plan Your Trip</div>
-    </div>
-</nav>
-
-<div class="form-layout">
-    <div class="form-left">
-        <div class="form-header">
-            <div class="section-tag">AI-Powered Planning</div>
-            <h1>Where are you<br><span class="gradient-text">headed?</span></h1>
-            <p>Fill in your details for a hyper-personalized itinerary with real flights, hotels, visa info, budget breakdown, and day-by-day plans.</p>
-        </div>
-
-        <!-- Usage indicator -->
-        <div class="usage-bar" id="usageBar" style="display:none;">
-            <div>
-                <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:rgba(var(--white-rgb),0.4);margin-bottom:4px;">Today's Usage</div>
-                <div style="color:var(--white);font-weight:500;" id="usageText">— itineraries used</div>
-            </div>
-            <div class="usage-dots" id="usageDots"></div>
-        </div>
-
-        <form id="tripForm" class="trip-form">
-
-            <!-- Multi-City Toggle -->
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:rgba(212,167,106,0.06);border:1px solid rgba(212,167,106,0.2);border-radius:12px;">
-                <div>
-                    <div style="font-size:14px;font-weight:500;color:var(--white);margin-bottom:2px;">🗺️ Multi-City Trip</div>
-                    <div style="font-size:12px;color:rgba(var(--white-rgb),0.5);">Plan Paris → Rome → Zurich in one itinerary</div>
-                </div>
-                <label class="multicity-switch">
-                    <input type="checkbox" id="multiCityToggle" onchange="toggleMultiCity(this.checked)">
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <!-- SINGLE CITY section -->
-            <div id="singleCitySection">
-                <div class="form-section-label">✈ Route Details</div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>From (City)</label>
-                        <input type="text" name="from" id="fromInput" placeholder="e.g. Mumbai" required>
-                    </div>
-                    <div class="form-group">
-                        <label>📍 Destination</label>
-                        <input type="text" name="destination" id="destInput" placeholder="e.g. Goa, Bangkok, Paris" required>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>📅 Travel Date</label>
-                        <input type="date" name="date" id="dateInput" required>
-                    </div>
-                    <div class="form-group">
-                        <label>⏳ Number of Days</label>
-                        <input type="number" name="days" id="daysInput" placeholder="e.g. 4" min="1" max="30" required>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MULTI CITY section -->
-            <div id="multiCitySection" style="display:none;">
-                <div class="form-section-label">✈ Multi-City Route</div>
-                <div class="form-row" style="margin-bottom:0;">
-                    <div class="form-group">
-                        <label>From (Origin City)</label>
-                        <input type="text" name="from" id="fromInputMulti" placeholder="e.g. Mumbai">
-                    </div>
-                    <div class="form-group">
-                        <label>📅 Departure Date</label>
-                        <input type="date" name="date" id="dateInputMulti">
-                    </div>
-                </div>
-                <div style="margin-top:16px;margin-bottom:8px;font-size:12px;color:rgba(var(--white-rgb),0.5);">Add destination cities (in order of visit):</div>
-                <div id="cityRowsContainer"></div>
-                <button type="button" class="add-city-btn" onclick="addCityRow()">+ Add City</button>
-                <input type="hidden" id="citiesData" name="cities" value="[]">
-                <div style="margin-top:12px;padding:10px 14px;background:var(--glass);border:1px solid var(--glass-border);border-radius:10px;font-size:12px;color:rgba(var(--white-rgb),0.5);">
-                    Total trip: <strong id="totalDaysDisplay" style="color:var(--gold);">0 days</strong>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>💰 Total Budget (₹)</label>
-                    <input type="number" name="budget" placeholder="e.g. 25000" required>
-                </div>
-                <div class="form-group">
-                    <label>👥 Travelers</label>
-                    <select name="travelers">
-                        <option value="solo">🧍 Solo</option>
-                        <option value="couple">👫 Couple</option>
-                        <option value="family">👨‍👩‍👧 Family</option>
-                        <option value="group">👥 Group</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-section-label" style="margin-top:8px;">🎨 Your Travel Style</div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>🎨 Travel Style</label>
-                    <select name="style">
-                        <option value="budget">🎒 Budget Backpacker</option>
-                        <option value="mid">🏙️ Mid-Range Comfort</option>
-                        <option value="luxury">💎 Luxury Experience</option>
-                        <option value="adventure">🧗 Adventure Seeker</option>
-                        <option value="relax">🌴 Relax &amp; Unwind</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>⚡ Travel Pace</label>
-                    <select name="pace">
-                        <option value="normal">⏱ Normal (3-4 places/day)</option>
-                        <option value="slow">🐌 Slow (2-3 places, deep dive)</option>
-                        <option value="fast">⚡ Fast (5-6 places, packed)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>🧳 Luggage</label>
-                    <select name="luggage">
-                        <option value="cabin">Cabin Bag Only</option>
-                        <option value="checked">1 Checked Bag (15kg)</option>
-                        <option value="heavy">Heavy Luggage (25kg+)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-section-label" style="margin-top:8px;">🌟 Your Interests</div>
-            <div class="form-group full">
-                <label>Select all that apply</label>
-                <div class="interest-chips" id="interestChips">
-                    <div class="chip selected" data-val="nature">🌿 Nature</div>
-                    <div class="chip" data-val="city">🏙️ City Life</div>
-                    <div class="chip" data-val="history">🏛️ History</div>
-                    <div class="chip" data-val="food">🍜 Food &amp; Cuisine</div>
-                    <div class="chip" data-val="adventure">🧗 Adventure Sports</div>
-                    <div class="chip" data-val="beach">🏖️ Beach &amp; Water</div>
-                    <div class="chip" data-val="nightlife">🌃 Nightlife</div>
-                    <div class="chip" data-val="shopping">🛍️ Shopping</div>
-                    <div class="chip" data-val="culture">🎭 Arts &amp; Culture</div>
-                    <div class="chip" data-val="photography">📸 Photography</div>
-                    <div class="chip" data-val="wellness">🧘 Wellness &amp; Spa</div>
-                    <div class="chip" data-val="offbeat">🗺️ Offbeat Gems</div>
-                </div>
-                <input type="hidden" name="interests" id="interestsInput" value="nature">
-            </div>
-
-            <div class="form-section-label" style="margin-top:8px;">⚙️ Preferences</div>
-            <div class="form-group full">
-                <label>🏨 Hotel Suggestions?</label>
-                <div class="toggle-group">
-                    <button type="button" class="toggle-btn active" data-val="yes" onclick="setToggle(this,'hotel')">Yes, suggest hotels</button>
-                    <button type="button" class="toggle-btn" data-val="no" onclick="setToggle(this,'hotel')">No hotels needed</button>
-                </div>
-                <input type="hidden" name="hotel" id="hotelInput" value="yes">
-            </div>
-            <div class="form-group full">
-                <label>✈️ Flight Suggestions?</label>
-                <div class="toggle-group">
-                    <button type="button" class="toggle-btn active" data-val="yes" onclick="setToggle(this,'flight')">Yes, suggest flights</button>
-                    <button type="button" class="toggle-btn" data-val="no" onclick="setToggle(this,'flight')">No flights needed</button>
-                </div>
-                <input type="hidden" name="flight" id="flightInput" value="yes">
-            </div>
-
-            <button type="submit" class="btn-primary btn-submit">
-                <span class="btn-text">Generate My AI Itinerary ✨</span>
+    <nav class="form-nav">
+        <a href="index.html" class="nav-logo">✈ TravelAI</a>
+        <div class="form-nav-actions">
+            <a href="blog.html" class="nav-text-link hide-mobile">Blog</a>
+            <a href="dashboard.html" id="navDashboard" class="nav-text-link hide-mobile"
+                style="display:none;color:var(--gold);">Dashboard</a>
+            <button class="btn-outline btn-sm theme-toggle-btn" onclick="toggleTheme()"
+                style="padding:8px 14px;border-radius:50px;">
+                <span class="light-icon">☀️</span><span class="dark-icon">🌙</span>
             </button>
-        </form>
-    </div>
+            <button class="btn-outline btn-sm" id="authBtn">Sign In</button>
+        </div>
+    </nav>
 
-    <div class="form-right">
-        <div class="preview-panel">
-            <div class="preview-header">Your Trip Preview</div>
-            <div class="preview-body" id="previewBody">
-                <div class="preview-placeholder">
-                    <div class="preview-icon">🗺️</div>
-                    <p>Fill in the form to see your trip details here</p>
+    <div class="form-layout">
+        <div class="form-left">
+            <div class="form-header">
+                <div class="section-tag">AI-Powered Planning</div>
+                <h1>Where are you<br><span class="gradient-text">headed?</span></h1>
+                <p>Fill in your details for a hyper-personalized itinerary with real flights, hotels, visa info, budget
+                    breakdown, and day-by-day plans.</p>
+            </div>
+
+            <!-- Usage indicator -->
+            <div class="usage-bar" id="usageBar" style="display:none;">
+                <div>
+                    <div
+                        style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:rgba(var(--white-rgb),0.4);margin-bottom:4px;">
+                        Today's Usage</div>
+                    <div style="color:var(--white);font-weight:500;" id="usageText">— itineraries used</div>
+                </div>
+                <div class="usage-dots" id="usageDots"></div>
+            </div>
+
+            <form id="tripForm" class="trip-form">
+
+                <!-- Multi-City Toggle -->
+                <div
+                    style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:rgba(212,167,106,0.06);border:1px solid rgba(212,167,106,0.2);border-radius:12px;">
+                    <div>
+                        <div style="font-size:14px;font-weight:500;color:var(--white);margin-bottom:2px;">🗺️ Multi-City
+                            Trip</div>
+                        <div style="font-size:12px;color:rgba(var(--white-rgb),0.5);">Plan Paris → Rome → Zurich in one
+                            itinerary</div>
+                    </div>
+                    <label class="multicity-switch">
+                        <input type="checkbox" id="multiCityToggle" onchange="toggleMultiCity(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- SINGLE CITY section -->
+                <div id="singleCitySection">
+                    <div class="form-section-label">✈ Route Details</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>From (City)</label>
+                            <input type="text" name="from" id="fromInput" placeholder="e.g. Mumbai" required>
+                        </div>
+                        <div class="form-group">
+                            <label>📍 Destination</label>
+                            <input type="text" name="destination" id="destInput" placeholder="e.g. Goa, Bangkok, Paris"
+                                required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>📅 Travel Date</label>
+                            <input type="date" name="date" id="dateInput" required>
+                        </div>
+                        <div class="form-group">
+                            <label>⏳ Number of Days</label>
+                            <input type="number" name="days" id="daysInput" placeholder="e.g. 4" min="1" max="30"
+                                required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MULTI CITY section -->
+                <div id="multiCitySection" style="display:none;">
+                    <div class="form-section-label">✈ Multi-City Route</div>
+                    <div class="form-row" style="margin-bottom:0;">
+                        <div class="form-group">
+                            <label>From (Origin City)</label>
+                            <input type="text" name="from" id="fromInputMulti" placeholder="e.g. Mumbai">
+                        </div>
+                        <div class="form-group">
+                            <label>📅 Departure Date</label>
+                            <input type="date" name="date" id="dateInputMulti">
+                        </div>
+                    </div>
+                    <div style="margin-top:16px;margin-bottom:8px;font-size:12px;color:rgba(var(--white-rgb),0.5);">Add
+                        destination cities (in order of visit):</div>
+                    <div id="cityRowsContainer"></div>
+                    <button type="button" class="add-city-btn" onclick="addCityRow()">+ Add City</button>
+                    <input type="hidden" id="citiesData" name="cities" value="[]">
+                    <div
+                        style="margin-top:12px;padding:10px 14px;background:var(--glass);border:1px solid var(--glass-border);border-radius:10px;font-size:12px;color:rgba(var(--white-rgb),0.5);">
+                        Total trip: <strong id="totalDaysDisplay" style="color:var(--gold);">0 days</strong>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>💰 Total Budget (₹)</label>
+                        <input type="number" name="budget" placeholder="e.g. 25000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>👥 Travelers</label>
+                        <select name="travelers">
+                            <option value="solo">🧍 Solo</option>
+                            <option value="couple">👫 Couple</option>
+                            <option value="family">👨‍👩‍👧 Family</option>
+                            <option value="group">👥 Group</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section-label" style="margin-top:8px;">🎨 Your Travel Style</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>🎨 Travel Style</label>
+                        <select name="style">
+                            <option value="budget">🎒 Budget Backpacker</option>
+                            <option value="mid">🏙️ Mid-Range Comfort</option>
+                            <option value="luxury">💎 Luxury Experience</option>
+                            <option value="adventure">🧗 Adventure Seeker</option>
+                            <option value="relax">🌴 Relax &amp; Unwind</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>⚡ Travel Pace</label>
+                        <select name="pace">
+                            <option value="normal">⏱ Normal (3-4 places/day)</option>
+                            <option value="slow">🐌 Slow (2-3 places, deep dive)</option>
+                            <option value="fast">⚡ Fast (5-6 places, packed)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>🧳 Luggage</label>
+                        <select name="luggage">
+                            <option value="cabin">Cabin Bag Only</option>
+                            <option value="checked">1 Checked Bag (15kg)</option>
+                            <option value="heavy">Heavy Luggage (25kg+)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section-label" style="margin-top:8px;">🌟 Your Interests</div>
+                <div class="form-group full">
+                    <label>Select all that apply</label>
+                    <div class="interest-chips" id="interestChips">
+                        <div class="chip selected" data-val="nature">🌿 Nature</div>
+                        <div class="chip" data-val="city">🏙️ City Life</div>
+                        <div class="chip" data-val="history">🏛️ History</div>
+                        <div class="chip" data-val="food">🍜 Food &amp; Cuisine</div>
+                        <div class="chip" data-val="adventure">🧗 Adventure Sports</div>
+                        <div class="chip" data-val="beach">🏖️ Beach &amp; Water</div>
+                        <div class="chip" data-val="nightlife">🌃 Nightlife</div>
+                        <div class="chip" data-val="shopping">🛍️ Shopping</div>
+                        <div class="chip" data-val="culture">🎭 Arts &amp; Culture</div>
+                        <div class="chip" data-val="photography">📸 Photography</div>
+                        <div class="chip" data-val="wellness">🧘 Wellness &amp; Spa</div>
+                        <div class="chip" data-val="offbeat">🗺️ Offbeat Gems</div>
+                    </div>
+                    <input type="hidden" name="interests" id="interestsInput" value="nature">
+                </div>
+
+                <div class="form-section-label" style="margin-top:8px;">⚙️ Preferences</div>
+                <div class="form-group full">
+                    <label>🏨 Hotel Suggestions?</label>
+                    <div class="toggle-group">
+                        <button type="button" class="toggle-btn active" data-val="yes"
+                            onclick="setToggle(this,'hotel')">Yes, suggest hotels</button>
+                        <button type="button" class="toggle-btn" data-val="no" onclick="setToggle(this,'hotel')">No
+                            hotels needed</button>
+                    </div>
+                    <input type="hidden" name="hotel" id="hotelInput" value="yes">
+                </div>
+                <div class="form-group full">
+                    <label>✈️ Flight Suggestions?</label>
+                    <div class="toggle-group">
+                        <button type="button" class="toggle-btn active" data-val="yes"
+                            onclick="setToggle(this,'flight')">Yes, suggest flights</button>
+                        <button type="button" class="toggle-btn" data-val="no" onclick="setToggle(this,'flight')">No
+                            flights needed</button>
+                    </div>
+                    <input type="hidden" name="flight" id="flightInput" value="yes">
+                </div>
+
+                <button type="submit" class="btn-primary btn-submit">
+                    <span class="btn-text">Generate My AI Itinerary ✨</span>
+                </button>
+            </form>
+        </div>
+
+        <div class="form-right">
+            <div class="preview-panel">
+                <div class="preview-header">Your Trip Preview</div>
+                <div class="preview-body" id="previewBody">
+                    <div class="preview-placeholder">
+                        <div class="preview-icon">🗺️</div>
+                        <p>Fill in the form to see your trip details here</p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="tips-panel" style="border-color:rgba(212,167,106,0.2);">
-            <h4>✦ What You'll Get</h4>
-            <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;">
-                <li style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);"><span style="font-size:16px;">🗓</span> Day-by-day itinerary</li>
-                <li style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);"><span style="font-size:16px;">💰</span> Budget breakdown (3 tiers)</li>
-                <li style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);"><span style="font-size:16px;">🗺️</span> Day-wise route maps + distance</li>
-                <li style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);"><span style="font-size:16px;">🌤️</span> Weather for your travel dates</li>
-                <li style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);"><span style="font-size:16px;">🛂</span> Visa requirements</li>
-                <li style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);"><span style="font-size:16px;">🏨</span> 3 hotel options (Budget/Mid/Luxury)</li>
-                <li style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);"><span style="font-size:16px;">✈️</span> 3 flight options (Cheapest/Fastest/Best)</li>
-                <li style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);"><span style="font-size:16px;">🎒</span> Smart packing list</li>
-                <li style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);"><span style="font-size:16px;">🤖</span> AI chatbot assistant</li>
-            </ul>
-        </div>
+            <div class="tips-panel" style="border-color:rgba(212,167,106,0.2);">
+                <h4>✦ What You'll Get</h4>
+                <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;">
+                    <li
+                        style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);">
+                        <span style="font-size:16px;">🗓</span> Day-by-day itinerary</li>
+                    <li
+                        style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);">
+                        <span style="font-size:16px;">💰</span> Budget breakdown (3 tiers)</li>
+                    <li
+                        style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);">
+                        <span style="font-size:16px;">🗺️</span> Day-wise route maps + distance</li>
+                    <li
+                        style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);">
+                        <span style="font-size:16px;">🌤️</span> Weather for your travel dates</li>
+                    <li
+                        style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);">
+                        <span style="font-size:16px;">🛂</span> Visa requirements</li>
+                    <li
+                        style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);">
+                        <span style="font-size:16px;">🏨</span> 3 hotel options (Budget/Mid/Luxury)</li>
+                    <li
+                        style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);">
+                        <span style="font-size:16px;">✈️</span> 3 flight options (Cheapest/Fastest/Best)</li>
+                    <li
+                        style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);">
+                        <span style="font-size:16px;">🎒</span> Smart packing list</li>
+                    <li
+                        style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(var(--white-rgb),0.7);">
+                        <span style="font-size:16px;">🤖</span> AI chatbot assistant</li>
+                </ul>
+            </div>
 
-        <div class="tips-panel">
-            <h4>✦ Pro Tips</h4>
-            <ul>
-                <li>Book flights 3 weeks in advance for best fares.</li>
-                <li>Select specific interests for curated results.</li>
-                <li>"Slow pace" gives deeper, immersive experiences.</li>
-                <li>Multi-city: add cities in travel order.</li>
-            </ul>
+            <div class="tips-panel">
+                <h4>✦ Pro Tips</h4>
+                <ul>
+                    <li>Book flights 3 weeks in advance for best fares.</li>
+                    <li>Select specific interests for curated results.</li>
+                    <li>"Slow pace" gives deeper, immersive experiences.</li>
+                    <li>Multi-city: add cities in travel order.</li>
+                </ul>
+            </div>
         </div>
     </div>
-</div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyA-9y06D-vMg4kP9RQ91Ms_OPfrd9Ap_EE",
-    authDomain: "travel-ai-app-ae087.firebaseapp.com",
-    projectId: "travel-ai-app-ae087",
-    storageBucket: "travel-ai-app-ae087.firebasestorage.app",
-    messagingSenderId: "484864841789",
-    appId: "1:484864841789:web:9a71aa69bd9ce5866e7254"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyA-9y06D-vMg4kP9RQ91Ms_OPfrd9Ap_EE",
+            authDomain: "travel-ai-app-ae087.firebaseapp.com",
+            projectId: "travel-ai-app-ae087",
+            storageBucket: "travel-ai-app-ae087.firebasestorage.app",
+            messagingSenderId: "484864841789",
+            appId: "1:484864841789:web:9a71aa69bd9ce5866e7254"
+        };
 
-const app      = initializeApp(firebaseConfig);
-const auth     = getAuth(app);
-const db       = getFirestore(app);
-const provider = new GoogleAuthProvider();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
 
-let currentUser = null;
+        let currentUser = null;
 
-window.toggleTheme = function() {
-    document.documentElement.classList.toggle('light-theme');
-    localStorage.setItem('theme', document.documentElement.classList.contains('light-theme') ? 'light' : 'dark');
-};
+        window.toggleTheme = function () {
+            document.documentElement.classList.toggle('light-theme');
+            localStorage.setItem('theme', document.documentElement.classList.contains('light-theme') ? 'light' : 'dark');
+        };
 
-// ── AUTH ──
-const authBtn      = document.getElementById('authBtn');
-const navDashboard = document.getElementById('navDashboard');
+        // ── AUTH ──
+        const authBtn = document.getElementById('authBtn');
+        const navDashboard = document.getElementById('navDashboard');
 
-onAuthStateChanged(auth, async (user) => {
-    currentUser = user;
-    if (user) {
-        authBtn.textContent = `Sign Out (${(user.displayName || 'User').split(' ')[0]})`;
-        navDashboard.style.display = 'inline-block';
-        await refreshUsageDisplay(user.uid, true);
-    } else {
-        authBtn.textContent = 'Sign In';
-        navDashboard.style.display = 'none';
-        refreshUsageDisplay(null, false);
-    }
-});
-
-authBtn.addEventListener('click', () => {
-    if (currentUser) {
-        signOut(auth).then(() => { authBtn.textContent = 'Sign In'; });
-    } else {
-        signInWithPopup(auth, provider).catch(err => alert("Login failed: " + err.message));
-    }
-});
-
-document.getElementById('limitSignInBtn')?.addEventListener('click', () => {
-    document.getElementById('limitOverlay').classList.remove('show');
-    signInWithPopup(auth, provider).catch(() => {});
-});
-
-// ── USAGE DISPLAY ──
-async function refreshUsageDisplay(userId, isLoggedIn) {
-    const bar = document.getElementById('usageBar');
-    const today = new Date().toISOString().split('T')[0];
-    let count = 0, limit = isLoggedIn ? 10 : 2;
-
-    if (isLoggedIn && userId) {
-        try {
-            const snap = await getDoc(doc(db, "usage", `${userId}_${today}`));
-            count = snap.exists() ? (snap.data().count || 0) : 0;
-        } catch(e) {}
-    } else {
-        const storedDate = localStorage.getItem('usage_date');
-        count = storedDate === today ? parseInt(localStorage.getItem('usage_count') || '0') : 0;
-    }
-
-    bar.style.display = 'flex';
-    document.getElementById('usageText').textContent = `${count}/${limit} itineraries used today`;
-    const dots = document.getElementById('usageDots');
-    dots.innerHTML = '';
-    for (let i = 0; i < limit; i++) {
-        dots.innerHTML += `<div class="usage-dot${i < count ? ' used' : ''}"></div>`;
-    }
-}
-
-// ── USAGE LIMIT CHECK ──
-async function checkAndIncrementUsage() {
-    const today = new Date().toISOString().split('T')[0];
-
-    if (currentUser) {
-        const docRef = doc(db, "usage", `${currentUser.uid}_${today}`);
-        try {
-            const snap = await getDoc(docRef);
-            const count = snap.exists() ? (snap.data().count || 0) : 0;
-            const limit = 10; // logged-in free limit
-            if (count >= limit) {
-                document.getElementById('limitMsg').textContent =
-                    `You've used ${count}/${limit} itineraries today. Upgrade for unlimited access.`;
-                document.getElementById('limitOverlay').classList.add('show');
-                return false;
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (user) {
+                authBtn.textContent = `Sign Out (${(user.displayName || 'User').split(' ')[0]})`;
+                navDashboard.style.display = 'inline-block';
+                await refreshUsageDisplay(user.uid, true);
+            } else {
+                authBtn.textContent = 'Sign In';
+                navDashboard.style.display = 'none';
+                refreshUsageDisplay(null, false);
             }
-            // Increment
-            await setDoc(docRef, { userId: currentUser.uid, date: today, count: increment(1) }, { merge: true });
-            return true;
-        } catch(e) { return true; } // fail open
-    } else {
-        // Anonymous
-        const storedDate  = localStorage.getItem('usage_date');
-        const storedCount = parseInt(localStorage.getItem('usage_count') || '0');
-        const limit = 2;
-        if (storedDate === today && storedCount >= limit) {
-            document.getElementById('limitMsg').textContent =
-                `You've used ${storedCount}/${limit} free itineraries today. Sign in to get 10/day.`;
-            document.getElementById('limitOverlay').classList.add('show');
-            return false;
+        });
+
+        authBtn.addEventListener('click', () => {
+            if (currentUser) {
+                signOut(auth).then(() => { authBtn.textContent = 'Sign In'; });
+            } else {
+                signInWithPopup(auth, provider).catch(err => alert("Login failed: " + err.message));
+            }
+        });
+
+        document.getElementById('limitSignInBtn')?.addEventListener('click', () => {
+            document.getElementById('limitOverlay').classList.remove('show');
+            signInWithPopup(auth, provider).catch(() => { });
+        });
+
+        // ── USAGE DISPLAY ──
+        async function refreshUsageDisplay(userId, isLoggedIn) {
+            const bar = document.getElementById('usageBar');
+            const today = new Date().toISOString().split('T')[0];
+            let count = 0, limit = isLoggedIn ? 10 : 2;
+
+            if (isLoggedIn && userId) {
+                try {
+                    const snap = await getDoc(doc(db, "usage", `${userId}_${today}`));
+                    count = snap.exists() ? (snap.data().count || 0) : 0;
+                } catch (e) { }
+            } else {
+                const storedDate = localStorage.getItem('usage_date');
+                count = storedDate === today ? parseInt(localStorage.getItem('usage_count') || '0') : 0;
+            }
+
+            bar.style.display = 'flex';
+            document.getElementById('usageText').textContent = `${count}/${limit} itineraries used today`;
+            const dots = document.getElementById('usageDots');
+            dots.innerHTML = '';
+            for (let i = 0; i < limit; i++) {
+                dots.innerHTML += `<div class="usage-dot${i < count ? ' used' : ''}"></div>`;
+            }
         }
-        if (storedDate !== today) {
-            localStorage.setItem('usage_date', today);
-            localStorage.setItem('usage_count', '1');
-        } else {
-            localStorage.setItem('usage_count', (storedCount + 1).toString());
+
+        // ── USAGE LIMIT CHECK ──
+        async function checkAndIncrementUsage() {
+            const today = new Date().toISOString().split('T')[0];
+
+            if (currentUser) {
+                const docRef = doc(db, "usage", `${currentUser.uid}_${today}`);
+                try {
+                    const snap = await getDoc(docRef);
+                    const count = snap.exists() ? (snap.data().count || 0) : 0;
+                    const limit = 10; // logged-in free limit
+                    if (count >= limit) {
+                        document.getElementById('limitMsg').textContent =
+                            `You've used ${count}/${limit} itineraries today. Upgrade for unlimited access.`;
+                        document.getElementById('limitOverlay').classList.add('show');
+                        return false;
+                    }
+                    // Increment
+                    await setDoc(docRef, { userId: currentUser.uid, date: today, count: increment(1) }, { merge: true });
+                    return true;
+                } catch (e) { return true; } // fail open
+            } else {
+                // Anonymous
+                const storedDate = localStorage.getItem('usage_date');
+                const storedCount = parseInt(localStorage.getItem('usage_count') || '0');
+                const limit = 2;
+                if (storedDate === today && storedCount >= limit) {
+                    document.getElementById('limitMsg').textContent =
+                        `You've used ${storedCount}/${limit} free itineraries today. Sign in to get 10/day.`;
+                    document.getElementById('limitOverlay').classList.add('show');
+                    return false;
+                }
+                if (storedDate !== today) {
+                    localStorage.setItem('usage_date', today);
+                    localStorage.setItem('usage_count', '1');
+                } else {
+                    localStorage.setItem('usage_count', (storedCount + 1).toString());
+                }
+                return true;
+            }
         }
-        return true;
-    }
-}
 
-// ── CHIPS ──
-document.querySelectorAll('.chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-        chip.classList.toggle('selected');
-        const selected = [...document.querySelectorAll('.chip.selected')].map(c => c.dataset.val);
-        document.getElementById('interestsInput').value = selected.join(',');
-    });
-});
+        // ── CHIPS ──
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                chip.classList.toggle('selected');
+                const selected = [...document.querySelectorAll('.chip.selected')].map(c => c.dataset.val);
+                document.getElementById('interestsInput').value = selected.join(',');
+            });
+        });
 
-function setToggle(btn, field) {
-    btn.closest('.toggle-group').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(field + 'Input').value = btn.dataset.val;
-}
-window.setToggle = setToggle;
+        function setToggle(btn, field) {
+            btn.closest('.toggle-group').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(field + 'Input').value = btn.dataset.val;
+        }
+        window.setToggle = setToggle;
 
-// ── PREVIEW ──
-function updatePreview() {
-    const isMulti = document.getElementById('multiCityToggle').checked;
-    let from = '', dest = '', budget = '', days = '', date = '', style = '', pace = '';
+        // ── PREVIEW ──
+        function updatePreview() {
+            const isMulti = document.getElementById('multiCityToggle').checked;
+            let from = '', dest = '', budget = '', days = '', date = '', style = '', pace = '';
 
-    if (isMulti) {
-        from  = document.getElementById('fromInputMulti')?.value || '';
-        date  = document.getElementById('dateInputMulti')?.value || '';
-        days  = document.getElementById('totalDaysDisplay')?.textContent?.split(' ')[0] || '0';
-        dest  = getCityRows().map(c => c.city).join(' → ') || '—';
-    } else {
-        from  = document.querySelector('[name=from]')?.value || '';
-        dest  = document.querySelector('[name=destination]')?.value || '';
-        budget = document.querySelector('[name=budget]')?.value || '';
-        days   = document.querySelector('[name=days]')?.value || '';
-        date   = document.querySelector('[name=date]')?.value || '';
-        style  = document.querySelector('[name=style]')?.value || 'budget';
-        pace   = document.querySelector('[name=pace]')?.value || 'normal';
-    }
+            if (isMulti) {
+                from = document.getElementById('fromInputMulti')?.value || '';
+                date = document.getElementById('dateInputMulti')?.value || '';
+                days = document.getElementById('totalDaysDisplay')?.textContent?.split(' ')[0] || '0';
+                dest = getCityRows().map(c => c.city).join(' → ') || '—';
+            } else {
+                from = document.querySelector('[name=from]')?.value || '';
+                dest = document.querySelector('[name=destination]')?.value || '';
+                budget = document.querySelector('[name=budget]')?.value || '';
+                days = document.querySelector('[name=days]')?.value || '';
+                date = document.querySelector('[name=date]')?.value || '';
+                style = document.querySelector('[name=style]')?.value || 'budget';
+                pace = document.querySelector('[name=pace]')?.value || 'normal';
+            }
 
-    if (!from && !dest) return;
+            if (!from && !dest) return;
 
-    budget = budget || document.querySelector('[name=budget]')?.value || '';
-    style  = style  || document.querySelector('[name=style]')?.value  || 'budget';
-    pace   = pace   || document.querySelector('[name=pace]')?.value   || 'normal';
+            budget = budget || document.querySelector('[name=budget]')?.value || '';
+            style = style || document.querySelector('[name=style]')?.value || 'budget';
+            pace = pace || document.querySelector('[name=pace]')?.value || 'normal';
 
-    const styleEmoji = { budget:'🎒',mid:'🏙️',luxury:'💎',adventure:'🧗',relax:'🌴' }[style] || '🎨';
-    const paceEmoji  = { slow:'🐌',normal:'⏱',fast:'⚡' }[pace] || '⏱';
+            const styleEmoji = { budget: '🎒', mid: '🏙️', luxury: '💎', adventure: '🧗', relax: '🌴' }[style] || '🎨';
+            const paceEmoji = { slow: '🐌', normal: '⏱', fast: '⚡' }[pace] || '⏱';
 
-    const body = document.getElementById('previewBody');
-    body.innerHTML = `
+            const body = document.getElementById('previewBody');
+            body.innerHTML = `
         <div class="preview-item"><span>🛫 Route</span><strong>${from || '—'} → ${dest || '—'}</strong></div>
         <div class="preview-item"><span>📅 Date</span><strong>${date || '—'}${days ? ' (' + days + ' days)' : ''}</strong></div>
         ${budget ? `<div class="preview-item"><span>💰 Budget</span><strong>₹${parseInt(budget).toLocaleString('en-IN')}</strong></div>` : ''}
         <div class="preview-item"><span>${styleEmoji} Style</span><strong style="text-transform:capitalize;">${style || '—'}</strong></div>
         <div class="preview-item"><span>${paceEmoji} Pace</span><strong style="text-transform:capitalize;">${pace || '—'}</strong></div>
-        ${days && budget ? `<div class="preview-daily">~₹${Math.round(parseInt(budget)/parseInt(days)).toLocaleString('en-IN')}/day</div>` : ''}
+        ${days && budget ? `<div class="preview-daily">~₹${Math.round(parseInt(budget) / parseInt(days)).toLocaleString('en-IN')}/day</div>` : ''}
         ${isMulti ? `<div style="margin-top:8px;padding:8px;background:rgba(212,167,106,0.06);border-radius:8px;font-size:11px;color:rgba(var(--white-rgb),0.5);">🗺️ Multi-city trip</div>` : ''}
     `;
-}
+        }
 
-document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', updatePreview));
+        document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', updatePreview));
 
-// ── LOADER ──
-function startLoader() {
-    const steps = ['ls1','ls2','ls3','ls4','ls5'];
-    const bar = document.getElementById('loaderBar');
-    let i = 0;
-    bar.style.width = '0%';
-    const iv = setInterval(() => {
-        if (i > 0) document.getElementById(steps[i-1])?.classList.remove('active');
-        if (i < steps.length) {
-            document.getElementById(steps[i])?.classList.add('active');
-            bar.style.width = ((i+1)/steps.length * 100) + '%';
-            i++;
-        } else clearInterval(iv);
-    }, 1400);
-}
+        // ── LOADER ──
+        function startLoader() {
+            const steps = ['ls1', 'ls2', 'ls3', 'ls4', 'ls5'];
+            const bar = document.getElementById('loaderBar');
+            let i = 0;
+            bar.style.width = '0%';
+            const iv = setInterval(() => {
+                if (i > 0) document.getElementById(steps[i - 1])?.classList.remove('active');
+                if (i < steps.length) {
+                    document.getElementById(steps[i])?.classList.add('active');
+                    bar.style.width = ((i + 1) / steps.length * 100) + '%';
+                    i++;
+                } else clearInterval(iv);
+            }, 1400);
+        }
 
-// ── MULTI-CITY ──
-window.toggleMultiCity = function(enabled) {
-    document.getElementById('singleCitySection').style.display = enabled ? 'none' : 'block';
-    document.getElementById('multiCitySection').style.display  = enabled ? 'block' : 'none';
+        // ── MULTI-CITY ──
+        window.toggleMultiCity = function (enabled) {
+            document.getElementById('singleCitySection').style.display = enabled ? 'none' : 'block';
+            document.getElementById('multiCitySection').style.display = enabled ? 'block' : 'none';
 
-    // Toggle required attributes
-    const singleFrom = document.getElementById('fromInput');
-    const singleDest = document.getElementById('destInput');
-    const singleDate = document.getElementById('dateInput');
-    const singleDays = document.getElementById('daysInput');
-    const multiFrom  = document.getElementById('fromInputMulti');
-    const multiDate  = document.getElementById('dateInputMulti');
+            // Toggle required attributes
+            const singleFrom = document.getElementById('fromInput');
+            const singleDest = document.getElementById('destInput');
+            const singleDate = document.getElementById('dateInput');
+            const singleDays = document.getElementById('daysInput');
+            const multiFrom = document.getElementById('fromInputMulti');
+            const multiDate = document.getElementById('dateInputMulti');
 
-    if (enabled) {
-        singleFrom?.removeAttribute('required');
-        singleDest?.removeAttribute('required');
-        singleDate?.removeAttribute('required');
-        singleDays?.removeAttribute('required');
-        multiFrom?.setAttribute('required','');
-        multiDate?.setAttribute('required','');
-        if (getCityRows().length === 0) { addCityRow(); addCityRow(); }
-    } else {
-        singleFrom?.setAttribute('required','');
-        singleDest?.setAttribute('required','');
-        singleDate?.setAttribute('required','');
-        singleDays?.setAttribute('required','');
-        multiFrom?.removeAttribute('required');
-        multiDate?.removeAttribute('required');
-    }
-    updatePreview();
-};
+            if (enabled) {
+                singleFrom?.removeAttribute('required');
+                singleDest?.removeAttribute('required');
+                singleDate?.removeAttribute('required');
+                singleDays?.removeAttribute('required');
+                multiFrom?.setAttribute('required', '');
+                multiDate?.setAttribute('required', '');
+                if (getCityRows().length === 0) { addCityRow(); addCityRow(); }
+            } else {
+                singleFrom?.setAttribute('required', '');
+                singleDest?.setAttribute('required', '');
+                singleDate?.setAttribute('required', '');
+                singleDays?.setAttribute('required', '');
+                multiFrom?.removeAttribute('required');
+                multiDate?.removeAttribute('required');
+            }
+            updatePreview();
+        };
 
-function getCityRows() {
-    return [...document.querySelectorAll('.city-row')].map(row => ({
-        city: row.querySelector('.city-name-input')?.value?.trim() || '',
-        days: parseInt(row.querySelector('.city-days-input')?.value) || 1
-    })).filter(c => c.city);
-}
+        function getCityRows() {
+            return [...document.querySelectorAll('.city-row')].map(row => ({
+                city: row.querySelector('.city-name-input')?.value?.trim() || '',
+                days: parseInt(row.querySelector('.city-days-input')?.value) || 1
+            })).filter(c => c.city);
+        }
 
-window.addCityRow = function() {
-    const container = document.getElementById('cityRowsContainer');
-    const idx = container.children.length + 1;
-    const row = document.createElement('div');
-    row.className = 'city-row';
-    row.innerHTML = `
+        window.addCityRow = function () {
+            const container = document.getElementById('cityRowsContainer');
+            const idx = container.children.length + 1;
+            const row = document.createElement('div');
+            row.className = 'city-row';
+            row.innerHTML = `
         <input class="city-name-input" type="text" placeholder="City ${idx} (e.g. Paris)" oninput="updateCitiesData()">
         <input class="city-days-input" type="number" value="2" min="1" max="30" title="Days" oninput="updateCitiesData()">
         <button type="button" class="remove-city-btn" onclick="removeCityRow(this)" title="Remove">✕</button>
     `;
-    container.appendChild(row);
-    updateCitiesData();
-};
+            container.appendChild(row);
+            updateCitiesData();
+        };
 
-window.removeCityRow = function(btn) {
-    const row = btn.closest('.city-row');
-    if (document.querySelectorAll('.city-row').length <= 1) return; // keep at least 1
-    row.style.opacity = '0'; row.style.transform = 'scale(0.95)'; row.style.transition = '0.2s';
-    setTimeout(() => { row.remove(); updateCitiesData(); }, 200);
-};
+        window.removeCityRow = function (btn) {
+            const row = btn.closest('.city-row');
+            if (document.querySelectorAll('.city-row').length <= 1) return; // keep at least 1
+            row.style.opacity = '0'; row.style.transform = 'scale(0.95)'; row.style.transition = '0.2s';
+            setTimeout(() => { row.remove(); updateCitiesData(); }, 200);
+        };
 
-window.updateCitiesData = function() {
-    const rows = getCityRows();
-    document.getElementById('citiesData').value = JSON.stringify(rows);
-    const total = rows.reduce((s, c) => s + c.days, 0);
-    document.getElementById('totalDaysDisplay').textContent = total + ' days';
-    updatePreview();
-};
+        window.updateCitiesData = function () {
+            const rows = getCityRows();
+            document.getElementById('citiesData').value = JSON.stringify(rows);
+            const total = rows.reduce((s, c) => s + c.days, 0);
+            document.getElementById('totalDaysDisplay').textContent = total + ' days';
+            updatePreview();
+        };
 
-// ── FORM SUBMIT ──
-document.getElementById("tripForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
+        // ── FORM SUBMIT ──
+        document.getElementById("tripForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
 
-    // Check usage limit before generation
-    const allowed = await checkAndIncrementUsage();
-    if (!allowed) return;
+            // Check usage limit before generation
+            const allowed = await checkAndIncrementUsage();
+            if (!allowed) return;
 
-    document.getElementById("loading").style.display = "flex";
-    startLoader();
+            document.getElementById("loading").style.display = "flex";
+            startLoader();
 
-    const formData = new FormData(this);
-    const isMulti = document.getElementById('multiCityToggle').checked;
+            const formData = new FormData(this);
+            const isMulti = document.getElementById('multiCityToggle').checked;
 
-    // For multi-city: override destination with first city, add cities JSON
-    if (isMulti) {
-        const cities = getCityRows();
-        if (cities.length === 0) { alert("Please add at least one destination city."); document.getElementById("loading").style.display = "none"; return; }
-        formData.set('destination', cities[0].city);
-        formData.set('days', cities.reduce((s, c) => s + c.days, 0).toString());
-        formData.set('cities', JSON.stringify(cities));
-        formData.set('from', document.getElementById('fromInputMulti').value);
-        formData.set('date', document.getElementById('dateInputMulti').value);
-    }
+            // For multi-city: override destination with first city, add cities JSON
+            if (isMulti) {
+                const cities = getCityRows();
+                if (cities.length === 0) { alert("Please add at least one destination city."); document.getElementById("loading").style.display = "none"; return; }
+                formData.set('destination', cities[0].city);
+                formData.set('days', cities.reduce((s, c) => s + c.days, 0).toString());
+                formData.set('cities', JSON.stringify(cities));
+                formData.set('from', document.getElementById('fromInputMulti').value);
+                formData.set('date', document.getElementById('dateInputMulti').value);
+            }
 
-    try {
-        const response = await fetch("https://ai-travel-planner-gmmc.onrender.com/generate", {
-            method: "POST",
-            body: new URLSearchParams(formData)
+            try {
+                const response = await fetch("https://ai-travel-planner-gmmc.onrender.com/generate", {
+                    method: "POST",
+                    body: new URLSearchParams(formData)
+                });
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+
+                localStorage.setItem("tripData", JSON.stringify(data));
+                localStorage.setItem("destination", formData.get("destination"));
+                localStorage.setItem("from", formData.get("from"));
+                localStorage.setItem("days", formData.get("days"));
+                localStorage.setItem("budget", formData.get("budget"));
+                localStorage.setItem("style", formData.get("style"));
+                localStorage.setItem("pace", formData.get("pace"));
+                localStorage.setItem("travelers", formData.get("travelers"));
+                localStorage.setItem("hotelReq", formData.get("hotel"));
+                localStorage.setItem("flightReq", formData.get("flight"));
+                localStorage.setItem("date", formData.get("date"));
+
+                window.location.href = "result.html";
+            } catch (err) {
+                console.error(err);
+                alert("Something went wrong: " + err.message + "\nPlease try again.");
+                document.getElementById("loading").style.display = "none";
+            }
         });
-        const data = await response.json();
-        if (data.error) throw new Error(data.error);
-
-        localStorage.setItem("tripData",   JSON.stringify(data));
-        localStorage.setItem("destination", formData.get("destination"));
-        localStorage.setItem("from",        formData.get("from"));
-        localStorage.setItem("days",        formData.get("days"));
-        localStorage.setItem("budget",      formData.get("budget"));
-        localStorage.setItem("style",       formData.get("style"));
-        localStorage.setItem("pace",        formData.get("pace"));
-        localStorage.setItem("travelers",   formData.get("travelers"));
-        localStorage.setItem("hotelReq",    formData.get("hotel"));
-        localStorage.setItem("flightReq",   formData.get("flight"));
-        localStorage.setItem("date",        formData.get("date"));
-
-        window.location.href = "result.html";
-    } catch(err) {
-        console.error(err);
-        alert("Something went wrong: " + err.message + "\nPlease try again.");
-        document.getElementById("loading").style.display = "none";
-    }
-});
-</script>
+    </script>
 </body>
+
 </html>
