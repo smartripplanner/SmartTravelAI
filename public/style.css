@@ -1172,7 +1172,7 @@ html.light-theme .hotel-card::after {
     .section-header h2 { font-size: 24px; }
     .feat-card { padding: 22px; }
     .step-card { padding: 28px 20px; }
-    .step-num { font-size: 40px; }
+    .step-num { font-size: 40px; } 
     .navbar { padding: 12px 14px; }
     .nav-logo { font-size: 18px; }
     .result-hero-content h1,
@@ -1180,4 +1180,5 @@ html.light-theme .hotel-card::after {
     .dash-header h1 { font-size: 24px; }
     .loader-bar-wrap { width: 240px; }
     .loader-title { font-size: 22px; }
+    
 }
