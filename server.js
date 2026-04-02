@@ -74,15 +74,25 @@ const IMG_REJECT_KW = [
 // Used for Wikipedia filename word-boundary matching (split on _ - space).
 // Each entry is checked as an EXACT whole word — prevents "man" matching "Roman".
 const REJECT_FNAME_WORDS = new Set([
+    // ── People ──
     'person','people','portrait','selfie','face','wedding','fashion','model',
     'man','woman','boy','girl','crowd','group','headshot','nude','naked',
     'tourist','tourists','visitor','visitors','traveler','travellers','travelers',
     'traveller','couple','family','baby','children','child','kids',
-    'flag','logo','diagram','chart','graph','schematic','illustration','emblem',
     'bikini','volunteer','volunteers','athlete','protesters','protest','politician',
     'celebrity','actor','actress','singer','minister','president','king','queen',
     'officer','soldier','staff','worker','vendor','guide','monk','priest',
-    'bride','groom','dancer','performer','journalist','reporter','speaker'
+    'bride','groom','dancer','performer','journalist','reporter','speaker',
+    'artist','architect','designer','painter','sculptor','photographer','composer',
+    // ── Maps / diagrams ──
+    'map','maps','karte','mapa','carte','topographic','topographical','panoramakarte',
+    'administrative','districts','district','zones','zone','infographic','brochure',
+    // ── Roads / transport infrastructure ──
+    'highway','motorway','autostrada','autoroute','autobahn','freeway','expressway',
+    'signage','roadsign','interchange','junction','overpass',
+    // ── Other non-place visuals ──
+    'flag','logo','diagram','chart','graph','schematic','illustration','emblem',
+    'poster','flyer','stamp','signature','seal','crest','coat'
 ]);
 
 // Substrings checked against the Wikipedia page *title* (not filename).
@@ -91,7 +101,9 @@ const REJECT_TITLE_SUBSTRINGS = [
     'biography','politician','actor','actress','singer','celebrity',
     'president','minister','athlete','player','coach','influencer',
     'businessman','entrepreneur','author','writer','poet','philosopher',
-    'activist','comedian','director','producer','musician','rapper'
+    'activist','comedian','director','producer','musician','rapper',
+    'artist','architect','designer','painter','sculptor','photographer','composer',
+    'novelist','journalist','scientist','inventor','explorer','general'
 ];
 
 function isPlaceImage(url, pageTitle) {
@@ -107,9 +119,10 @@ function isPlaceImage(url, pageTitle) {
     // 1. Hard-reject if any filename word is a known human / non-place term
     if (fWords.some(w => REJECT_FNAME_WORDS.has(w))) return false;
 
-    // 2. Hard-reject URL-level multi-word patterns
+    // 2. Hard-reject URL-level multi-word patterns (maps, portraits, inappropriate)
     const urlLow = url.toLowerCase();
     if (/group[_\-]photo|body[_\-]paint|coat[_\-]of[_\-]arm|bikini[_\-]model|group[_\-]of/.test(urlLow)) return false;
+    if (/[_\-]map[_\-\.]|_map$|district[_\-]map|administrative[_\-]|panoramakarte|tourismuskarte/.test(urlLow)) return false;
 
     // 3. Page-title reject — if the Wikipedia article is about a person, not a place
     const titleLow = (pageTitle || '').toLowerCase();

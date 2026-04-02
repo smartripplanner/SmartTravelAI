@@ -2371,13 +2371,41 @@ window.sendChat = async function() {
         }
 
 // ── IMAGE FETCH HELPER (UPDATED API CALL TO RENDER) ──
+// Tracks how many times each URL has been assigned so the same image
+// never appears more than twice across the whole itinerary.
+const _usedImgUrls = new Map();
+
+function _imgHash(str) {
+    return Math.abs([...str].reduce((h, c) => Math.imul(31, h) + c.charCodeAt(0) | 0, 0));
+}
+
 async function fetchRealImage(query, fallbackText, type = 'place') {
+    let imageUrl = null;
     try {
         const res = await fetch(`https://ai-travel-planner-gmmc.onrender.com/get-image?query=${encodeURIComponent(query)}&type=${type}`);
         const data = await res.json();
-        if (data.imageUrl) return data.imageUrl;
+        if (data.imageUrl) imageUrl = data.imageUrl;
     } catch(e) {}
-    return `https://placehold.co/800x600/1a2235/d4a76a?text=${encodeURIComponent(fallbackText)}`;
+
+    if (!imageUrl) {
+        imageUrl = `https://placehold.co/800x600/1a2235/d4a76a?text=${encodeURIComponent(fallbackText.substring(0, 30))}`;
+    }
+
+    // If this URL has already been used twice, generate a unique AI image
+    // with a query-specific seed so it's different every time but still on-topic.
+    if ((_usedImgUrls.get(imageUrl) || 0) >= 2) {
+        const uniqueSeed = (_imgHash(query + imageUrl) + Date.now()) % 99991;
+        const safeQ = query.replace(/[^a-zA-Z0-9 ]/g, '').trim().split(' ').slice(0, 5).join(' ');
+        const prompt = type === 'hotel'
+            ? `Professional hotel architecture photography of ${safeQ}, grand exterior, no people, wide angle`
+            : `Professional travel photography of ${safeQ}, iconic scenic landmark, no people, no tourists, wide angle, golden hour`;
+        const neg = 'people,person,man,woman,crowd,tourist,face,portrait,map,diagram';
+        imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}` +
+                   `?width=800&height=600&nologo=true&negative=${encodeURIComponent(neg)}&seed=${uniqueSeed}&model=flux`;
+    }
+
+    _usedImgUrls.set(imageUrl, (_usedImgUrls.get(imageUrl) || 0) + 1);
+    return imageUrl;
 }
 
         // ── MAP MAXIMIZE / FULLSCREEN ──
