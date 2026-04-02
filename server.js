@@ -339,8 +339,10 @@ app.get("/nearby-places", async (req, res) => {
 // 5. EMAIL ITINERARY (Brevo API)
 // ═══════════════════════════════════════════════
 app.post("/email-itinerary", async (req, res) => {
-    const { email, destination, days, from, style, budget, travelDate, itinerary, totalCost } = req.body;
-    if (!email || !destination) return res.status(400).json({ error: "Email and destination required." });
+    const { email, destination: rawDestination, days, from: rawFrom, style, budget, travelDate, itinerary, totalCost } = req.body;
+    const destination = rawDestination || 'Unknown';
+    const from        = rawFrom        || 'Unknown';
+    if (!email || !rawDestination) return res.status(400).json({ error: "Email and destination required." });
     if (!BREVO_API_KEY || !EMAIL_USER) return res.status(500).json({ error: "Email API not configured." });
 
     const tripStyle = style ? style.charAt(0).toUpperCase() + style.slice(1) : 'Standard';
@@ -408,8 +410,8 @@ app.post("/email-itinerary", async (req, res) => {
         <tr>
           <td style="background:linear-gradient(135deg,#0a0f1a 0%,#1a2235 100%);padding:36px 40px 28px;text-align:center;border-bottom:1px solid rgba(212,167,106,0.18);">
             <div style="font-family:Georgia,serif;font-size:13px;letter-spacing:0.22em;text-transform:uppercase;color:#d4a76a;margin-bottom:14px;">✈ TravelAI</div>
-            <h1 style="font-family:Georgia,serif;color:#f5f0e8;font-size:30px;font-weight:300;margin:0 0 10px;line-height:1.2;">Your Trip to ${effectiveDestination}</h1>
-            <p style="color:rgba(245,240,232,0.48);font-size:13px;margin:0;">${days} Days &nbsp;·&nbsp; ${effectiveFrom || 'Home'} → ${effectiveDestination} &nbsp;·&nbsp; ${tripStyle} Style</p>
+            <h1 style="font-family:Georgia,serif;color:#f5f0e8;font-size:30px;font-weight:300;margin:0 0 10px;line-height:1.2;">Your Trip to ${destination}</h1>
+            <p style="color:rgba(245,240,232,0.48);font-size:13px;margin:0;">${days} Days &nbsp;·&nbsp; ${from} → ${destination} &nbsp;·&nbsp; ${tripStyle} Style</p>
           </td>
         </tr>
         <tr>
@@ -467,7 +469,7 @@ app.post("/email-itinerary", async (req, res) => {
         await axios.post('https://api.brevo.com/v3/smtp/email', {
             sender: { email: EMAIL_USER, name: "TravelAI Planner" },
             to: [{ email }],
-            subject: `✈️ Your ${days}-Day ${destination || effectiveDestination} Itinerary — TravelAI`,
+            subject: `✈️ Your ${days}-Day ${destination} Itinerary — TravelAI`,
             htmlContent
         }, {
             headers: { 'accept': 'application/json', 'api-key': BREVO_API_KEY, 'content-type': 'application/json' },

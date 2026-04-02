@@ -674,11 +674,10 @@ window.exportToPDF = function() {
         <div style="color:rgba(255,255,255,0.4);font-size:12px;">Please wait a few seconds</div>`;
     document.body.appendChild(pdfOverlay);
 
-    // ── PDF container — rendered off-screen so html2canvas can paint it without visual glitches ──
-    const isLight = document.documentElement.classList.contains('light-theme');
-    const pdfBg = isLight ? '#ffffff' : '#0a0f1a';
+    // ── PDF container — fixed+invisible so html2canvas can fully paint it in the viewport ──
+    // (elements moved far outside the viewport via top:-9999px are sometimes skipped by the renderer)
     const pdfContainer = document.createElement('div');
-    pdfContainer.style.cssText = `position:absolute;top:-9999px;left:-9999px;width:794px;background:${pdfBg};color:#f5f0e8;overflow:hidden;`;
+    pdfContainer.style.cssText = 'position:fixed;top:0;left:0;width:794px;opacity:0;pointer-events:none;z-index:99999;background:#0a0f1a;color:#f5f0e8;overflow:hidden;';
     pdfContainer.innerHTML = htmlContent;
     document.body.appendChild(pdfContainer);
 
@@ -689,8 +688,8 @@ window.exportToPDF = function() {
         html2canvas: {
             scale: 2,
             useCORS: true,
-            allowTaint: false,   // false = no external images, prevents blank-page from tainted canvas
-            backgroundColor: pdfBg,  // explicit hex prevents transparent/blank output
+            allowTaint: true,
+            backgroundColor: '#0a0f1a',  // explicit hex — prevents transparent/blank canvas output
             logging: false,
             letterRendering: true,
             windowWidth: 794,
@@ -720,7 +719,7 @@ window.exportToPDF = function() {
                 cleanup();
                 alert("PDF generation failed. Please try again.");
             });
-    }, 600);
+    }, 1000);
 }
 
 // ── LOAD LOCAL DATA ──
