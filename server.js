@@ -61,30 +61,60 @@ if (!PIXABAY_API_KEY) console.warn("ℹ️  INFO: PIXABAY_API_KEY not set — Pi
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 // ── IMAGE SAFETY FILTER ──────────────────────────────────────────────────────
-// Words in a Wikipedia filename or page title that signal a human-only image.
+// Used for Pixabay tag filtering (tags are plain comma-separated words).
 const IMG_REJECT_KW = [
-    'person', 'people', 'portrait', 'selfie', 'face', 'wedding', 'fashion',
-    'model', '_man_', '_woman_', '_boy_', '_girl_', 'crowd', 'group_photo',
-    'headshot', 'nude', 'naked', 'body_paint', 'bikini_model',
-    '_flag', 'coat_of_arm', 'logo', 'seal_of', 'emblem', 'stamp', 'signature',
-    '_plan', 'schematic', 'diagram', 'chart', 'graph', 'illustration'
+    'person','people','portrait','selfie','face','wedding','fashion','model',
+    'man','woman','boy','girl','crowd','group','headshot','nude','naked',
+    'tourist','tourists','visitor','visitors','traveler','travellers',
+    'couple','family','baby','children','child','kids','flag','logo',
+    'diagram','chart','graph','schematic','illustration','emblem','bikini',
+    'athlete','protest','politician','celebrity'
 ];
-// Words that strongly indicate a landmark / travel / landscape image.
-const IMG_ACCEPT_KW = [
-    'landmark', 'building', 'architecture', 'church', 'cathedral', 'mosque',
-    'temple', 'bridge', 'castle', 'palace', 'tower', 'skyline', 'street',
-    'museum', 'park', 'beach', 'mountain', 'island', 'lake', 'waterfall',
-    'bay', 'coast', 'market', 'square', 'monument', 'ruins', 'historic',
-    'aerial', 'panorama', 'sunset', 'sunrise', 'scenic', 'harbor', 'garden',
-    'fountain', 'gate', 'arch', 'fort', 'shrine', 'pagoda', 'canal',
-    'piazza', 'boulevard', 'promenade', 'view', 'landscape', 'cityscape'
+
+// Used for Wikipedia filename word-boundary matching (split on _ - space).
+// Each entry is checked as an EXACT whole word — prevents "man" matching "Roman".
+const REJECT_FNAME_WORDS = new Set([
+    'person','people','portrait','selfie','face','wedding','fashion','model',
+    'man','woman','boy','girl','crowd','group','headshot','nude','naked',
+    'tourist','tourists','visitor','visitors','traveler','travellers','travelers',
+    'traveller','couple','family','baby','children','child','kids',
+    'flag','logo','diagram','chart','graph','schematic','illustration','emblem',
+    'bikini','volunteer','volunteers','athlete','protesters','protest','politician',
+    'celebrity','actor','actress','singer','minister','president','king','queen',
+    'officer','soldier','staff','worker','vendor','guide','monk','priest',
+    'bride','groom','dancer','performer','journalist','reporter','speaker'
+]);
+
+// Substrings checked against the Wikipedia page *title* (not filename).
+// If any match, the page is likely about a person, not a place.
+const REJECT_TITLE_SUBSTRINGS = [
+    'biography','politician','actor','actress','singer','celebrity',
+    'president','minister','athlete','player','coach','influencer',
+    'businessman','entrepreneur','author','writer','poet','philosopher',
+    'activist','comedian','director','producer','musician','rapper'
 ];
 
 function isPlaceImage(url, pageTitle) {
-    const hay = (url + ' ' + (pageTitle || '')).toLowerCase();
-    // Hard-reject: SVG, GIF, human keywords
+    // Always reject vector/animation formats
     if (/\.(svg|gif)(\?|$)/i.test(url)) return false;
-    if (IMG_REJECT_KW.some(kw => hay.includes(kw)))  return false;
+
+    // Tokenise the filename into individual words for word-boundary matching.
+    // Wikipedia filenames use underscores as separators: "Man_at_Market.jpg" → ["man","at","market"]
+    const fname = decodeURIComponent(url.split('/').pop().split('?')[0])
+                    .replace(/\.[^.]+$/, '').toLowerCase();
+    const fWords = fname.split(/[_\-\s]+/);
+
+    // 1. Hard-reject if any filename word is a known human / non-place term
+    if (fWords.some(w => REJECT_FNAME_WORDS.has(w))) return false;
+
+    // 2. Hard-reject URL-level multi-word patterns
+    const urlLow = url.toLowerCase();
+    if (/group[_\-]photo|body[_\-]paint|coat[_\-]of[_\-]arm|bikini[_\-]model|group[_\-]of/.test(urlLow)) return false;
+
+    // 3. Page-title reject — if the Wikipedia article is about a person, not a place
+    const titleLow = (pageTitle || '').toLowerCase();
+    if (REJECT_TITLE_SUBSTRINGS.some(kw => titleLow.includes(kw))) return false;
+
     return true;
 }
 
@@ -547,10 +577,10 @@ app.get("/get-image", async (req, res) => {
 
     try {
         // ── 2. Wikipedia — fetch 10 candidates, apply safety filter ─────────
-        // Hotels get a tighter search; places use the bare query.
+        // Hotels get an exterior/architecture search; places bias toward landmarks.
         const wikiSearch = type === 'hotel'
-            ? cleanQuery + ' hotel building'
-            : cleanQuery + ' landmark';
+            ? cleanQuery + ' hotel architecture exterior'
+            : cleanQuery + ' architecture landmark scenic';
         const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json` +
                         `&piprop=thumbnail&pithumbsize=900&generator=search` +
                         `&gsrsearch=${encodeURIComponent(wikiSearch)}&gsrlimit=10`;
@@ -598,9 +628,9 @@ app.get("/get-image", async (req, res) => {
         // always resolves to the same generated image (consistent UI).
         const safePlace = cleanQuery.split(' ').slice(0, 6).join(' ');
         const prompt = type === 'hotel'
-            ? `Professional hotel photography of ${safePlace}, luxury hotel exterior, architecture, no people, wide angle, daylight, ultra high quality travel photo`
-            : `Professional travel photography of ${safePlace}, famous landmark, scenic view, wide angle, daylight, no people, no portrait, landscape photography, ultra high quality`;
-        const negPrompt = 'people,person,face,selfie,portrait,crowd,group,nude,low quality,blurry';
+            ? `Professional architectural photography of ${safePlace} hotel, grand exterior facade, no people, empty, wide angle, golden hour, ultra high quality`
+            : `Professional travel photography of ${safePlace}, iconic scenic landmark, architecture, wide angle, completely empty, no tourists, no people, golden hour, ultra high quality`;
+        const negPrompt = 'people,person,man,woman,boy,girl,face,selfie,portrait,tourist,tourists,crowd,group,human,figure,nude,blurry,low quality,watermark';
         const aiUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}` +
                       `?width=800&height=600&nologo=true` +
                       `&negative=${encodeURIComponent(negPrompt)}` +
