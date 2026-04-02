@@ -46,17 +46,59 @@ app.get("/", (req, res) => {
 // ═══════════════════════════════════════════════
 // ENVIRONMENT VARIABLES
 // ═══════════════════════════════════════════════
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const MAPS_API_KEY = process.env.MAPS_API_KEY;
-const EMAIL_USER = process.env.EMAIL_USER;
-const BREVO_API_KEY = process.env.BREVO_API_KEY;
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "admin@travelai.com").split(",").map(e => e.trim());
+const GEMINI_API_KEY  = process.env.GEMINI_API_KEY;
+const MAPS_API_KEY    = process.env.MAPS_API_KEY;
+const EMAIL_USER      = process.env.EMAIL_USER;
+const BREVO_API_KEY   = process.env.BREVO_API_KEY;
+const PIXABAY_API_KEY = process.env.PIXABAY_API_KEY; // optional — enables Pixabay image search
+const ADMIN_EMAILS    = (process.env.ADMIN_EMAILS || "admin@travelai.com").split(",").map(e => e.trim());
 
-if (!GEMINI_API_KEY) console.error("⚠️ WARNING: GEMINI_API_KEY missing.");
-if (!MAPS_API_KEY)   console.error("⚠️ WARNING: MAPS_API_KEY missing.");
-if (!BREVO_API_KEY)  console.error("⚠️ WARNING: BREVO_API_KEY missing.");
+if (!GEMINI_API_KEY)  console.error("⚠️ WARNING: GEMINI_API_KEY missing.");
+if (!MAPS_API_KEY)    console.error("⚠️ WARNING: MAPS_API_KEY missing.");
+if (!BREVO_API_KEY)   console.error("⚠️ WARNING: BREVO_API_KEY missing.");
+if (!PIXABAY_API_KEY) console.warn("ℹ️  INFO: PIXABAY_API_KEY not set — Pixabay image search disabled.");
 
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
+
+// ── IMAGE SAFETY FILTER ──────────────────────────────────────────────────────
+// Words in a Wikipedia filename or page title that signal a human-only image.
+const IMG_REJECT_KW = [
+    'person', 'people', 'portrait', 'selfie', 'face', 'wedding', 'fashion',
+    'model', '_man_', '_woman_', '_boy_', '_girl_', 'crowd', 'group_photo',
+    'headshot', 'nude', 'naked', 'body_paint', 'bikini_model',
+    '_flag', 'coat_of_arm', 'logo', 'seal_of', 'emblem', 'stamp', 'signature',
+    '_plan', 'schematic', 'diagram', 'chart', 'graph', 'illustration'
+];
+// Words that strongly indicate a landmark / travel / landscape image.
+const IMG_ACCEPT_KW = [
+    'landmark', 'building', 'architecture', 'church', 'cathedral', 'mosque',
+    'temple', 'bridge', 'castle', 'palace', 'tower', 'skyline', 'street',
+    'museum', 'park', 'beach', 'mountain', 'island', 'lake', 'waterfall',
+    'bay', 'coast', 'market', 'square', 'monument', 'ruins', 'historic',
+    'aerial', 'panorama', 'sunset', 'sunrise', 'scenic', 'harbor', 'garden',
+    'fountain', 'gate', 'arch', 'fort', 'shrine', 'pagoda', 'canal',
+    'piazza', 'boulevard', 'promenade', 'view', 'landscape', 'cityscape'
+];
+
+function isPlaceImage(url, pageTitle) {
+    const hay = (url + ' ' + (pageTitle || '')).toLowerCase();
+    // Hard-reject: SVG, GIF, human keywords
+    if (/\.(svg|gif)(\?|$)/i.test(url)) return false;
+    if (IMG_REJECT_KW.some(kw => hay.includes(kw)))  return false;
+    return true;
+}
+
+// ── IMAGE CACHE (in-memory, capped at 600 entries) ──────────────────────────
+const imageCache = new Map();
+function cacheSet(key, url) {
+    if (imageCache.size >= 600) imageCache.delete(imageCache.keys().next().value);
+    imageCache.set(key, url);
+}
+
+// Deterministic numeric seed from a string (for consistent AI-generated images per place)
+function strSeed(str) {
+    return Math.abs([...str].reduce((h, c) => Math.imul(31, h) + c.charCodeAt(0) | 0, 0)) % 9999;
+}
 
 // --- IATA CODE MAPPER ---
 const getIATACode = (city) => {
@@ -487,33 +529,89 @@ app.post("/email-itinerary", async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════
-// 6. IMAGE FETCHER
+// 6. IMAGE FETCHER  (safe, filtered, cached)
 // ═══════════════════════════════════════════════
 app.get("/get-image", async (req, res) => {
+    const { query, type } = req.query;
+    if (!query) return res.json({ imageUrl: 'https://placehold.co/800x600/1a2235/d4a76a?text=Travel' });
+
+    const cleanQuery = query.replace(/[^a-zA-Z0-9 ]/g, "").trim();
+    const cacheKey   = `${type || 'place'}::${cleanQuery.toLowerCase()}`;
+
+    // ── 1. Cache hit — skip all external calls ──────────────────────────────
+    if (imageCache.has(cacheKey)) {
+        return res.json({ imageUrl: imageCache.get(cacheKey) });
+    }
+
+    const ok = (url) => { cacheSet(cacheKey, url); return res.json({ imageUrl: url }); };
+
     try {
-        const { query, type } = req.query;
-        if (!query) return res.json({ imageUrl: 'https://placehold.co/800x600/1a2235/d4a76a?text=Travel' });
-        const cleanQuery = query.replace(/[^a-zA-Z0-9 ]/g, "").trim();
-
-        const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=thumbnail&pithumbsize=800&generator=search&gsrsearch=${encodeURIComponent(cleanQuery)}&gsrlimit=3`;
-        const wikiRes = await axios.get(wikiUrl, { headers: { 'User-Agent': 'TravelAI_App/2.0' } });
-
+        // ── 2. Wikipedia — fetch 10 candidates, apply safety filter ─────────
+        // Hotels get a tighter search; places use the bare query.
+        const wikiSearch = type === 'hotel'
+            ? cleanQuery + ' hotel building'
+            : cleanQuery + ' landmark';
+        const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json` +
+                        `&piprop=thumbnail&pithumbsize=900&generator=search` +
+                        `&gsrsearch=${encodeURIComponent(wikiSearch)}&gsrlimit=10`;
+        const wikiRes = await axios.get(wikiUrl, {
+            headers: { 'User-Agent': 'TravelAI_App/3.0 (travel planner)' },
+            timeout: 6000
+        });
         const pages = wikiRes.data.query?.pages;
         if (pages) {
-            const pageIds = Object.keys(pages);
-            for (const pageId of pageIds) {
-                const src = pages[pageId].thumbnail?.source;
-                if (src && !src.toLowerCase().endsWith('.svg') && !src.toLowerCase().includes('map') && !src.toLowerCase().includes('flag')) {
-                    return res.json({ imageUrl: src });
+            // Sort by search rank (index field) so the most relevant result wins
+            const ranked = Object.values(pages)
+                .filter(p => p.thumbnail?.source)
+                .sort((a, b) => (a.index || 99) - (b.index || 99));
+            for (const page of ranked) {
+                if (isPlaceImage(page.thumbnail.source, page.title)) {
+                    return ok(page.thumbnail.source);
                 }
             }
         }
 
-        const flickrKeywords = cleanQuery.split(" ").slice(0, 3).join(",");
-        const fallback = type === 'hotel' ? `hotel,resort,${flickrKeywords}` : flickrKeywords;
-        res.json({ imageUrl: `https://loremflickr.com/800/600/${encodeURIComponent(fallback)}/all` });
-    } catch (error) {
-        res.json({ imageUrl: `https://placehold.co/800x600/1a2235/d4a76a?text=${encodeURIComponent((req.query.query || 'place').split(' ')[0])}` });
+        // ── 3. Pixabay — safesearch + travel category (only if key is set) ──
+        if (PIXABAY_API_KEY) {
+            const pixRes = await axios.get('https://pixabay.com/api/', {
+                params: {
+                    key:          PIXABAY_API_KEY,
+                    q:            cleanQuery + (type === 'hotel' ? ' hotel' : ' landmark travel'),
+                    image_type:   'photo',
+                    category:     'travel',
+                    safesearch:   'true',
+                    per_page:     10,
+                    orientation:  'horizontal',
+                    min_width:    700
+                },
+                timeout: 6000
+            });
+            for (const hit of (pixRes.data.hits || [])) {
+                const tags = (hit.tags || '').toLowerCase();
+                const bad  = IMG_REJECT_KW.some(kw => tags.includes(kw));
+                if (!bad && hit.webformatURL) return ok(hit.webformatURL);
+            }
+        }
+
+        // ── 4. AI image generation via Pollinations.ai ───────────────────────
+        // Free, no API key required. Seed is deterministic so the same place
+        // always resolves to the same generated image (consistent UI).
+        const safePlace = cleanQuery.split(' ').slice(0, 6).join(' ');
+        const prompt = type === 'hotel'
+            ? `Professional hotel photography of ${safePlace}, luxury hotel exterior, architecture, no people, wide angle, daylight, ultra high quality travel photo`
+            : `Professional travel photography of ${safePlace}, famous landmark, scenic view, wide angle, daylight, no people, no portrait, landscape photography, ultra high quality`;
+        const negPrompt = 'people,person,face,selfie,portrait,crowd,group,nude,low quality,blurry';
+        const aiUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}` +
+                      `?width=800&height=600&nologo=true` +
+                      `&negative=${encodeURIComponent(negPrompt)}` +
+                      `&seed=${strSeed(cleanQuery)}&model=flux`;
+        return ok(aiUrl);
+
+    } catch (err) {
+        console.error('/get-image error:', err.message);
+        // Final safe fallback — Picsum gives curated landscape/architecture photos, never portraits
+        const seed = cleanQuery.replace(/\s+/g, '-').toLowerCase().substring(0, 30);
+        return res.json({ imageUrl: `https://picsum.photos/seed/${encodeURIComponent(seed)}/800/600` });
     }
 });
 
