@@ -50,86 +50,13 @@ const GEMINI_API_KEY  = process.env.GEMINI_API_KEY;
 const MAPS_API_KEY    = process.env.MAPS_API_KEY;
 const EMAIL_USER      = process.env.EMAIL_USER;
 const BREVO_API_KEY   = process.env.BREVO_API_KEY;
-const PIXABAY_API_KEY = process.env.PIXABAY_API_KEY; // optional — enables Pixabay image search
 const ADMIN_EMAILS    = (process.env.ADMIN_EMAILS || "admin@travelai.com").split(",").map(e => e.trim());
 
-if (!GEMINI_API_KEY)  console.error("⚠️ WARNING: GEMINI_API_KEY missing.");
-if (!MAPS_API_KEY)    console.error("⚠️ WARNING: MAPS_API_KEY missing.");
-if (!BREVO_API_KEY)   console.error("⚠️ WARNING: BREVO_API_KEY missing.");
-if (!PIXABAY_API_KEY) console.warn("ℹ️  INFO: PIXABAY_API_KEY not set — Pixabay image search disabled.");
+if (!GEMINI_API_KEY) console.error("⚠️ WARNING: GEMINI_API_KEY missing.");
+if (!MAPS_API_KEY)   console.error("⚠️ WARNING: MAPS_API_KEY missing — Google Places images disabled.");
+if (!BREVO_API_KEY)  console.error("⚠️ WARNING: BREVO_API_KEY missing.");
 
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
-
-// ── IMAGE SAFETY FILTER ──────────────────────────────────────────────────────
-// Used for Pixabay tag filtering (tags are plain comma-separated words).
-const IMG_REJECT_KW = [
-    'person','people','portrait','selfie','face','wedding','fashion','model',
-    'man','woman','boy','girl','crowd','group','headshot','nude','naked',
-    'tourist','tourists','visitor','visitors','traveler','travellers',
-    'couple','family','baby','children','child','kids','flag','logo',
-    'diagram','chart','graph','schematic','illustration','emblem','bikini',
-    'athlete','protest','politician','celebrity'
-];
-
-// Used for Wikipedia filename word-boundary matching (split on _ - space).
-// Each entry is checked as an EXACT whole word — prevents "man" matching "Roman".
-const REJECT_FNAME_WORDS = new Set([
-    // ── People ──
-    'person','people','portrait','selfie','face','wedding','fashion','model',
-    'man','woman','boy','girl','crowd','group','headshot','nude','naked',
-    'tourist','tourists','visitor','visitors','traveler','travellers','travelers',
-    'traveller','couple','family','baby','children','child','kids',
-    'bikini','volunteer','volunteers','athlete','protesters','protest','politician',
-    'celebrity','actor','actress','singer','minister','president','king','queen',
-    'officer','soldier','staff','worker','vendor','guide','monk','priest',
-    'bride','groom','dancer','performer','journalist','reporter','speaker',
-    'artist','architect','designer','painter','sculptor','photographer','composer',
-    // ── Maps / diagrams ──
-    'map','maps','karte','mapa','carte','topographic','topographical','panoramakarte',
-    'administrative','districts','district','zones','zone','infographic','brochure',
-    // ── Roads / transport infrastructure ──
-    'highway','motorway','autostrada','autoroute','autobahn','freeway','expressway',
-    'signage','roadsign','interchange','junction','overpass',
-    // ── Other non-place visuals ──
-    'flag','logo','diagram','chart','graph','schematic','illustration','emblem',
-    'poster','flyer','stamp','signature','seal','crest','coat'
-]);
-
-// Substrings checked against the Wikipedia page *title* (not filename).
-// If any match, the page is likely about a person, not a place.
-const REJECT_TITLE_SUBSTRINGS = [
-    'biography','politician','actor','actress','singer','celebrity',
-    'president','minister','athlete','player','coach','influencer',
-    'businessman','entrepreneur','author','writer','poet','philosopher',
-    'activist','comedian','director','producer','musician','rapper',
-    'artist','architect','designer','painter','sculptor','photographer','composer',
-    'novelist','journalist','scientist','inventor','explorer','general'
-];
-
-function isPlaceImage(url, pageTitle) {
-    // Always reject vector/animation formats
-    if (/\.(svg|gif)(\?|$)/i.test(url)) return false;
-
-    // Tokenise the filename into individual words for word-boundary matching.
-    // Wikipedia filenames use underscores as separators: "Man_at_Market.jpg" → ["man","at","market"]
-    const fname = decodeURIComponent(url.split('/').pop().split('?')[0])
-                    .replace(/\.[^.]+$/, '').toLowerCase();
-    const fWords = fname.split(/[_\-\s]+/);
-
-    // 1. Hard-reject if any filename word is a known human / non-place term
-    if (fWords.some(w => REJECT_FNAME_WORDS.has(w))) return false;
-
-    // 2. Hard-reject URL-level multi-word patterns (maps, portraits, inappropriate)
-    const urlLow = url.toLowerCase();
-    if (/group[_\-]photo|body[_\-]paint|coat[_\-]of[_\-]arm|bikini[_\-]model|group[_\-]of/.test(urlLow)) return false;
-    if (/[_\-]map[_\-\.]|_map$|district[_\-]map|administrative[_\-]|panoramakarte|tourismuskarte/.test(urlLow)) return false;
-
-    // 3. Page-title reject — if the Wikipedia article is about a person, not a place
-    const titleLow = (pageTitle || '').toLowerCase();
-    if (REJECT_TITLE_SUBSTRINGS.some(kw => titleLow.includes(kw))) return false;
-
-    return true;
-}
 
 // ── IMAGE CACHE (in-memory, capped at 600 entries) ──────────────────────────
 const imageCache = new Map();
@@ -141,6 +68,97 @@ function cacheSet(key, url) {
 // Deterministic numeric seed from a string (for consistent AI-generated images per place)
 function strSeed(str) {
     return Math.abs([...str].reduce((h, c) => Math.imul(31, h) + c.charCodeAt(0) | 0, 0)) % 9999;
+}
+
+// ═══════════════════════════════════════════════
+// GOOGLE PLACES IMAGE FETCHER
+// ═══════════════════════════════════════════════
+
+/**
+ * Resolve a Google Place photo reference to a real CDN URL.
+ * Google's Place Photo endpoint returns HTTP 302 → actual image on lh3.googleusercontent.com.
+ * We capture that Location header (no image downloaded) so the API key never reaches the client.
+ */
+async function resolvePhotoRef(photoRef) {
+    if (!MAPS_API_KEY) return null;
+    const apiUrl = `https://maps.googleapis.com/maps/api/place/photo` +
+                   `?maxwidth=800&photoreference=${encodeURIComponent(photoRef)}&key=${MAPS_API_KEY}`;
+    try {
+        // maxRedirects:0 makes axios throw on the 302 instead of following it
+        await axios.get(apiUrl, { maxRedirects: 0, timeout: 5000 });
+        return apiUrl; // rare: direct 200, return as-is
+    } catch (e) {
+        const loc = e.response?.headers?.location;
+        if (loc) return loc; // CDN URL — safe to expose, contains no API key
+        return null;
+    }
+}
+
+/**
+ * Fetch up to `count` real place photos via the Google Places API (Legacy).
+ * Pipeline:
+ *   1. Find Place from Text  → place_id
+ *   2. Place Details          → photos[] (photo_reference tokens)
+ *   3. Place Photo            → resolve each ref to a CDN URL
+ * Results are cached in imageCache so repeated calls for the same place are free.
+ */
+async function getPlaceImages(placeName, count = 3) {
+    if (!MAPS_API_KEY) return [];
+
+    const cacheKey = `gplaces::${placeName.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim()}`;
+    if (imageCache.has(cacheKey)) return imageCache.get(cacheKey);
+
+    try {
+        // ── Step 1: Find Place from Text ──────────────────────────────────────
+        const findRes = await axios.get(
+            'https://maps.googleapis.com/maps/api/place/findplacefromtext/json',
+            {
+                params: {
+                    input:     placeName,
+                    inputtype: 'textquery',
+                    fields:    'place_id,name',
+                    key:       MAPS_API_KEY
+                },
+                timeout: 6000
+            }
+        );
+        const placeId = findRes.data.candidates?.[0]?.place_id;
+        if (!placeId) throw new Error(`No place_id found for: "${placeName}"`);
+
+        // ── Step 2: Place Details → photo references ───────────────────────
+        const detailRes = await axios.get(
+            'https://maps.googleapis.com/maps/api/place/details/json',
+            {
+                params: {
+                    place_id: placeId,
+                    fields:   'photos',
+                    key:      MAPS_API_KEY
+                },
+                timeout: 6000
+            }
+        );
+        const photos = detailRes.data.result?.photos || [];
+        if (!photos.length) throw new Error(`No photos available for place_id: ${placeId}`);
+
+        // ── Step 3: Resolve refs → CDN URLs (try count*2 in case some fail) ──
+        const urls = [];
+        for (const photo of photos.slice(0, count * 2)) {
+            if (urls.length >= count) break;
+            const url = await resolvePhotoRef(photo.photo_reference);
+            if (url) urls.push(url);
+        }
+        if (!urls.length) throw new Error('All photo refs failed to resolve');
+
+        // ── Cache the resolved URLs ────────────────────────────────────────
+        if (imageCache.size >= 600) imageCache.delete(imageCache.keys().next().value);
+        imageCache.set(cacheKey, urls);
+        console.log(`✅ Google Places images cached for "${placeName}" (${urls.length} photos)`);
+        return urls;
+
+    } catch (e) {
+        console.error(`getPlaceImages("${placeName}"):`, e.message);
+        return []; // caller falls through to AI fallback
+    }
 }
 
 // --- IATA CODE MAPPER ---
@@ -572,7 +590,7 @@ app.post("/email-itinerary", async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════
-// 6. IMAGE FETCHER  (safe, filtered, cached)
+// 6. IMAGE FETCHER  (Google Places → AI fallback, cached)
 // ═══════════════════════════════════════════════
 app.get("/get-image", async (req, res) => {
     const { query, type } = req.query;
@@ -583,67 +601,26 @@ app.get("/get-image", async (req, res) => {
 
     // ── 1. Cache hit — skip all external calls ──────────────────────────────
     if (imageCache.has(cacheKey)) {
-        return res.json({ imageUrl: imageCache.get(cacheKey) });
+        const cached = imageCache.get(cacheKey);
+        return res.json({ imageUrl: Array.isArray(cached) ? cached[0] : cached });
     }
 
     const ok = (url) => { cacheSet(cacheKey, url); return res.json({ imageUrl: url }); };
 
     try {
-        // ── 2. Wikipedia — fetch 10 candidates, apply safety filter ─────────
-        // Hotels get an exterior/architecture search; places bias toward landmarks.
-        const wikiSearch = type === 'hotel'
-            ? cleanQuery + ' hotel architecture exterior'
-            : cleanQuery + ' architecture landmark scenic';
-        const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json` +
-                        `&piprop=thumbnail&pithumbsize=900&generator=search` +
-                        `&gsrsearch=${encodeURIComponent(wikiSearch)}&gsrlimit=10`;
-        const wikiRes = await axios.get(wikiUrl, {
-            headers: { 'User-Agent': 'TravelAI_App/3.0 (travel planner)' },
-            timeout: 6000
-        });
-        const pages = wikiRes.data.query?.pages;
-        if (pages) {
-            // Sort by search rank (index field) so the most relevant result wins
-            const ranked = Object.values(pages)
-                .filter(p => p.thumbnail?.source)
-                .sort((a, b) => (a.index || 99) - (b.index || 99));
-            for (const page of ranked) {
-                if (isPlaceImage(page.thumbnail.source, page.title)) {
-                    return ok(page.thumbnail.source);
-                }
-            }
+        // ── 2. Google Places API — real, accurate place photos ───────────────
+        if (MAPS_API_KEY) {
+            const photos = await getPlaceImages(cleanQuery);
+            if (photos.length) return ok(photos[0]);
         }
 
-        // ── 3. Pixabay — safesearch + travel category (only if key is set) ──
-        if (PIXABAY_API_KEY) {
-            const pixRes = await axios.get('https://pixabay.com/api/', {
-                params: {
-                    key:          PIXABAY_API_KEY,
-                    q:            cleanQuery + (type === 'hotel' ? ' hotel' : ' landmark travel'),
-                    image_type:   'photo',
-                    category:     'travel',
-                    safesearch:   'true',
-                    per_page:     10,
-                    orientation:  'horizontal',
-                    min_width:    700
-                },
-                timeout: 6000
-            });
-            for (const hit of (pixRes.data.hits || [])) {
-                const tags = (hit.tags || '').toLowerCase();
-                const bad  = IMG_REJECT_KW.some(kw => tags.includes(kw));
-                if (!bad && hit.webformatURL) return ok(hit.webformatURL);
-            }
-        }
-
-        // ── 4. AI image generation via Pollinations.ai ───────────────────────
-        // Free, no API key required. Seed is deterministic so the same place
-        // always resolves to the same generated image (consistent UI).
+        // ── 3. Pollinations.ai AI fallback (no key required) ─────────────────
+        // Used when Google Places returns no results (very obscure places).
         const safePlace = cleanQuery.split(' ').slice(0, 6).join(' ');
         const prompt = type === 'hotel'
-            ? `Professional architectural photography of ${safePlace} hotel, grand exterior facade, no people, empty, wide angle, golden hour, ultra high quality`
-            : `Professional travel photography of ${safePlace}, iconic scenic landmark, architecture, wide angle, completely empty, no tourists, no people, golden hour, ultra high quality`;
-        const negPrompt = 'people,person,man,woman,boy,girl,face,selfie,portrait,tourist,tourists,crowd,group,human,figure,nude,blurry,low quality,watermark';
+            ? `Professional architectural photography of ${safePlace} hotel, grand exterior facade, no people, wide angle, golden hour, ultra high quality`
+            : `Professional travel photography of ${safePlace}, iconic scenic landmark, wide angle, no people, no tourists, golden hour, ultra high quality`;
+        const negPrompt = 'people,person,man,woman,face,crowd,tourist,group,nude,blurry,low quality,watermark';
         const aiUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}` +
                       `?width=800&height=600&nologo=true` +
                       `&negative=${encodeURIComponent(negPrompt)}` +
@@ -652,7 +629,7 @@ app.get("/get-image", async (req, res) => {
 
     } catch (err) {
         console.error('/get-image error:', err.message);
-        // Final safe fallback — Picsum gives curated landscape/architecture photos, never portraits
+        // Last resort — Picsum landscape/architecture seed (never portraits)
         const seed = cleanQuery.replace(/\s+/g, '-').toLowerCase().substring(0, 30);
         return res.json({ imageUrl: `https://picsum.photos/seed/${encodeURIComponent(seed)}/800/600` });
     }
