@@ -558,169 +558,93 @@ window.toggleTheme = function() {
     }
 }
 
-// ── PDF EXPORT — Uses email template design ──
-window.exportToPDF = function() {
-    const btn = document.getElementById('pdfBtn');
-    btn.textContent = "⏳ Generating...";
-    btn.disabled = true;
+// ── PDF EXPORT — rebuilt from email-itinerary template; pure <table> layout, zero CSS grid/variables ──
+        window.exportToPDF = function () {
+            const btn = document.getElementById('pdfBtn');
+            const originalText = btn.textContent;
+            btn.textContent = "⏳ Generating PDF...";
+            btn.disabled = true;
 
-    const tripStyle = (style || 'budget').charAt(0).toUpperCase() + (style || 'budget').slice(1);
-    const estCost = tripData ? tripData.totalEstimatedCost : ('₹' + parseInt(budget).toLocaleString('en-IN'));
+            // 1. Fetch fresh data
+            const dataRaw = localStorage.getItem("tripData");
+            const tripData = dataRaw ? JSON.parse(dataRaw) : null;
+            const dest = localStorage.getItem("destination") || "Your Destination";
+            const dur = localStorage.getItem("days") || "3";
+            const startLoc = localStorage.getItem("from") || "Home";
+            const tStyle = (localStorage.getItem("style") || 'budget').charAt(0).toUpperCase() + (localStorage.getItem("style") || 'budget').slice(1);
+            const tDate = localStorage.getItem("date") || "Upcoming";
+            const totalCost = tripData?.totalEstimatedCost || ('₹' + parseInt(localStorage.getItem("budget") || 0).toLocaleString('en-IN'));
 
-    // ── Build day cards — table-based layout so html2canvas renders columns correctly ──
-    const dayCardsHtml = (tripData?.itinerary || []).map(day => `
-      <div style="background:#1a2235;border:1px solid rgba(212,167,106,0.18);border-radius:12px;overflow:hidden;margin-bottom:16px;page-break-inside:avoid;">
-        <div style="padding:14px 20px;background:#1e2d47;border-bottom:1px solid rgba(212,167,106,0.15);">
-          <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-            <td><span style="font-family:Georgia,serif;font-size:17px;color:#d4a76a;font-weight:600;">Day ${day.day}</span>${day.theme ? `<span style="font-size:12px;color:#a07840;margin-left:10px;">— ${day.theme}</span>` : ''}</td>
-            <td align="right"><span style="font-size:13px;color:#d4a76a;font-weight:600;font-family:Arial,sans-serif;">${day.cost || ''}</span></td>
-          </tr></table>
-        </div>
-        <div style="padding:12px 20px 8px;">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:#7a7060;margin-bottom:8px;font-family:Arial,sans-serif;">Places to Visit</div>
-          <div style="margin-bottom:4px;">${(day.places||[]).map(p=>`<span style="display:inline-block;background:#1e2d1a;border:1px solid #4a3a1a;color:#d4a76a;padding:3px 11px;border-radius:20px;font-size:12px;margin:2px 3px 2px 0;font-family:Arial,sans-serif;">${p}</span>`).join('')}</div>
-        </div>
-        <div style="padding:8px 20px 14px;">
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:${day.note ? '8px' : '0'};"><tr>
-            <td width="50%" valign="top" style="padding-right:6px;">
-              <div style="background:#151e2e;border:1px solid #2a2a3a;border-radius:8px;padding:11px 13px;">
-                <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#7a7060;margin-bottom:5px;font-family:Arial,sans-serif;">Food</div>
-                <div style="font-size:13px;color:#f5f0e8;line-height:1.55;font-family:Arial,sans-serif;">${day.food||'—'}</div>
-              </div>
+            // 2. Build Day Cards (Inline Styles ONLY)
+            const dayCards = (tripData?.itinerary || []).map(day => `
+      <div style="background:#1a2235; border:1px solid #d4a76a; border-radius:12px; margin-bottom:20px; padding:15px; page-break-inside:avoid;">
+          <table width="100%" style="border-bottom:1px solid #d4a76a; padding-bottom:10px; margin-bottom:10px;">
+            <tr>
+              <td style="font-family:Georgia, serif; font-size:18px; color:#d4a76a; font-weight:bold;">Day ${day.day}: ${day.theme || 'Exploration'}</td>
+              <td align="right" style="color:#d4a76a; font-size:14px; font-weight:bold;">${day.cost || ''}</td>
+            </tr>
+          </table>
+          <div style="font-size:11px; text-transform:uppercase; color:#888; margin-bottom:5px;">Places</div>
+          <div style="margin-bottom:15px;">${(day.places || []).map(p => `<span style="border:1px solid #d4a76a; padding:3px 10px; border-radius:15px; font-size:12px; margin-right:5px; display:inline-block; color:#d4a76a;">${p}</span>`).join('')}</div>
+          <table width="100%" cellspacing="10"><tr>
+            <td width="50%" style="background:#111827; padding:12px; border-radius:8px; border:1px solid #333; vertical-align:top;">
+                <div style="font-size:10px; color:#d4a76a; margin-bottom:6px; font-weight:bold;">FOOD</div>
+                <div style="font-size:13px; line-height:1.4; color:#f5f0e8;">${day.food}</div>
             </td>
-            <td width="50%" valign="top" style="padding-left:6px;">
-              <div style="background:#151e2e;border:1px solid #2a2a3a;border-radius:8px;padding:11px 13px;">
-                <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#7a7060;margin-bottom:5px;font-family:Arial,sans-serif;">Transport</div>
-                <div style="font-size:13px;color:#f5f0e8;line-height:1.55;font-family:Arial,sans-serif;">${day.transport||'—'}</div>
-              </div>
+            <td width="50%" style="background:#111827; padding:12px; border-radius:8px; border:1px solid #333; vertical-align:top;">
+                <div style="font-size:10px; color:#d4a76a; margin-bottom:6px; font-weight:bold;">TRANSPORT</div>
+                <div style="font-size:13px; line-height:1.4; color:#f5f0e8;">${day.transport}</div>
             </td>
           </tr></table>
-          ${day.note ? `<div style="background:#1a1408;border:1px solid #3a2a0a;border-radius:8px;padding:9px 13px;font-size:12px;color:#c8b898;line-height:1.5;font-family:Arial,sans-serif;">Pro Tip: ${day.note}</div>` : ''}
-        </div>
+          ${day.note ? `<div style="margin-top:10px; font-size:12px; color:#c8941a; font-style:italic;">Tip: ${day.note}</div>` : ''}
       </div>`).join('');
 
-    // ── Build budget section — table-based, no CSS grid ──
-    const bd = tripData?.budget_breakdown;
-    const budgetHtml = bd ? `
-      <div style="page-break-inside:avoid;margin-bottom:24px;">
-        <h2 style="font-family:Georgia,serif;font-size:20px;font-weight:400;color:#f5f0e8;margin:0 0 4px;">Budget Estimate</h2>
-        <p style="font-size:11px;color:#7a7060;margin:0 0 16px;font-family:Arial,sans-serif;">Full cost breakdown for your trip</p>
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;"><tr>
-          ${[['Budget',bd.budget_total],['Mid-Range',bd.midrange_total],['Luxury',bd.luxury_total]].map(([label,price])=>`
-          <td width="33%" style="padding:0 6px 0 0;"><div style="background:#1a2235;border:1px solid #3a2a0a;border-radius:10px;padding:18px;text-align:center;">
-            <div style="font-size:11px;text-transform:uppercase;color:#7a7060;margin-bottom:8px;font-family:Arial,sans-serif;">${label}</div>
-            <div style="font-family:Georgia,serif;font-size:24px;color:#d4a76a;font-weight:600;">${price||'—'}</div>
-          </div></td>`).join('')}
-        </tr></table>
-        <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-          ${[['Flights',bd.flights],['Hotels',bd.hotels],['Food',bd.food],['Transport',bd.transport],['Activities',bd.activities]].map(([label,val])=>`
-          <td width="20%" style="padding:0 4px 0 0;"><div style="background:#151e2e;border:1px solid #2a2a3a;border-radius:8px;padding:12px;text-align:center;">
-            <div style="font-size:10px;color:#7a7060;text-transform:uppercase;margin-bottom:4px;font-family:Arial,sans-serif;">${label}</div>
-            <div style="font-size:14px;font-weight:600;color:#d4a76a;font-family:Arial,sans-serif;">${val||'—'}</div>
-          </div></td>`).join('')}
-        </tr></table>
-      </div>` : '';
-
-    // best_time intentionally excluded from PDF per spec (Trip Header + Itinerary + Budget only)
-
-    // ── Full PDF HTML template — zero CSS grid, zero CSS variables ──
-    const htmlContent = `<div style="background:#0a0f1a;color:#f5f0e8;font-family:Arial,sans-serif;margin:0;padding:0;width:100%;">
-
-      <!-- HEADER -->
-      <div style="background:#111827;padding:40px 48px 30px;border-bottom:2px solid #3a2a0a;">
-        <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.18em;color:#a07840;margin-bottom:12px;">AI Generated Travel Plan &middot; TravelAI</div>
-        <h1 style="font-family:Georgia,serif;color:#f5f0e8;font-size:36px;font-weight:300;margin:0 0 10px;line-height:1.15;">Your Trip to ${destination}</h1>
-        <p style="color:#8a8070;font-size:13px;margin:0;">${days} Days &nbsp;&middot;&nbsp; ${from} &rarr; ${destination} &nbsp;&middot;&nbsp; ${tripStyle} Style &nbsp;&middot;&nbsp; ${travelDateStr}</p>
-      </div>
-
-      <!-- SUMMARY STRIP — table layout, no CSS grid -->
-      <div style="background:#0d1420;padding:22px 48px;border-bottom:1px solid #1a1a2a;">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-          ${[['Destination',destination],['Duration',days+' Days'],['Est. Budget',estCost],['From',from],['Style',tripStyle]].map(([label,val],i)=>`
-          <td width="20%" style="text-align:center;padding:0 8px;${i>0?'border-left:1px solid #1a1a2a;':''}">
-            <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:#6a6050;margin-bottom:5px;font-family:Arial,sans-serif;">${label}</div>
-            <div style="font-size:14px;font-weight:700;color:#d4a76a;font-family:Arial,sans-serif;">${val}</div>
-          </td>`).join('')}
-        </tr></table>
-      </div>
-
-      <!-- ITINERARY SECTION -->
-      <div style="padding:32px 48px 16px;">
-        <h2 style="font-family:Georgia,serif;font-size:22px;font-weight:400;color:#f5f0e8;margin:0 0 4px;">Day-by-Day Itinerary</h2>
-        <p style="font-size:11px;color:#6a6050;margin:0 0 22px;font-family:Arial,sans-serif;">Curated by TravelAI based on your preferences</p>
-        ${dayCardsHtml}
-      </div>
-
-      <!-- BUDGET SECTION -->
-      ${bd ? `<div style="padding:8px 48px 24px;">${budgetHtml}</div>` : ''}
-
-      <!-- FOOTER -->
-      <div style="padding:20px 48px 26px;background:#050a12;text-align:center;border-top:1px solid #1a1a2a;">
-        <div style="font-family:Georgia,serif;font-size:18px;color:#a07840;margin-bottom:6px;">TravelAI</div>
-        <p style="color:#4a4438;font-size:11px;margin:0;line-height:1.7;font-family:Arial,sans-serif;">
-          Generated by TravelAI &mdash; Powered by SmartTripPlanner AI<br>
-          Flight &amp; hotel prices are estimates only. Always verify before booking.
-        </p>
-      </div>
+            // 3. Wrap everything in a fixed-width container for A4 sizing
+            const finalHtml = `
+    <div style="background:#0a0f1a; color:#f5f0e8; font-family:Helvetica, Arial, sans-serif; padding:40px; width:794px; box-sizing:border-box;">
+        <div style="border-bottom:2px solid #d4a76a; padding-bottom:20px; margin-bottom:20px;">
+            <div style="color:#d4a76a; letter-spacing:2px; font-size:12px;">TRAVELAI PLANNER</div>
+            <h1 style="font-family:Georgia, serif; font-size:32px; margin:10px 0; color:#f5f0e8;">Trip to ${dest}</h1>
+            <p style="color:#888; font-size:14px;">${dur} Days • ${startLoc} to ${dest} • ${tStyle} Style • ${tDate}</p>
+        </div>
+        <table width="100%" style="margin-bottom:30px; background:#111827; padding:15px; border-radius:10px; text-align:center;">
+            <tr>
+                <td><div style="font-size:10px; color:#888;">DURATION</div><div style="color:#d4a76a; font-weight:bold; font-size:16px;">${dur} Days</div></td>
+                <td><div style="font-size:10px; color:#888;">BUDGET</div><div style="color:#d4a76a; font-weight:bold; font-size:16px;">${totalCost}</div></td>
+                <td><div style="font-size:10px; color:#888;">STYLE</div><div style="color:#d4a76a; font-weight:bold; font-size:16px;">${tStyle}</div></td>
+            </tr>
+        </table>
+        ${dayCards}
+        <div style="text-align:center; padding-top:20px; border-top:1px solid #333; color:#666; font-size:11px;">
+            Generated by TravelAI • Verification of actual prices recommended.
+        </div>
     </div>`;
 
-    // ── Loading overlay shown to user while PDF renders ──
-    const pdfOverlay = document.createElement('div');
-    pdfOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:100001;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;';
-    pdfOverlay.innerHTML = `
-        <div style="font-size:2.5rem;">&#9992;&#65039;</div>
-        <div style="color:#d4a76a;font-family:Georgia,serif;font-size:18px;font-weight:400;">Generating PDF&hellip;</div>
-        <div style="color:rgba(255,255,255,0.4);font-size:12px;">Please wait a few seconds</div>`;
-    document.body.appendChild(pdfOverlay);
+            // 4. Configure PDF (Notice: No CORS, No Taint, No DOM targeting)
+            const opt = {
+                margin: [0, 0],
+                filename: `TravelAI_${dest.replace(/\s+/g, '_')}.pdf`,
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: {
+                    scale: 2,
+                    backgroundColor: '#0a0f1a', // Ensure black background
+                    letterRendering: true,
+                    scrollY: 0,        // <-- FIX: Ignores vertical scroll
 
-    // ── PDF container — position:absolute z-index:-1 so the browser paints real pixels
-    //    without covering the overlay, and html2canvas can read them correctly ──
-    const pdfContainer = document.createElement('div');
-    pdfContainer.style.cssText = 'position:absolute;left:0;top:0;width:794px;z-index:-1;visibility:visible;background:#0a0f1a;color:#f5f0e8;overflow:hidden;';
-    pdfContainer.innerHTML = htmlContent;
-    document.body.appendChild(pdfContainer);
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
 
-    const opt = {
-        margin: [8, 6, 8, 6],
-        filename: `TravelAI_${destination}_${days}Days.pdf`,
-        image: { type: 'jpeg', quality: 0.92 },
-        html2canvas: {
-            scale: 2,
-            useCORS: true,
-            allowTaint: false,
-            backgroundColor: '#0a0f1a',
-            proxy: 'https://ai-travel-planner-gmmc.onrender.com/get-image',
-            logging: false,
-            letterRendering: true,
-            windowWidth: 794,
-            scrollX: 0,
-            scrollY: 0
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'], before: '.pdf-page-break', avoid: '.pdf-no-break' }
-    };
-
-    const cleanup = () => {
-        if (document.body.contains(pdfContainer)) document.body.removeChild(pdfContainer);
-        if (document.body.contains(pdfOverlay))   document.body.removeChild(pdfOverlay);
-        btn.textContent = "📥 PDF";
-        btn.disabled = false;
-    };
-
-    // Wait 1000ms for fonts + inline styles to fully render before capture
-    setTimeout(() => {
-        html2pdf()
-            .set(opt)
-            .from(pdfContainer)
-            .save()
-            .then(cleanup)
-            .catch(err => {
-                console.error("PDF Error:", err);
-                cleanup();
-                alert("PDF generation failed. Please try again.");
+            // 5. Pass the raw string directly to html2pdf!
+            html2pdf().set(opt).from(finalHtml).save().then(() => {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }).catch(err => {
+                console.error("PDF Export Error:", err);
+                btn.textContent = "Error";
+                btn.disabled = false;
             });
-    }, 1000);
-}
+        };
 
 // ── LOAD LOCAL DATA ──
 const tripDataRaw = localStorage.getItem("tripData");
