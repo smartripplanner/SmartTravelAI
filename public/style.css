@@ -349,64 +349,7 @@ input, select, button, textarea { font-family: var(--font-sans); }
 .weather-grid { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ─── RESPONSIVE ─── */
-@media (max-width: 1024px) {
-    .navbar, .form-nav, .result-nav { padding: 18px 24px; }
-    .hero { padding: 100px 24px 60px; flex-direction: column; }
-    .hero-visual { display: none; }
-    .features { padding: 60px 24px; }
-    .features-grid { grid-template-columns: 1fr 1fr; }
-    .feat-large { grid-column: span 2; }
-    .how-section { padding: 60px 24px; }
-    .steps-row { flex-direction: column; }
-    .step-arrow { transform: rotate(90deg); }
-    .form-layout { grid-template-columns: 1fr; padding: 40px 24px; }
-    .form-right { position: static; }
-    .form-header h1 { font-size: 40px; }
-    .summary-grid { grid-template-columns: repeat(3, 1fr); }
-    .flights-grid { grid-template-columns: 1fr 1fr; }
-    .section-block { padding: 40px 24px; }
-    .result-hero { padding: 40px 24px; }
-    .day-images-grid { grid-template-columns: 1fr; height: auto; }
-    .day-img-item { height: 180px; }
-    .day-details { grid-template-columns: 1fr; }
-    .hotel-grid { grid-template-columns: 1fr; }
-    .packing-grid { grid-template-columns: repeat(2, 1fr); }
-    .card-stack { display: none; }
-    .result-nav-actions { gap: 8px; }
-    .dash-stats { flex-wrap: wrap; }
-}
-@media (max-width: 768px) {
-    .result-nav { padding: 10px 14px; flex-wrap: wrap; gap: 8px; }
-    .result-nav-actions { flex-wrap: wrap; gap: 5px; }
-    .result-nav-actions > * { flex-shrink: 0; }
-    .result-hero { height: auto; min-height: 240px; padding: 76px 18px 24px; }
-    .result-hero-content h1 { font-size: 26px; }
-    .rh-meta { flex-direction: column; gap: 5px; }
-    .rh-meta span { font-size: 12px; }
-    .summary-section { padding: 20px 14px; }
-    .summary-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .sum-card { padding: 14px 10px; gap: 10px; }
-    .sum-icon { font-size: 18px; }
-    .sum-val { font-size: 13px; }
-    .section-block { padding: 28px 14px; }
-    .section-title-row h2 { font-size: 22px; }
-    .day-header-wrap { padding: 18px 16px 0; }
-    .day-body { padding: 18px 16px; }
-    .flights-grid { grid-template-columns: 1fr; }
-    .hotel-grid { grid-template-columns: 1fr; }
-    .day-details { grid-template-columns: 1fr; }
-}
-@media (max-width: 640px) {
-    .features-grid { grid-template-columns: 1fr; }
-    .feat-large { grid-column: 1; }
-    .form-row { grid-template-columns: 1fr; }
-    .form-group.full { grid-column: 1; }
-    .summary-grid { grid-template-columns: repeat(2, 1fr); }
-    .flights-grid { grid-template-columns: 1fr; }
-    .packing-grid { grid-template-columns: 1fr 1fr; }
-    .hero-title { font-size: 42px; }
-    .dash-header { flex-direction: column; align-items: flex-start; gap: 16px; }
-}
+/* This section intentionally left minimal — see unified responsive block at bottom */
 
 /* ═══════════════════════════════════════════════════════════
    WORLD CLASS UI/UX ENHANCEMENT LAYER v2
@@ -860,9 +803,50 @@ html.light-theme .hotel-card::after {
 .plan-features li { font-size: 13px; color: rgba(var(--white-rgb),0.7); display: flex; align-items: center; gap: 8px; }
 .plan-features li::before { content: '✓'; color: var(--gold); font-weight: 700; flex-shrink: 0; }
 
-/* ═════════════════════════════════
-   FULL MOBILE RESPONSIVE — All Pages
-   ═════════════════════════════════ */
+/* ═════════════════════════════════════════════════════
+   FULL MOBILE RESPONSIVE — Unified for All Pages
+   World-class SaaS-level responsive design
+   ═════════════════════════════════════════════════════ */
+
+/* ── Hamburger Button (hidden on desktop) ── */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    z-index: 101;
+}
+.hamburger span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: var(--white);
+    border-radius: 2px;
+    transition: 0.3s;
+}
+.nav-right-mobile {
+    display: none;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ── Desktop-only / Mobile-only helpers ── */
+.desktop-only { display: inline-flex; }
+.hide-mobile { }
+
+/* ── Form nav actions ── */
+.form-nav-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+/* ════ TABLET — max-width: 1024px ════ */
 @media (max-width: 1024px) {
     .hero { flex-direction: column; padding: 100px 40px 60px; gap: 40px; }
     .hero-visual { display: none; }
@@ -875,71 +859,311 @@ html.light-theme .hotel-card::after {
     .steps-row { flex-direction: column; gap: 12px; }
     .step-arrow { display: none; }
     .form-layout { grid-template-columns: 1fr; }
-    .form-right { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-right { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; position: static; }
     .admin-stats-grid { grid-template-columns: repeat(2, 1fr); }
     .blog-grid { grid-template-columns: 1fr 1fr; }
+    .card-stack { display: none; }
+    .result-nav-actions { gap: 8px; }
+    .dash-stats { flex-wrap: wrap; }
+    .section-block { padding: 40px 24px; }
+    .result-hero { padding: 40px 24px; }
+    .summary-grid { grid-template-columns: repeat(3, 1fr); }
+    .flights-grid { grid-template-columns: 1fr 1fr; }
+    .day-images-grid { grid-template-columns: 1fr; height: auto; }
+    .day-img-item { height: 180px; }
+    .day-details { grid-template-columns: 1fr; }
+    .hotel-grid { grid-template-columns: 1fr; }
+    .packing-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ════ MOBILE — max-width: 768px ════ */
 @media (max-width: 768px) {
-    .navbar { padding: 12px 18px; }
-    .nav-links { gap: 10px; flex-wrap: wrap; }
-    .nav-links a { font-size: 12px; }
-    .hero { padding: 80px 18px 50px; }
-    .hero-title { font-size: 40px !important; }
+    /* ── Hide custom cursor on touch devices ── */
+    .cursor, .cursor-follower { display: none !important; }
+
+    /* ── Hamburger menu visible ── */
+    .hamburger { display: flex; }
+    .nav-right-mobile { display: flex; }
+    .desktop-only { display: none !important; }
+    .hide-mobile { display: none !important; }
+
+    /* ── NAVBAR — Mobile Drawer ── */
+    .navbar {
+        padding: 14px 18px;
+        flex-wrap: wrap;
+    }
+    .navbar.scrolled { padding: 10px 18px; }
+
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+        background: rgba(var(--dark-rgb), 0.97);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid var(--glass-border);
+        margin-top: 14px;
+        padding: 16px 0 8px;
+        border-radius: 0 0 var(--radius) var(--radius);
+    }
+    .nav-links.open {
+        display: flex;
+    }
+    .nav-links a,
+    .nav-links button:not(.theme-toggle-btn) {
+        width: 100%;
+        text-align: left;
+        padding: 12px 8px;
+        font-size: 15px;
+        border-radius: 8px;
+    }
+    .nav-links a:hover,
+    .nav-links button:not(.theme-toggle-btn):hover {
+        background: rgba(var(--glass-white-rgb), 0.04);
+    }
+
+    /* Plan My Trip CTA — full width in mobile menu */
+    .nav-cta.mobile-full-width {
+        display: block;
+        width: 100%;
+        text-align: center;
+        padding: 14px 24px;
+        margin-top: 8px;
+        border-radius: 12px;
+        font-size: 15px !important;
+    }
+
+    /* ── HERO Section ── */
+    .hero {
+        padding: 90px 20px 50px;
+        min-height: auto;
+    }
+    .hero-title {
+        font-size: 36px !important;
+        line-height: 1.15;
+    }
+    .hero-sub {
+        font-size: 15px;
+        margin-bottom: 32px;
+    }
+    .hero-badge {
+        font-size: 11px;
+        padding: 6px 14px;
+        margin-bottom: 20px;
+    }
+    .hero-actions .btn-primary {
+        width: 100%;
+        justify-content: center;
+        padding: 16px 28px;
+        font-size: 16px;
+    }
+    .hero-stat-row {
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    .stat span { font-size: 22px; }
+    .stat small { font-size: 11px; }
+
+    /* ── FEATURES ── */
     .features { padding: 50px 18px; }
     .features-grid { grid-template-columns: 1fr; }
     .feat-large { grid-column: span 1; }
-    .section-header h2 { font-size: 30px; }
+    .feat-card { padding: 28px; }
+    .feat-card h3 { font-size: 20px; }
+    .section-header h2 { font-size: 28px; }
+    .section-header { margin-bottom: 36px; }
+
+    /* ── HOW IT WORKS ── */
     .how-section { padding: 50px 18px; }
+    .cta-center .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* ── FOOTER ── */
     .footer { padding: 36px 18px 28px; }
-    .result-nav { padding: 10px 14px; }
-    .result-nav-actions { gap: 5px; }
-    .result-nav .nav-text-link { display: none; }
-    .result-hero { min-height: 240px !important; padding: 70px 18px 24px !important; }
-    #heroTitle { font-size: 22px !important; }
+    .footer-logo { font-size: 20px; }
+    .footer p { font-size: 12px; }
+
+    /* ── FORM PAGE ── */
+    .form-nav {
+        padding: 12px 16px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .form-nav-actions {
+        gap: 10px;
+    }
+    .form-nav-actions .nav-text-link { display: none; }
+    .form-layout {
+        padding: 20px 14px 40px;
+        gap: 24px;
+    }
+    .form-header h1 { font-size: 32px !important; }
+    .form-header p { font-size: 14px; }
+    .form-row { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: 1; }
+    .form-right {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .preview-panel { display: none; }
+    .btn-submit {
+        font-size: 16px !important;
+        padding: 16px !important;
+    }
+    .toggle-group { flex-wrap: wrap; }
+    .toggle-btn { flex: 1 1 calc(50% - 6px); min-width: 0; }
+    .interest-chips { gap: 8px; }
+    .chip { padding: 7px 14px; font-size: 12px; }
+
+    /* ── RESULT PAGE ── */
+    .result-nav {
+        padding: 10px 14px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .result-nav .nav-logo { font-size: 18px; }
+    .result-nav-actions {
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
+        justify-content: flex-end;
+    }
+    .result-nav-actions button,
+    .result-nav-actions a button {
+        font-size: 11px !important;
+        padding: 8px 10px !important;
+    }
+    .result-hero {
+        height: auto;
+        min-height: 220px;
+        padding: 76px 18px 24px;
+    }
+    .result-hero-content h1,
+    #heroTitle {
+        font-size: 24px !important;
+        line-height: 1.2;
+    }
+    .rh-meta { flex-direction: column; gap: 5px; }
+    .rh-meta span { font-size: 12px; }
+    .summary-section { padding: 20px 14px; }
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .sum-card { padding: 14px 10px; gap: 10px; }
+    .sum-icon { font-size: 18px; }
+    .sum-val { font-size: 13px; }
     .section-block { padding: 28px 14px !important; }
     .section-title-row h2 { font-size: 20px !important; }
-    .weather-card { min-width: 100px; padding: 12px 8px; }
-    .wc-icon { font-size: 24px; }
-    .map-box { height: 220px; }
-    .form-nav { padding: 12px 16px; }
-    .form-layout { padding: 20px 14px 40px; }
-    .form-header h1 { font-size: 34px !important; }
-    .form-row { grid-template-columns: 1fr; }
-    .preview-panel { display: none; }
-    .dashboard-container { padding: 70px 14px 40px; }
-    .dash-header { flex-direction: column; align-items: flex-start; }
-    .trips-grid { grid-template-columns: 1fr; }
-    .profile-container { padding: 70px 14px 40px; }
-    .profile-hero { flex-direction: column; text-align: center; padding: 28px 20px; }
-    .blog-container { padding: 40px 14px; }
-    .blog-grid { grid-template-columns: 1fr; }
-    .blog-hero { padding: 80px 18px 40px; }
-    .admin-layout { grid-template-columns: 1fr; padding: 70px 14px 40px; }
-    .admin-sidebar { position: static; }
-    .admin-stats-grid { grid-template-columns: 1fr 1fr; }
-    .budget-tiers { grid-template-columns: 1fr !important; }
-    .best-time-grid { grid-template-columns: 1fr 1fr !important; }
-    .nearby-grid { grid-template-columns: 1fr 1fr !important; }
     .flights-grid { grid-template-columns: 1fr !important; }
     .hotel-grid { grid-template-columns: 1fr !important; }
     .day-images-grid { grid-template-columns: 1fr !important; height: auto !important; }
     .day-img-item { height: 150px !important; }
-    .currency-rates-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .day-header-wrap { padding: 18px 16px 0; }
+    .day-body { padding: 18px 16px; }
+    .day-details { grid-template-columns: 1fr; }
+    .packing-grid { grid-template-columns: 1fr 1fr; }
+    .weather-card { min-width: 100px; padding: 12px 8px; }
+    .wc-icon { font-size: 24px; }
+    .map-box { height: 220px; }
     .map-fullscreen-modal { padding: 8px; }
+    .budget-tiers { grid-template-columns: 1fr !important; }
+    .best-time-grid { grid-template-columns: 1fr 1fr !important; }
+    .nearby-grid { grid-template-columns: 1fr 1fr !important; }
+    .currency-rates-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+    /* ── DASHBOARD ── */
+    .dashboard-container { padding: 70px 14px 40px; }
+    .dash-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .dash-header h1 { font-size: 28px; }
+    .dash-stats { gap: 10px; }
+    .dash-stat { min-width: calc(50% - 8px); padding: 16px; }
+    .dash-stat-num { font-size: 28px; }
+    .trips-grid { grid-template-columns: 1fr; }
+    .search-bar { width: 100%; }
+    .filter-row { gap: 8px; }
+    .profile-bar {
+        flex-direction: column;
+        text-align: center;
+        padding: 16px;
+        gap: 10px;
+    }
+
+    /* ── PROFILE ── */
+    .profile-container { padding: 70px 14px 40px; }
+    .profile-hero {
+        flex-direction: column;
+        text-align: center;
+        padding: 28px 20px;
+    }
+    .plan-price { font-size: 28px; }
+
+    /* ── BLOG ── */
+    .blog-container { padding: 40px 14px; }
+    .blog-grid { grid-template-columns: 1fr; }
+    .blog-hero { padding: 80px 18px 40px; }
+    .blog-card-img { height: 180px; }
+
+    /* ── ADMIN ── */
+    .admin-layout {
+        grid-template-columns: 1fr;
+        padding: 70px 14px 40px;
+    }
+    .admin-sidebar { position: static; }
+    .admin-stats-grid { grid-template-columns: 1fr 1fr; }
+    .admin-table { font-size: 12px; }
+    .admin-table th, .admin-table td { padding: 10px 8px; }
+
+    /* ── Make all images responsive ── */
+    img { max-width: 100%; height: auto; }
+
+    /* ── Global font-size reduction for mobile ── */
+    .btn-primary { font-size: 15px; padding: 14px 28px; }
+    .btn-outline { font-size: 13px; }
+
+    /* ── Mobile full-width buttons helper ── */
+    .mobile-full-width {
+        width: 100% !important;
+        display: block;
+        text-align: center;
+    }
+
+    /* ── Loading screen mobile ── */
+    .loader-title { font-size: 26px; }
+    .loader-bar-wrap { width: 280px; }
+    .loader-step { font-size: 13px; padding: 8px 14px; }
 }
 
+/* ════ SMALL MOBILE — max-width: 480px ════ */
 @media (max-width: 480px) {
-    .navbar { flex-wrap: wrap; }
-    .nav-links { width: 100%; justify-content: flex-end; }
-    .hero-title { font-size: 32px !important; }
+    .hero-title { font-size: 30px !important; }
+    .hero-sub { font-size: 14px; }
     .form-header h1 { font-size: 26px !important; }
     .summary-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
     .sum-card { padding: 10px 8px !important; }
     .best-time-grid { grid-template-columns: 1fr !important; }
     .budget-breakdown-grid { grid-template-columns: repeat(2, 1fr) !important; }
     .visa-card { grid-template-columns: 1fr !important; }
-    .admin-stats-grid { grid-template-columns: 1fr 1fr; }
-    .plan-price { font-size: 28px; }
-    .dash-stat-num { font-size: 28px; }
+    .admin-stats-grid { grid-template-columns: 1fr; }
+    .packing-grid { grid-template-columns: 1fr !important; }
+    .nearby-grid { grid-template-columns: 1fr !important; }
+    .section-header h2 { font-size: 24px; }
+    .feat-card { padding: 22px; }
+    .step-card { padding: 28px 20px; }
+    .step-num { font-size: 40px; }
+    .navbar { padding: 12px 14px; }
+    .nav-logo { font-size: 18px; }
+    .result-hero-content h1,
+    #heroTitle { font-size: 20px !important; }
+    .dash-header h1 { font-size: 24px; }
+    .loader-bar-wrap { width: 240px; }
+    .loader-title { font-size: 22px; }
 }
