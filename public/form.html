@@ -861,8 +861,7 @@
                 localStorage.setItem("flightReq",   formData.get("flight"));
                 localStorage.setItem("date",        formData.get("date"));
 
-                // Small pause so the user sees the "all steps complete" state before navigating
-                setTimeout(() => { window.location.href = "result.html"; }, 400);
+                window.location.href = "result.html";
             } catch (err) {
                 console.error(err);
                 stopLoader();

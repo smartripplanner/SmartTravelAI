@@ -1935,8 +1935,20 @@
                     window.mapsData = window.mapsData || [];
                     window.mapsData[index] = { day: day, mapInstance: map };
 
-                    const hotelName = tripData?.hotels?.[0]?.name || (destination + ' City Center');
-                    const hotelAddress = tripData?.hotels?.[0]?.address || destination;
+                    // ── MULTI-CITY FIX ──
+                    // day.city is set per-day by the AI (e.g. "Paris", "Rome", "Amsterdam").
+                    // For single-city trips day.city === destination, so this is backwards-compatible.
+                    // All geocoding must use dayCity so each map targets the correct city.
+                    const dayCity = (day.city && day.city.trim()) ? day.city.trim() : destination;
+
+                    // Hotels in tripData cover only the primary destination.
+                    // For multi-city days whose city differs from the main destination,
+                    // skip the hotel waypoint and use the city centre as the anchor instead.
+                    const isMultiCity = !!(tripData?.meta?.isMultiCity);
+                    const cityMatchesHotel = !isMultiCity || dayCity.toLowerCase() === destination.toLowerCase();
+                    const hotelForDay  = cityMatchesHotel ? tripData?.hotels?.[0] : null;
+                    const hotelName    = hotelForDay?.name    || (dayCity + ' City Centre');
+                    const hotelAddress = hotelForDay?.address || dayCity;
 
                     const directionsService = new google.maps.DirectionsService();
                     const directionsRenderer = new google.maps.DirectionsRenderer({
@@ -1946,9 +1958,14 @@
                     });
 
                     // Build full route: Hotel → Place1 → Place2 → ... → Hotel
-                    const allStops = [hotelAddress + ', ' + destination, ...day.places.map(p => p + ', ' + destination), hotelAddress + ', ' + destination];
-                    const routeOrigin = allStops[0];
-                    const routeDest = allStops[allStops.length - 1];
+                    // Use dayCity (not global destination) so every city routes correctly
+                    const allStops = [
+                        hotelAddress + ', ' + dayCity,
+                        ...day.places.map(p => p + ', ' + dayCity),
+                        hotelAddress + ', ' + dayCity
+                    ];
+                    const routeOrigin    = allStops[0];
+                    const routeDest      = allStops[allStops.length - 1];
                     const routeWaypoints = allStops.slice(1, -1).map(loc => ({ location: loc, stopover: true }));
 
                     directionsService.route({
@@ -1966,7 +1983,7 @@
                                 totalDist += leg.distance?.value || 0;
                                 totalTime += leg.duration?.value || 0;
                             });
-                            const distKm = (totalDist / 1000).toFixed(1);
+                            const distKm   = (totalDist / 1000).toFixed(1);
                             const timeMins = Math.round(totalTime / 60);
                             const distBadge = document.getElementById(`mapDist${index}`);
                             if (distBadge) {
@@ -1981,8 +1998,8 @@
                             // Store for maximize
                             if (window.mapsData[index]) window.mapsData[index].directionsResponse = response;
                         } else {
-                            // Fallback: drop individual markers
-                            day.places.forEach(p => dropMarker(map, p));
+                            // Fallback: drop individual markers — pass dayCity so geocoding is correct
+                            day.places.forEach(p => dropMarker(map, p, dayCity));
                         }
                     });
                 }
@@ -1998,8 +2015,11 @@
             }
         }
 
-        function dropMarker(mapTarget, placeName) {
-            fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(placeName + ', ' + destination)}&key=AIzaSyDkD0iyaPkulI8IosMnbhKQgBQ3PO29JkQ`)
+        // cityContext defaults to the global destination for single-city trips;
+        // multi-city callers pass day.city so geocoding targets the correct city.
+        function dropMarker(mapTarget, placeName, cityContext) {
+            const city = (cityContext && cityContext.trim()) ? cityContext.trim() : destination;
+            fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(placeName + ', ' + city)}&key=AIzaSyDkD0iyaPkulI8IosMnbhKQgBQ3PO29JkQ`)
                 .then(r => r.json()).then(data => {
                     if (data.results?.length > 0) {
                         const loc = data.results[0].geometry.location;
@@ -2376,9 +2396,15 @@ async function fetchRealImage(query, fallbackText, type = 'place') {
             const day = data.day;
             titleEl.textContent = `Day ${day.day} — ${day.theme || 'Route'}`;
 
+            // Use the same city-resolution logic as the day-card map
+            const dayCityModal = (day.city && day.city.trim()) ? day.city.trim() : destination;
+            const isMultiCityModal = !!(tripData?.meta?.isMultiCity);
+            const cityMatchesHotelModal = !isMultiCityModal || dayCityModal.toLowerCase() === destination.toLowerCase();
+            const hotelForModal = cityMatchesHotelModal ? tripData?.hotels?.[0] : null;
+            const hotelNameModal = hotelForModal?.name || (dayCityModal + ' City Centre');
+
             // Build route label
-            const hotelName = tripData?.hotels?.[0]?.name || destination;
-            const stops = [hotelName, ...day.places, '↩ ' + hotelName.split(' ')[0]];
+            const stops = [hotelNameModal, ...day.places, '↩ ' + hotelNameModal.split(' ')[0]];
             metaEl.textContent = stops.join(' → ');
 
             modal.style.display = 'flex';
@@ -2404,7 +2430,8 @@ async function fetchRealImage(query, fallbackText, type = 'place') {
                     });
                     fullscreenDirRenderer.setDirections(data.directionsResponse);
                 } else {
-                    day.places.forEach(p => dropMarker(fullscreenMapInstance, p));
+                    // Pass dayCityModal so fallback markers land in the correct city
+                    day.places.forEach(p => dropMarker(fullscreenMapInstance, p, dayCityModal));
                 }
             }, 120);
         };
