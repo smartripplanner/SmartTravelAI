@@ -619,22 +619,7 @@ window.exportToPDF = function() {
         </div>
       </div>` : '';
 
-    // ── Build best time section if available ──
-    const bt = tripData?.best_time;
-    const bestTimeHtml = bt ? `
-      <div style="page-break-inside:avoid;margin-bottom:24px;">
-        <h2 style="font-family:Georgia,serif;font-size:20px;font-weight:400;color:#f5f0e8;margin:0 0 4px;">📅 Best Time to Visit</h2>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px;">
-          ${[['🗓','Best Months',bt.best_months],['🌤️','Weather',bt.weather_summary],['🔥','Peak Season',bt.peak_season],['💸','Cheapest Months',bt.cheapest_months]].map(([icon,label,val])=>`
-          <div style="background:#1a2235;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:16px;display:flex;gap:12px;align-items:flex-start;">
-            <div style="font-size:22px;">${icon}</div>
-            <div>
-              <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:rgba(245,240,232,0.38);margin-bottom:4px;font-family:Arial,sans-serif;">${label}</div>
-              <div style="font-size:14px;color:#f5f0e8;font-weight:500;font-family:Arial,sans-serif;">${val||'—'}</div>
-            </div>
-          </div>`).join('')}
-        </div>
-      </div>` : '';
+    // best_time intentionally excluded from PDF per spec (Trip Header + Itinerary + Budget only)
 
     // ── Full PDF HTML template ──
     const htmlContent = `<div style="background:#0a0f1a;color:#f5f0e8;font-family:Georgia,serif;margin:0;padding:0;width:100%;">
@@ -668,8 +653,7 @@ window.exportToPDF = function() {
       <!-- BUDGET SECTION -->
       ${bd ? `<div style="padding:8px 48px 24px;">${budgetHtml}</div>` : ''}
 
-      <!-- BEST TIME SECTION -->
-      ${bt ? `<div style="padding:8px 48px 24px;">${bestTimeHtml}</div>` : ''}
+      <!-- best_time section excluded from PDF output -->
 
       <!-- FOOTER -->
       <div style="padding:20px 48px 26px;background:#050a12;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
@@ -690,9 +674,11 @@ window.exportToPDF = function() {
         <div style="color:rgba(255,255,255,0.4);font-size:12px;">Please wait a few seconds</div>`;
     document.body.appendChild(pdfOverlay);
 
-    // ── PDF container — positive z-index so browser renders it fully ──
+    // ── PDF container — rendered off-screen so html2canvas can paint it without visual glitches ──
+    const isLight = document.documentElement.classList.contains('light-theme');
+    const pdfBg = isLight ? '#ffffff' : '#0a0f1a';
     const pdfContainer = document.createElement('div');
-    pdfContainer.style.cssText = 'position:fixed;top:0;left:0;width:794px;z-index:100000;background:#0a0f1a;color:#f5f0e8;';
+    pdfContainer.style.cssText = `position:absolute;top:-9999px;left:-9999px;width:794px;background:${pdfBg};color:#f5f0e8;overflow:hidden;`;
     pdfContainer.innerHTML = htmlContent;
     document.body.appendChild(pdfContainer);
 
@@ -703,8 +689,8 @@ window.exportToPDF = function() {
         html2canvas: {
             scale: 2,
             useCORS: true,
-            allowTaint: true,
-            backgroundColor: '#0a0f1a',
+            allowTaint: false,   // false = no external images, prevents blank-page from tainted canvas
+            backgroundColor: pdfBg,  // explicit hex prevents transparent/blank output
             logging: false,
             letterRendering: true,
             windowWidth: 794,
@@ -722,7 +708,7 @@ window.exportToPDF = function() {
         btn.disabled = false;
     };
 
-    // Wait 600ms for fonts + inline styles to fully render before capture
+    // Wait 1000ms for fonts + inline styles to fully render before capture
     setTimeout(() => {
         html2pdf()
             .set(opt)

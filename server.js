@@ -12,8 +12,21 @@ dns.setDefaultResultOrder('ipv4first');
 const app = express();
 
 // ── CORS — must be absolute first, before compression and body parsers ──
+const ALLOWED_ORIGINS = [
+    'https://smartripplannerai.netlify.app',
+    'https://amazing-travel-123.netlify.app'
+];
+
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    const origin = req.headers.origin;
+    // Reflect the exact origin back so credentialed requests also work;
+    // fall back to * for non-browser / unknown origins.
+    if (origin && ALLOWED_ORIGINS.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Vary', 'Origin');
+    } else {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+    }
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
     if (req.method === 'OPTIONS') return res.sendStatus(200); // kill pre-flight immediately
@@ -21,7 +34,7 @@ app.use((req, res, next) => {
 });
 
 app.use(compression());
-app.use(cors({ origin: '*' })); // keep cors() as secondary safety net
+app.use(cors({ origin: ALLOWED_ORIGINS, optionsSuccessStatus: 200 })); // secondary safety net
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -456,11 +469,18 @@ app.post("/email-itinerary", async (req, res) => {
             to: [{ email }],
             subject: `✈️ Your ${days}-Day ${destination || effectiveDestination} Itinerary — TravelAI`,
             htmlContent
-        }, { headers: { 'accept':'application/json','api-key':BREVO_API_KEY,'content-type':'application/json' } });
+        }, {
+            headers: { 'accept': 'application/json', 'api-key': BREVO_API_KEY, 'content-type': 'application/json' },
+            timeout: 10000   // 10 s — prevents Render from hanging and returning 502
+        });
         res.json({ success: true });
     } catch(e) {
-        console.error("Brevo Email error:", e.response ? e.response.data : e.message);
-        res.status(500).json({ error: "Email send failed." });
+        // Log the full Brevo error body so env-var / API-key issues are visible in Render logs
+        const errData = e.response?.data;
+        console.error("Brevo Email error — HTTP status:", e.response?.status);
+        console.error("Brevo response body:", JSON.stringify(errData));
+        console.error("Brevo raw message:", e.message);
+        res.status(500).json({ error: "Email send failed.", detail: errData || e.message });
     }
 });
 
