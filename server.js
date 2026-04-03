@@ -224,6 +224,22 @@ app.post("/generate", async (req, res) => {
         ? parsedCities.reduce((s, c) => s + parseInt(c.days || 1), 0)
         : parsedDays;
 
+    // ── Hotels prompt section — single flat array for single-city,
+    //    city-keyed object for multi-city so Gemini returns hotels per city.
+    const hotelsPromptSection = isMultiCity && parsedCities.length > 0
+        ? `"hotels_by_city": {
+${parsedCities.map(c => `    "${c.city}": [
+      {"category":"budget","categoryLabel":"🎒 Budget Stay","name":"Real budget hotel name in ${c.city}","rating":"3.0★","price":"₹XXXX/night","address":"Budget area, ${c.city}","amenities":["WiFi","AC","Breakfast"]},
+      {"category":"mid","categoryLabel":"🏙️ Mid-Range","name":"Real mid-range hotel name in ${c.city}","rating":"4.0★","price":"₹XXXX/night","address":"Central ${c.city}","amenities":["WiFi","Pool","Restaurant","Gym"]},
+      {"category":"luxury","categoryLabel":"👑 Luxury","name":"Real luxury hotel name in ${c.city}","rating":"5.0★","price":"₹XXXX/night","address":"Premium area, ${c.city}","amenities":["WiFi","Infinity Pool","Spa","Fine Dining","Concierge"]}
+    ]`).join(',\n')}
+  },`
+        : `"hotels": [
+    {"category":"budget","categoryLabel":"🎒 Budget Stay","name":"Real Budget Hotel in ${effectiveDestination}","rating":"3.0★","price":"₹1500/night","address":"Budget Area, ${effectiveDestination}","amenities":["WiFi","AC","Breakfast"]},
+    {"category":"mid","categoryLabel":"🏙️ Mid-Range","name":"Real Mid Hotel in ${effectiveDestination}","rating":"4.0★","price":"₹4500/night","address":"Central Area, ${effectiveDestination}","amenities":["WiFi","Pool","Restaurant","Gym"]},
+    {"category":"luxury","categoryLabel":"👑 Luxury","name":"Real Luxury Hotel in ${effectiveDestination}","rating":"5.0★","price":"₹12000/night","address":"Premium Area, ${effectiveDestination}","amenities":["WiFi","Infinity Pool","Spa","Fine Dining","Concierge"]}
+  ],`;
+
     // Build itinerary instruction for multi-city
     const itineraryInstruction = isMultiCity && parsedCities.length > 0
         ? parsedCities.map((c, i) => {
@@ -244,7 +260,7 @@ TRIP DETAILS:
 
 CRITICAL RULES:
 1. Output EXACTLY ${totalDays} day objects in "itinerary" array.
-2. Return EXACTLY 3 hotel options (budget, mid, luxury categories).
+2. Single-city: return "hotels" array with EXACTLY 3 options (budget/mid/luxury). Multi-city: return "hotels_by_city" object with EXACTLY 3 hotel options per city (budget/mid/luxury for each city).
 3. Return EXACTLY 3 flight options (cheapest, fastest, best_value categories).
 4. Tailor places based on interests.
 5. All hotel/flight names MUST be realistic for ${destDisplay}.
@@ -281,35 +297,7 @@ Return ONLY this JSON (no markdown, no extra text):
       "inbound": {"time": "07:00 PM → 09:30 PM", "duration": "2h 30m", "stops": "Non-stop"}
     }
   ],
-  "hotels": [
-    {
-      "category": "budget",
-      "categoryLabel": "🎒 Budget Stay",
-      "name": "Real Budget Hotel in ${effectiveDestination}",
-      "rating": "3.0★",
-      "price": "₹1500/night",
-      "address": "Budget Area, ${effectiveDestination}",
-      "amenities": ["WiFi", "AC", "Breakfast"]
-    },
-    {
-      "category": "mid",
-      "categoryLabel": "🏙️ Mid-Range",
-      "name": "Real Mid Hotel in ${effectiveDestination}",
-      "rating": "4.0★",
-      "price": "₹4500/night",
-      "address": "Central Area, ${effectiveDestination}",
-      "amenities": ["WiFi", "Pool", "Restaurant", "Gym"]
-    },
-    {
-      "category": "luxury",
-      "categoryLabel": "👑 Luxury",
-      "name": "Real Luxury Hotel in ${effectiveDestination}",
-      "rating": "5.0★",
-      "price": "₹12000/night",
-      "address": "Premium Area, ${effectiveDestination}",
-      "amenities": ["WiFi", "Infinity Pool", "Spa", "Fine Dining", "Concierge"]
-    }
-  ],
+  ${hotelsPromptSection}
   "itinerary": [
     {
       "day": 1,

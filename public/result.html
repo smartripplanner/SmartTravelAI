@@ -1282,8 +1282,9 @@
         <div class="section-block" id="hotelSection" style="display:none">
             <div class="section-title-row">
                 <h2>🏨 Hotel Options</h2>
-                <div class="section-sub">Budget · Mid-Range · Luxury — pick what suits your style.</div>
+                <div class="section-sub" id="hotelSectionSub">Budget · Mid-Range · Luxury — pick what suits your style.</div>
             </div>
+            <!-- Single-city: flat grid. Multi-city: replaced with per-city groups. -->
             <div class="hotel-grid" id="hotelsGrid"></div>
         </div>
 
@@ -1823,24 +1824,24 @@
             });
         }
 
-        // ── HOTEL RENDER — 3 tiers: Budget / Mid-Range / Luxury ──
-        if (showHotel && tripData?.hotels) {
-            document.getElementById("hotelSection").style.display = "block";
-            const hg = document.getElementById("hotelsGrid");
-            const nights = Math.max(1, days - 1);
-            const hotelCategoryStyles = {
-                budget: { color: '#10b981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.25)' },
-                mid: { color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.25)' },
-                luxury: { color: '#d4a76a', bg: 'rgba(212,167,106,0.08)', border: 'rgba(212,167,106,0.3)' }
-            };
-            tripData.hotels.slice(0, 3).forEach((h, idx) => {
-                const cardId = `hotel-img-${idx}`;
-                const cat = hotelCategoryStyles[h.category] || hotelCategoryStyles.mid;
-                const label = h.categoryLabel || (h.category === 'budget' ? '🎒 Budget Stay' : h.category === 'luxury' ? '👑 Luxury' : '🏙️ Mid-Range');
-                const amenitiesHtml = (h.amenities || []).map(a =>
-                    `<span style="font-size:10px;background:var(--glass);border:1px solid var(--glass-border);padding:2px 8px;border-radius:20px;color:rgba(var(--white-rgb),0.6);">${a}</span>`
-                ).join('');
-                hg.innerHTML += `
+        // ── HOTEL RENDER ──────────────────────────────────────────────────────
+        // Handles both single-city (tripData.hotels) and
+        // multi-city (tripData.hotels_by_city keyed by city name).
+        const hotelCategoryStyles = {
+            budget:  { color: '#10b981', bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.25)' },
+            mid:     { color: '#3b82f6', bg: 'rgba(59,130,246,0.08)',  border: 'rgba(59,130,246,0.25)' },
+            luxury:  { color: '#d4a76a', bg: 'rgba(212,167,106,0.08)', border: 'rgba(212,167,106,0.3)' }
+        };
+
+        // Build one hotel card's HTML and kick off its image fetch.
+        function buildHotelCard(h, cardId, cityName, nights) {
+            const cat   = hotelCategoryStyles[h.category] || hotelCategoryStyles.mid;
+            const label = h.categoryLabel || (h.category === 'budget' ? '🎒 Budget Stay' : h.category === 'luxury' ? '👑 Luxury' : '🏙️ Mid-Range');
+            const amenitiesHtml = (h.amenities || []).map(a =>
+                `<span style="font-size:10px;background:var(--glass);border:1px solid var(--glass-border);padding:2px 8px;border-radius:20px;color:rgba(var(--white-rgb),0.6);">${a}</span>`
+            ).join('');
+            const cityBookingLink = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(cityName || destination)}`;
+            const html = `
         <div class="hotel-card" style="border-color:${cat.border};">
             <div class="hotel-img" id="${cardId}" style="background-color:var(--dark3);background-size:cover;background-position:center;position:relative;">
                 <div class="hotel-badge">${h.rating}</div>
@@ -1851,17 +1852,90 @@
                 <div class="hotel-desc" style="margin-bottom:8px;">📍 ${h.address}</div>
                 ${amenitiesHtml ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;">${amenitiesHtml}</div>` : ''}
                 <div class="hotel-price" style="color:${cat.color};margin-bottom:2px;">${h.price}</div>
-                <div style="font-size:11px;color:rgba(var(--white-rgb),0.4);margin-bottom:12px;">Per night · ${nights} nights est.</div>
-                <a href="${bookingLink}" target="_blank" data-html2canvas-ignore>
+                <div style="font-size:11px;color:rgba(var(--white-rgb),0.4);margin-bottom:12px;">Per night · ${nights} night${nights !== 1 ? 's' : ''} est.</div>
+                <a href="${cityBookingLink}" target="_blank" data-html2canvas-ignore>
                     <button class="btn-outline btn-sm" style="width:100%;">View on Booking.com 🏨</button>
                 </a>
             </div>
         </div>`;
-                fetchRealImage(`${h.name} ${destination} hotel`, h.name, 'hotel').then(imgUrl => {
-                    const node = document.getElementById(cardId);
-                    if (node) node.style.backgroundImage = `url('${imgUrl}')`;
-                });
+            fetchRealImage(`${h.name} ${cityName || destination} hotel`, h.name, 'hotel').then(imgUrl => {
+                const node = document.getElementById(cardId);
+                if (node) node.style.backgroundImage = `url('${imgUrl}')`;
             });
+            return html;
+        }
+
+        // Derive per-city day ranges from the itinerary array.
+        function getCityDayRanges(itinerary) {
+            const ranges = [];
+            let currentCity = null, startDay = 1;
+            for (const day of itinerary) {
+                const city = (day.city || '').trim();
+                if (city.toLowerCase() !== (currentCity || '').toLowerCase()) {
+                    if (currentCity !== null) ranges.push({ city: currentCity, startDay, endDay: day.day - 1 });
+                    currentCity = city;
+                    startDay = day.day;
+                }
+            }
+            if (currentCity !== null) ranges.push({ city: currentCity, startDay, endDay: itinerary[itinerary.length - 1].day });
+            return ranges;
+        }
+
+        if (showHotel && (tripData?.hotels || tripData?.hotels_by_city)) {
+            document.getElementById("hotelSection").style.display = "block";
+            const hg = document.getElementById("hotelsGrid");
+
+            if (tripData.hotels_by_city) {
+                // ── MULTI-CITY: group hotels under each city with day ranges ──
+                document.getElementById("hotelSectionSub").textContent =
+                    "Budget · Mid-Range · Luxury options for each city on your route.";
+                hg.style.display = "block";
+
+                const cityRanges = getCityDayRanges(tripData.itinerary || []);
+                const rangeMap   = {};
+                cityRanges.forEach(r => { rangeMap[r.city.toLowerCase()] = r; });
+
+                Object.entries(tripData.hotels_by_city).forEach(([cityName, hotels]) => {
+                    const range  = rangeMap[cityName.toLowerCase()];
+                    const nights = range ? (range.endDay - range.startDay + 1) : Math.max(1, days - 1);
+                    const dayLabel = range
+                        ? (range.startDay === range.endDay
+                            ? `Day ${range.startDay}`
+                            : `Days ${range.startDay}–${range.endDay}`)
+                        : '';
+
+                    // City group header
+                    const groupEl = document.createElement('div');
+                    groupEl.style.cssText = 'grid-column:1/-1;margin-top:28px;margin-bottom:4px;';
+                    groupEl.innerHTML = `
+                        <div style="display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--glass-border);">
+                            <span style="font-size:20px;">🏙️</span>
+                            <div>
+                                <div style="font-size:18px;font-weight:600;color:var(--white);">${cityName}</div>
+                                ${dayLabel ? `<div style="font-size:12px;color:var(--gold);margin-top:2px;">${dayLabel}</div>` : ''}
+                            </div>
+                        </div>`;
+                    hg.appendChild(groupEl);
+
+                    // 3 hotel cards for this city
+                    (hotels || []).slice(0, 3).forEach((h, idx) => {
+                        const cardId  = `hotel-img-${cityName.replace(/\s+/g,'-').toLowerCase()}-${idx}`;
+                        const wrapper = document.createElement('div');
+                        wrapper.innerHTML = buildHotelCard(h, cardId, cityName, nights);
+                        hg.appendChild(wrapper.firstElementChild);
+                    });
+                });
+
+            } else {
+                // ── SINGLE-CITY: flat 3-card grid (existing behaviour) ──
+                const nights = Math.max(1, days - 1);
+                tripData.hotels.slice(0, 3).forEach((h, idx) => {
+                    const cardId  = `hotel-img-${idx}`;
+                    const wrapper = document.createElement('div');
+                    wrapper.innerHTML = buildHotelCard(h, cardId, destination, nights);
+                    hg.appendChild(wrapper.firstElementChild);
+                });
+            }
         }
 
         // ── ITINERARY RENDER (UPDATED API CALL TO RENDER) ──
