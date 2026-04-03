@@ -693,7 +693,7 @@ app.post("/email-itinerary", async (req, res) => {
         <tr>
           <td style="padding:28px 40px 24px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
             <p style="color:rgba(245,240,232,0.5);font-size:14px;margin:0 0 18px;line-height:1.6;">Want to explore more destinations or tweak this plan?</p>
-            <a href="https://amazing-travel-123.netlify.app/" style="display:inline-block;background:linear-gradient(135deg,#d4a76a,#c8941a);color:#0a0f1a;text-decoration:none;padding:13px 30px;border-radius:50px;font-size:13px;font-weight:700;letter-spacing:0.06em;">✨ Plan Another Trip</a>
+            <a href="https://smartripplannerai.netlify.app/" style="display:inline-block;background:linear-gradient(135deg,#d4a76a,#c8941a);color:#0a0f1a;text-decoration:none;padding:13px 30px;border-radius:50px;font-size:13px;font-weight:700;letter-spacing:0.06em;">✨ Plan Another Trip</a>
           </td>
         </tr>
         <tr>

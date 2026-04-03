@@ -1,0 +1,43 @@
+# ============================================================
+# Netlify _headers — Performance & Security
+# ============================================================
+
+# Security + performance headers for ALL pages
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(self)
+
+# HTML — never cache (always fresh)
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# CSS — cache 1 year (content rarely changes between deploys)
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+# JS files (if any local ones)
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+# Images
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+/*.jpeg
+  Cache-Control: public, max-age=31536000, immutable
+/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+/*.ico
+  Cache-Control: public, max-age=31536000, immutable
+
+# Fonts
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+/*.woff
+  Cache-Control: public, max-age=31536000, immutable

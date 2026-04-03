@@ -3,7 +3,9 @@
     "allow": [
       "Bash(git rm:*)",
       "Bash(gh pr:*)",
-      "mcp__Claude_Preview__preview_start"
+      "mcp__Claude_Preview__preview_start",
+      "WebFetch(domain:pagespeed.web.dev)",
+      "WebFetch(domain:www.googleapis.com)"
     ]
   }
 }

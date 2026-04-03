@@ -1236,3 +1236,95 @@ html.light-theme .hotel-card::after {
         font-weight: bold;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   PERFORMANCE OPTIMIZATIONS
+   ═══════════════════════════════════════════════════════════ */
+
+/* GPU-composited layer for elements with continuous animations */
+.float-card {
+    will-change: transform;
+}
+.loader-plane {
+    will-change: transform;
+}
+.loader-bar-fill {
+    will-change: transform;
+}
+.scroll-line {
+    will-change: opacity;
+}
+
+/* Promote cursor to its own compositor layer */
+.cursor {
+    will-change: left, top;
+}
+.cursor-follower {
+    will-change: left, top;
+}
+
+/* content-visibility: skip rendering of below-fold sections until needed.
+   contain-intrinsic-size prevents CLS by reserving approx layout space. */
+.features {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 600px;
+}
+.how-section {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
+}
+.footer {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 120px;
+}
+
+/* Isolate card layout so browser only repaints the affected card */
+.feat-card,
+.step-card,
+.sum-card,
+.flight-card,
+.hotel-card,
+.day-card,
+.trip-card,
+.budget-tier,
+.time-card {
+    contain: layout style;
+}
+
+/* Promote hover-animated cards to GPU layer only during hover
+   (avoids promoting ALL cards permanently which wastes VRAM) */
+.feat-card:hover,
+.step-card:hover,
+.flight-card:hover,
+.hotel-card:hover,
+.day-card:hover,
+.trip-card:hover {
+    will-change: transform;
+}
+
+/* Ensure transform-based animations never trigger layout */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-10px); }
+}
+@keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeLeft {
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .float-card {
+        animation: none;
+    }
+    .loader-plane {
+        animation: none;
+    }
+}

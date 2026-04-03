@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /form.html
+Allow: /blog.html
+Allow: /blog-post.html
+Allow: /sitemap.xml
+
+# Block private / dynamic / auth-required pages
+Disallow: /admin.html
+Disallow: /dashboard.html
+Disallow: /profile.html
+Disallow: /result.html
+Disallow: /share.html
+Disallow: /404.html
+
+Sitemap: https://smartripplannerai.netlify.app/sitemap.xml

@@ -3,11 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Travel Blog — TravelAI | Tips, Guides & Destination Inspiration</title>
-    <meta name="description" content="Explore travel tips, destination guides, budget hacks, and AI travel insights from the TravelAI blog.">
+    <title>Travel Blog — SmartTripPlanner AI | Tips, Guides & Destination Inspiration</title>
+    <meta name="description" content="Explore travel tips, destination guides, budget hacks, packing lists, visa guides, and AI travel insights — all on the SmartTripPlanner AI travel blog.">
     <meta name="keywords" content="travel blog, travel tips, destination guides, budget travel, AI travel, itinerary ideas">
+    <meta name="theme-color" content="#0a0f1a">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://smartripplannerai.netlify.app/blog.html">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="shortcut icon" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://ai-travel-planner-gmmc.onrender.com">
+    <link rel="preload" as="style" href="style.css">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap"></noscript>
+    <!-- JSON-LD: Blog schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Blog",
+      "name": "SmartTripPlanner AI Travel Blog",
+      "url": "https://smartripplannerai.netlify.app/blog.html",
+      "description": "Explore travel tips, destination guides, budget hacks, packing lists, and AI travel insights from SmartTripPlanner AI.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "SmartTripPlanner AI",
+        "url": "https://smartripplannerai.netlify.app/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://smartripplannerai.netlify.app/favicon.svg"
+        }
+      },
+      "inLanguage": "en",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "SmartTripPlanner AI",
+        "url": "https://smartripplannerai.netlify.app/"
+      }
+    }
+    </script>
     <script>
         (function() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -63,6 +99,14 @@
             .newsletter-form { flex-direction: column; }
         }
     </style>
+    <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "w612r8bafr");
+    </script>
 </head>
 <body>
 
@@ -181,10 +225,10 @@ const follower = document.getElementById('cursorFollower');
 document.addEventListener('mousemove', (e) => {
     cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px';
     setTimeout(() => { follower.style.left = e.clientX + 'px'; follower.style.top = e.clientY + 'px'; }, 80);
-});
+}, { passive: true });
 window.addEventListener('scroll', () => {
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
-});
+}, { passive: true });
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
