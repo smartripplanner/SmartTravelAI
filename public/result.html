@@ -35,7 +35,7 @@
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap"></noscript>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDkD0iyaPkulI8IosMnbhKQgBQ3PO29JkQ&loading=async" defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDkD0iyaPkulI8IosMnbhKQgBQ3PO29JkQ"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
     <script>
         (function () {
@@ -2138,89 +2138,93 @@
 
                 // MAP — Hotel → Places → Hotel routing
                 if (day.places.length > 0) {
-                    const isLight = document.documentElement.classList.contains('light-theme');
-                    const mapEl = document.getElementById(`map${index}`);
-                    const map = new google.maps.Map(mapEl, {
-                        zoom: 12,
-                        styles: isLight ? [] : mapDarkStyle,
-                        disableDefaultUI: false,
-                        zoomControl: true,
-                        mapTypeControl: false,
-                        streetViewControl: false,
-                        fullscreenControl: false
-                    });
-                    // Store map data for maximize
-                    window.mapsArray.push(map);
-                    window.mapsData = window.mapsData || [];
-                    window.mapsData[index] = { day: day, mapInstance: map };
+                    try {
+                        const isLight = document.documentElement.classList.contains('light-theme');
+                        const mapEl = document.getElementById(`map${index}`);
+                        const map = new google.maps.Map(mapEl, {
+                            zoom: 12,
+                            styles: isLight ? [] : mapDarkStyle,
+                            disableDefaultUI: false,
+                            zoomControl: true,
+                            mapTypeControl: false,
+                            streetViewControl: false,
+                            fullscreenControl: false
+                        });
+                        // Store map data for maximize
+                        window.mapsArray.push(map);
+                        window.mapsData = window.mapsData || [];
+                        window.mapsData[index] = { day: day, mapInstance: map };
 
-                    // ── MULTI-CITY FIX ──
-                    // day.city is set per-day by the AI (e.g. "Paris", "Rome", "Amsterdam").
-                    // For single-city trips day.city === destination, so this is backwards-compatible.
-                    // All geocoding must use dayCity so each map targets the correct city.
-                    const dayCity = (day.city && day.city.trim()) ? day.city.trim() : destination;
+                        // ── MULTI-CITY FIX ──
+                        // day.city is set per-day by the AI (e.g. "Paris", "Rome", "Amsterdam").
+                        // For single-city trips day.city === destination, so this is backwards-compatible.
+                        // All geocoding must use dayCity so each map targets the correct city.
+                        const dayCity = (day.city && day.city.trim()) ? day.city.trim() : destination;
 
-                    // Hotels in tripData cover only the primary destination.
-                    // For multi-city days whose city differs from the main destination,
-                    // skip the hotel waypoint and use the city centre as the anchor instead.
-                    const isMultiCity = !!(tripData?.meta?.isMultiCity);
-                    const cityMatchesHotel = !isMultiCity || dayCity.toLowerCase() === destination.toLowerCase();
-                    const hotelForDay  = cityMatchesHotel ? tripData?.hotels?.[0] : null;
-                    const hotelName    = hotelForDay?.name    || (dayCity + ' City Centre');
-                    const hotelAddress = hotelForDay?.address || dayCity;
+                        // Hotels in tripData cover only the primary destination.
+                        // For multi-city days whose city differs from the main destination,
+                        // skip the hotel waypoint and use the city centre as the anchor instead.
+                        const isMultiCity = !!(tripData?.meta?.isMultiCity);
+                        const cityMatchesHotel = !isMultiCity || dayCity.toLowerCase() === destination.toLowerCase();
+                        const hotelForDay  = cityMatchesHotel ? tripData?.hotels?.[0] : null;
+                        const hotelName    = hotelForDay?.name    || (dayCity + ' City Centre');
+                        const hotelAddress = hotelForDay?.address || dayCity;
 
-                    const directionsService = new google.maps.DirectionsService();
-                    const directionsRenderer = new google.maps.DirectionsRenderer({
-                        map,
-                        suppressMarkers: false,
-                        polylineOptions: { strokeColor: '#d4a76a', strokeWeight: 4, strokeOpacity: 0.9 }
-                    });
+                        const directionsService = new google.maps.DirectionsService();
+                        const directionsRenderer = new google.maps.DirectionsRenderer({
+                            map,
+                            suppressMarkers: false,
+                            polylineOptions: { strokeColor: '#d4a76a', strokeWeight: 4, strokeOpacity: 0.9 }
+                        });
 
-                    // Build full route: Hotel → Place1 → Place2 → ... → Hotel
-                    // Use dayCity (not global destination) so every city routes correctly
-                    const allStops = [
-                        hotelAddress + ', ' + dayCity,
-                        ...day.places.map(p => p + ', ' + dayCity),
-                        hotelAddress + ', ' + dayCity
-                    ];
-                    const routeOrigin    = allStops[0];
-                    const routeDest      = allStops[allStops.length - 1];
-                    const routeWaypoints = allStops.slice(1, -1).map(loc => ({ location: loc, stopover: true }));
+                        // Build full route: Hotel → Place1 → Place2 → ... → Hotel
+                        // Use dayCity (not global destination) so every city routes correctly
+                        const allStops = [
+                            hotelAddress + ', ' + dayCity,
+                            ...day.places.map(p => p + ', ' + dayCity),
+                            hotelAddress + ', ' + dayCity
+                        ];
+                        const routeOrigin    = allStops[0];
+                        const routeDest      = allStops[allStops.length - 1];
+                        const routeWaypoints = allStops.slice(1, -1).map(loc => ({ location: loc, stopover: true }));
 
-                    directionsService.route({
-                        origin: routeOrigin,
-                        destination: routeDest,
-                        waypoints: routeWaypoints,
-                        travelMode: google.maps.TravelMode.DRIVING,
-                        optimizeWaypoints: false
-                    }, (response, status) => {
-                        if (status === 'OK') {
-                            directionsRenderer.setDirections(response);
-                            // Calculate total distance & time
-                            let totalDist = 0, totalTime = 0;
-                            response.routes[0].legs.forEach(leg => {
-                                totalDist += leg.distance?.value || 0;
-                                totalTime += leg.duration?.value || 0;
-                            });
-                            const distKm   = (totalDist / 1000).toFixed(1);
-                            const timeMins = Math.round(totalTime / 60);
-                            const distBadge = document.getElementById(`mapDist${index}`);
-                            if (distBadge) {
-                                distBadge.style.display = 'inline-flex';
-                                distBadge.textContent = `🛣️ ${distKm} km · ⏱ ${timeMins} min`;
+                        directionsService.route({
+                            origin: routeOrigin,
+                            destination: routeDest,
+                            waypoints: routeWaypoints,
+                            travelMode: google.maps.TravelMode.DRIVING,
+                            optimizeWaypoints: false
+                        }, (response, status) => {
+                            if (status === 'OK') {
+                                directionsRenderer.setDirections(response);
+                                // Calculate total distance & time
+                                let totalDist = 0, totalTime = 0;
+                                response.routes[0].legs.forEach(leg => {
+                                    totalDist += leg.distance?.value || 0;
+                                    totalTime += leg.duration?.value || 0;
+                                });
+                                const distKm   = (totalDist / 1000).toFixed(1);
+                                const timeMins = Math.round(totalTime / 60);
+                                const distBadge = document.getElementById(`mapDist${index}`);
+                                if (distBadge) {
+                                    distBadge.style.display = 'inline-flex';
+                                    distBadge.textContent = `🛣️ ${distKm} km · ⏱ ${timeMins} min`;
+                                }
+                                const routeLabel = document.getElementById(`routeLabel${index}`);
+                                if (routeLabel) {
+                                    const stops = [hotelName.split(' ')[0], ...day.places, '↩ Hotel'];
+                                    routeLabel.textContent = stops.join(' → ');
+                                }
+                                // Store for maximize
+                                if (window.mapsData[index]) window.mapsData[index].directionsResponse = response;
+                            } else {
+                                // Fallback: drop individual markers — pass dayCity so geocoding is correct
+                                day.places.forEach(p => dropMarker(map, p, dayCity));
                             }
-                            const routeLabel = document.getElementById(`routeLabel${index}`);
-                            if (routeLabel) {
-                                const stops = [hotelName.split(' ')[0], ...day.places, '↩ Hotel'];
-                                routeLabel.textContent = stops.join(' → ');
-                            }
-                            // Store for maximize
-                            if (window.mapsData[index]) window.mapsData[index].directionsResponse = response;
-                        } else {
-                            // Fallback: drop individual markers — pass dayCity so geocoding is correct
-                            day.places.forEach(p => dropMarker(map, p, dayCity));
-                        }
-                    });
+                        });
+                    } catch (mapErr) {
+                        console.warn(`Map failed for Day ${day.day}:`, mapErr);
+                    }
                 }
 
                 // IMAGES
