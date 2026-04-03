@@ -198,6 +198,8 @@ input, select, button, textarea { font-family: var(--font-sans); }
 .form-group label { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(var(--white-rgb), 0.5); }
 .form-group input, .form-group select { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; padding: 14px 18px; font-size: 15px; color: var(--white); transition: var(--transition); appearance: none; -webkit-appearance: none; }
 .form-group input[type="date"] { color: rgba(var(--white-rgb), 0.7); }
+.form-group input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) opacity(0.6); cursor: pointer; }
+html.light-theme .form-group input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0) opacity(0.5); }
 .form-group input:focus, .form-group select:focus { outline: none; border-color: rgba(212,167,106,0.5); background: rgba(212,167,106,0.06); box-shadow: 0 0 0 3px rgba(212,167,106,0.1); }
 .form-group input::placeholder { color: rgba(var(--white-rgb), 0.25); }
 .form-group select option { background: var(--dark2); color: var(--white); }
@@ -719,6 +721,11 @@ html.light-theme .flight-card::after,
 html.light-theme .hotel-card::after {
     background: linear-gradient(105deg, transparent 40%, rgba(0,0,0,0.03) 50%, transparent 60%);
 }
+/* Map modal always renders on a dark backdrop — force light text regardless of theme */
+.map-modal-header #mapModalTitle { color: #f1f5f9; }
+.map-modal-header #mapModalMeta  { color: rgba(241,245,249,0.65); }
+.map-modal-header .btn-outline   { color: #f1f5f9; border-color: rgba(241,245,249,0.35); }
+.map-modal-header .btn-outline:hover { color: var(--gold); border-color: var(--gold); }
 
 /* ═══════════════════════════════════════════════════
    NEW COMPONENTS — Phase 3 Update
@@ -1180,5 +1187,52 @@ html.light-theme .hotel-card::after {
     .dash-header h1 { font-size: 24px; }
     .loader-bar-wrap { width: 240px; }
     .loader-title { font-size: 22px; }
-    
+    .float-home-btn { width: 44px; height: 44px; font-size: 18px; bottom: 20px; left: 20px; }
+}
+
+/* ── FLOATING HOME BUTTON ── */
+.float-home-btn {
+    position: fixed;
+    bottom: 32px;
+    left: 32px;
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, var(--gold), #c8941a);
+    color: #0a0f1a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(212, 167, 106, 0.45);
+    z-index: 490;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.float-home-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 30px rgba(212, 167, 106, 0.6);
+}
+
+/* ── PRINT WATERMARK (native browser print) ── */
+.print-watermark {
+    display: none;
+}
+@media print {
+    .print-watermark {
+        display: block;
+        position: fixed;
+        top: 38%;
+        left: 5%;
+        transform: rotate(-35deg);
+        font-size: 100px;
+        font-family: 'Cormorant Garamond', Georgia, serif;
+        color: #888;
+        opacity: 0.10;
+        z-index: 0;
+        pointer-events: none;
+        white-space: nowrap;
+        letter-spacing: 5px;
+        font-weight: bold;
+    }
 }

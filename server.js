@@ -58,6 +58,44 @@ if (!BREVO_API_KEY)  console.error("⚠️ WARNING: BREVO_API_KEY missing.");
 
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
+// ── TRIP STORE (in-memory, capped at 500 trips) ─────────────────────────────
+const trips = new Map();
+
+function generateTripId() {
+    const year = new Date().getFullYear();
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    return `TRIP-${year}-${rand}`;
+}
+
+// Build a compact plain-text summary of a trip for chatbot context
+function buildTripContext(data) {
+    const meta   = data.meta || {};
+    const bd     = data.budget_breakdown || {};
+    const itin   = (data.itinerary || []).map(d =>
+        `Day ${d.day}${d.city ? ` (${d.city})` : ''}: ${(d.places || []).join(', ')} | Food: ${d.food || '—'} | Transport: ${d.transport || '—'} | Cost: ${d.cost || '—'} | Note: ${d.note || ''}`
+    ).join('\n');
+
+    let hotelsSummary = '';
+    if (data.hotels) {
+        hotelsSummary = data.hotels.map(h => `${h.category}: ${h.name} at ${h.address} (${h.price}, ${h.rating})`).join('\n');
+    } else if (data.hotels_by_city) {
+        hotelsSummary = Object.entries(data.hotels_by_city).map(([city, hs]) =>
+            `${city}:\n` + hs.map(h => `  ${h.category}: ${h.name} (${h.price}, ${h.rating})`).join('\n')
+        ).join('\n');
+    }
+
+    return [
+        `Trip ID: ${meta.tripId || 'N/A'}`,
+        `Destination: ${meta.tripTitle || '—'} | From: ${meta.firstCity || '—'} | Mode: ${meta.travelMode || 'flight'}`,
+        `Duration: ${(data.itinerary || []).length} days | Total cost: ${data.totalEstimatedCost || '—'}`,
+        `Budget — Flights: ${bd.flights || '—'}, Hotels: ${bd.hotels || '—'}, Food: ${bd.food || '—'}, Transport: ${bd.transport || '—'}`,
+        `Best time: ${data.best_time?.best_months || '—'} (${data.best_time?.weather_summary || ''})`,
+        `Visa: ${data.visa_info?.type || 'N/A'} | Cost: ${data.visa_info?.cost_approx || '—'} | Processing: ${data.visa_info?.processing_time || '—'}`,
+        `Hotels:\n${hotelsSummary}`,
+        `Itinerary:\n${itin}`
+    ].join('\n');
+}
+
 // ── IMAGE CACHE (in-memory, capped at 600 entries) ──────────────────────────
 const imageCache = new Map();
 function cacheSet(key, url) {
@@ -161,6 +199,65 @@ async function getPlaceImages(placeName, count = 3) {
     }
 }
 
+// ── REGION MAP — used to derive a smart trip title for multi-city trips ──────
+const REGION_MAP = {
+    // Europe
+    Paris:'Europe', Rome:'Europe', Amsterdam:'Europe', Zurich:'Europe', Vienna:'Europe',
+    Prague:'Europe', Berlin:'Europe', Barcelona:'Europe', Madrid:'Europe', London:'Europe',
+    Milan:'Europe', Istanbul:'Europe', Athens:'Europe', Lisbon:'Europe', Budapest:'Europe',
+    Warsaw:'Europe', Brussels:'Europe', Geneva:'Europe', Nice:'Europe', Florence:'Europe',
+    Venice:'Europe', Dubrovnik:'Europe', Santorini:'Europe', Porto:'Europe', Copenhagen:'Europe',
+    Stockholm:'Europe', Oslo:'Europe', Helsinki:'Europe', Dublin:'Europe', Reykjavik:'Europe',
+    // Japan
+    Tokyo:'Japan', Kyoto:'Japan', Osaka:'Japan', Hiroshima:'Japan',
+    Nara:'Japan', Sapporo:'Japan', Fukuoka:'Japan', Hakone:'Japan',
+    // Thailand
+    Bangkok:'Thailand', Phuket:'Thailand', Krabi:'Thailand', 'Chiang Mai':'Thailand',
+    'Koh Samui':'Thailand', Pattaya:'Thailand', Ayutthaya:'Thailand',
+    // UAE
+    Dubai:'UAE', 'Abu Dhabi':'UAE', Sharjah:'UAE',
+    // Konkan (Maharashtra coast)
+    Alibaug:'Konkan', Ganpatipule:'Konkan', Ratnagiri:'Konkan', Tarkarli:'Konkan',
+    Dapoli:'Konkan', Murud:'Konkan', Harihareshwar:'Konkan', Malvan:'Konkan', Vengurla:'Konkan',
+    // Himachal Pradesh
+    Manali:'Himachal Pradesh', Shimla:'Himachal Pradesh', Kasol:'Himachal Pradesh',
+    Dharamshala:'Himachal Pradesh', 'McLeod Ganj':'Himachal Pradesh', Dalhousie:'Himachal Pradesh',
+    Spiti:'Himachal Pradesh', Kufri:'Himachal Pradesh', Chail:'Himachal Pradesh',
+    // Rajasthan
+    Jaipur:'Rajasthan', Udaipur:'Rajasthan', Jodhpur:'Rajasthan', Jaisalmer:'Rajasthan',
+    Pushkar:'Rajasthan', Bikaner:'Rajasthan', Ajmer:'Rajasthan', 'Mount Abu':'Rajasthan',
+    // Kerala
+    Kochi:'Kerala', Munnar:'Kerala', Alleppey:'Kerala', Thekkady:'Kerala',
+    Wayanad:'Kerala', Kovalam:'Kerala', Varkala:'Kerala', Kumarakom:'Kerala', Thrissur:'Kerala',
+    // Goa
+    Goa:'Goa', 'North Goa':'Goa', 'South Goa':'Goa', Panaji:'Goa', Calangute:'Goa', Anjuna:'Goa',
+    // Uttarakhand
+    Rishikesh:'Uttarakhand', Haridwar:'Uttarakhand', Mussoorie:'Uttarakhand',
+    Nainital:'Uttarakhand', 'Jim Corbett':'Uttarakhand', Auli:'Uttarakhand', Chopta:'Uttarakhand',
+    // Northeast India
+    Shillong:'Northeast India', Meghalaya:'Northeast India', Kaziranga:'Northeast India',
+    Cherrapunji:'Northeast India', Gangtok:'Northeast India', Darjeeling:'Northeast India', Sikkim:'Northeast India',
+    // Bali / Indonesia
+    Bali:'Bali', Ubud:'Bali', Seminyak:'Bali', Kuta:'Bali', 'Nusa Penida':'Bali', Canggu:'Bali',
+    // Southeast Asia
+    Singapore:'Singapore',
+    'Kuala Lumpur':'Malaysia', Langkawi:'Malaysia', Penang:'Malaysia',
+    'Ho Chi Minh':'Vietnam', Hanoi:'Vietnam', 'Hoi An':'Vietnam', 'Ha Long':'Vietnam',
+    'Siem Reap':'Cambodia', 'Phnom Penh':'Cambodia',
+    Colombo:'Sri Lanka', Kandy:'Sri Lanka', Sigiriya:'Sri Lanka', Galle:'Sri Lanka',
+    Maldives:'Maldives', Male:'Maldives',
+    // Middle East / Africa
+    Doha:'Qatar', Riyadh:'Saudi Arabia', Cairo:'Egypt', Marrakech:'Morocco', Casablanca:'Morocco',
+};
+
+// Returns a region name when ALL cities in the array share the same region; else null.
+function detectRegion(cityNames) {
+    if (!cityNames || cityNames.length < 2) return null;
+    const regions = cityNames.map(c => REGION_MAP[c] || REGION_MAP[(c || '').trim()]);
+    if (regions.every(r => r && r === regions[0])) return regions[0];
+    return null;
+}
+
 // --- IATA CODE MAPPER ---
 const getIATACode = (city) => {
     const map = {
@@ -224,6 +321,42 @@ app.post("/generate", async (req, res) => {
         ? parsedCities.reduce((s, c) => s + parseInt(c.days || 1), 0)
         : parsedDays;
 
+    // First and last city for multi-city route (used in flight prompt + meta)
+    const firstCity = isMultiCity && parsedCities.length > 0 ? parsedCities[0].city : effectiveDestination;
+    const lastCity  = isMultiCity && parsedCities.length > 0 ? parsedCities[parsedCities.length - 1].city : effectiveDestination;
+
+    // ── Flight / Transport prompt section ─────────────────────────────────────
+    // Multi-city: show departure (Home→FirstCity) + return (LastCity→Home) structure.
+    // Single-city: show 3 options (cheapest / fastest / best_value) with outbound+inbound.
+    // Gemini sets travel_mode → "flight" (any leg > 500 km or international) or
+    //                          "ground" (all legs ≤ 500 km domestic; bus/train/cab/ferry).
+    // If travel_mode = "ground": set flights:[] and fill transport_legs instead.
+    const interCityLegsExample = isMultiCity && parsedCities.length > 1
+        ? parsedCities.slice(0, -1).map((c, i) =>
+            `{"from":"${c.city}","to":"${parsedCities[i + 1].city}","mode":"Bus/Train/Cab/Ferry","duration":"Xh Ym","price":"₹XXX","frequency":"Every X hrs or On demand"}`)
+        : [];
+
+    const flightPromptSection = isMultiCity
+        ? `"travel_mode": "flight",
+  "flights": [
+    {"type":"departure","categoryLabel":"✈️ Departure Flight","from":"${effectiveFrom}","to":"${firstCity}","airline":"Real airline for this route","code":"FL-001","price":"₹XXXXX","outbound":{"time":"10:00 AM → 02:30 PM","duration":"Xh Ym","stops":"Non-stop or X stop(s)"}},
+    {"type":"return","categoryLabel":"✈️ Return Flight","from":"${lastCity}","to":"${effectiveFrom}","airline":"Real airline for this route","code":"FL-002","price":"₹XXXXX","outbound":{"time":"11:00 AM → 03:30 PM","duration":"Xh Ym","stops":"Non-stop or X stop(s)"}}
+  ],
+  "transport_legs": [
+    {"from":"${effectiveFrom}","to":"${firstCity}","mode":"Bus/Train/Cab/Ferry","duration":"Xh Ym","price":"₹XXX","frequency":"Every X hrs or On demand"},
+    ${interCityLegsExample.join(',\n    ')}${interCityLegsExample.length ? ',' : ''}
+    {"from":"${lastCity}","to":"${effectiveFrom}","mode":"Bus/Train/Cab/Ferry","duration":"Xh Ym","price":"₹XXX","frequency":"Every X hrs or On demand"}
+  ],`
+        : `"travel_mode": "flight",
+  "flights": [
+    {"category":"cheapest","categoryLabel":"💸 Cheapest Option","from":"${effectiveFrom}","to":"${effectiveDestination}","airline":"Real Airline","code":"FL-123","price":"₹8500","outbound":{"time":"06:00 AM → 08:30 AM","duration":"2h 30m","stops":"1 Stop"},"inbound":{"time":"08:00 PM → 10:30 PM","duration":"2h 30m","stops":"1 Stop"}},
+    {"category":"fastest","categoryLabel":"⚡ Fastest Route","from":"${effectiveFrom}","to":"${effectiveDestination}","airline":"Different Airline","code":"FL-456","price":"₹12000","outbound":{"time":"10:00 AM → 12:00 PM","duration":"2h 00m","stops":"Non-stop"},"inbound":{"time":"06:00 PM → 08:00 PM","duration":"2h 00m","stops":"Non-stop"}},
+    {"category":"best_value","categoryLabel":"⭐ Best Value","from":"${effectiveFrom}","to":"${effectiveDestination}","airline":"Third Airline","code":"FL-789","price":"₹10000","outbound":{"time":"08:00 AM → 10:30 AM","duration":"2h 30m","stops":"Non-stop"},"inbound":{"time":"07:00 PM → 09:30 PM","duration":"2h 30m","stops":"Non-stop"}}
+  ],
+  "transport_legs": [
+    {"from":"${effectiveFrom}","to":"${effectiveDestination}","mode":"Bus/Train/Cab","duration":"Xh Ym","price":"₹XXX","frequency":"Every X hrs"}
+  ],`;
+
     // ── Hotels prompt section — single flat array for single-city,
     //    city-keyed object for multi-city so Gemini returns hotels per city.
     const hotelsPromptSection = isMultiCity && parsedCities.length > 0
@@ -261,42 +394,20 @@ TRIP DETAILS:
 CRITICAL RULES:
 1. Output EXACTLY ${totalDays} day objects in "itinerary" array.
 2. Single-city: return "hotels" array with EXACTLY 3 options (budget/mid/luxury). Multi-city: return "hotels_by_city" object with EXACTLY 3 hotel options per city (budget/mid/luxury for each city).
-3. Return EXACTLY 3 flight options (cheapest, fastest, best_value categories).
+3. TRAVEL MODE: analyse the route and set "travel_mode" to "flight" or "ground".
+   - "flight" if any single leg exceeds ~500 km OR crosses an international border.
+   - "ground" if ALL legs are short-haul domestic (≤ ~500 km), best covered by bus/train/cab/ferry.
+   If "flight": populate the flights array with real airline data; set transport_legs: [].
+   If "ground": set flights: []; populate transport_legs — one object per leg — with realistic mode/price/duration.
+   Multi-city flights show ONLY departure (${effectiveFrom}→${firstCity}) + return (${lastCity}→${effectiveFrom}); NOT 3 options.
+   Single-city flights show 3 options (cheapest / fastest / best_value) each with outbound + inbound.
 4. Tailor places based on interests.
-5. All hotel/flight names MUST be realistic for ${destDisplay}.
+5. All hotel/transport/airline names MUST be realistic for the actual route.
 6. For multi-city trips, label day themes with the city name.
 
 Return ONLY this JSON (no markdown, no extra text):
 {
-  "flights": [
-    {
-      "category": "cheapest",
-      "categoryLabel": "💸 Cheapest Option",
-      "airline": "Real Airline Name",
-      "code": "FL-123",
-      "price": "₹8500",
-      "outbound": {"time": "06:00 AM → 08:30 AM", "duration": "2h 30m", "stops": "1 Stop"},
-      "inbound": {"time": "08:00 PM → 10:30 PM", "duration": "2h 30m", "stops": "1 Stop"}
-    },
-    {
-      "category": "fastest",
-      "categoryLabel": "⚡ Fastest Route",
-      "airline": "Different Airline",
-      "code": "FL-456",
-      "price": "₹12000",
-      "outbound": {"time": "10:00 AM → 12:00 PM", "duration": "2h 00m", "stops": "Non-stop"},
-      "inbound": {"time": "06:00 PM → 08:00 PM", "duration": "2h 00m", "stops": "Non-stop"}
-    },
-    {
-      "category": "best_value",
-      "categoryLabel": "⭐ Best Value",
-      "airline": "Third Airline",
-      "code": "FL-789",
-      "price": "₹10000",
-      "outbound": {"time": "08:00 AM → 10:30 AM", "duration": "2h 30m", "stops": "Non-stop"},
-      "inbound": {"time": "07:00 PM → 09:30 PM", "duration": "2h 30m", "stops": "Non-stop"}
-    }
-  ],
+  ${flightPromptSection}
   ${hotelsPromptSection}
   "itinerary": [
     {
@@ -362,12 +473,34 @@ Return ONLY this JSON (no markdown, no extra text):
         if (jsonStart === -1 || jsonEnd === -1) throw new Error("No JSON object found in Gemini response");
         text = text.slice(jsonStart, jsonEnd + 1);
         const data = JSON.parse(text);
+        // Generate unique Trip ID and store itinerary for chatbot access
+        const tripId = generateTripId();
+        const regionName = detectRegion(
+            isMultiCity && parsedCities.length > 1
+                ? parsedCities.map(c => c.city)
+                : [effectiveDestination]
+        );
         data.meta = {
-            originCode: getIATACode(effectiveFrom),
-            destCode: getIATACode(effectiveDestination),
+            tripId:        tripId,
+            originCode:    getIATACode(effectiveFrom),
+            destCode:      getIATACode(effectiveDestination),
+            firstCityCode: getIATACode(firstCity),
+            lastCityCode:  getIATACode(lastCity),
+            firstCity,
+            lastCity,
             isMultiCity,
-            cities: parsedCities
+            cities:        parsedCities,
+            travelMode:    data.travel_mode || 'flight',
+            tripTitle:     regionName || firstCity || effectiveDestination
         };
+
+        // Store trip for chatbot access (evict oldest if over 500)
+        if (trips.size >= 500) {
+            const firstKey = trips.keys().next().value;
+            trips.delete(firstKey);
+        }
+        trips.set(tripId, data);
+
         res.setHeader('Content-Type', 'application/json');
         res.send(JSON.stringify(data));
     } catch (error) {
@@ -377,17 +510,37 @@ Return ONLY this JSON (no markdown, no extra text):
 });
 
 // ═══════════════════════════════════════════════
-// 2. AI CHATBOT
+// 2. TRIP RETRIEVAL
+// ═══════════════════════════════════════════════
+app.get("/trip/:tripId", (req, res) => {
+    const { tripId } = req.params;
+    const trip = trips.get(tripId);
+    if (!trip) return res.status(404).json({ error: "Trip not found." });
+    res.json(trip);
+});
+
+// ═══════════════════════════════════════════════
+// 3. AI CHATBOT
 // ═══════════════════════════════════════════════
 app.post("/chat", async (req, res) => {
     if (!genAI) return res.status(500).json({ error: "Gemini API key is not configured." });
-    const { message, destination, context } = req.body;
+    const { message, destination, context, tripId } = req.body;
     if (!message) return res.status(400).json({ error: "No message provided." });
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        const chatPrompt = `You are TravelAI, a friendly AI travel assistant for ${destination || 'various destinations'}.
-Context: ${context || 'User is planning a trip.'}
-Answer concisely (max 3-4 sentences). Use emojis sparingly.
+
+        // Build rich context from stored trip if tripId provided
+        let tripContext = context || 'User is planning a trip.';
+        if (tripId && trips.has(tripId)) {
+            tripContext = buildTripContext(trips.get(tripId));
+        }
+
+        const chatPrompt = `You are TravelAI, a friendly AI travel assistant.
+You have full access to the user's trip itinerary. Use the details below to give precise, helpful answers.
+Trip Context:
+${tripContext}
+
+Answer concisely (max 3-4 sentences). Use emojis sparingly. If asked about specific days, hotels, costs, or places, refer directly to the itinerary above.
 Question: ${message}`;
         const result = await model.generateContent(chatPrompt);
         res.json({ reply: result.response.text().trim() });
