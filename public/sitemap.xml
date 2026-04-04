@@ -36,6 +36,54 @@
     <priority>0.6</priority>
   </url>
 
+  <!-- About Us -->
+  <url>
+    <loc>https://smartripplannerai.netlify.app/about.html</loc>
+    <lastmod>2026-04-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Contact Us -->
+  <url>
+    <loc>https://smartripplannerai.netlify.app/contact.html</loc>
+    <lastmod>2026-04-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Privacy Policy -->
+  <url>
+    <loc>https://smartripplannerai.netlify.app/privacy-policy.html</loc>
+    <lastmod>2026-04-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <!-- Terms & Conditions -->
+  <url>
+    <loc>https://smartripplannerai.netlify.app/terms.html</loc>
+    <lastmod>2026-04-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <!-- Affiliate Disclosure -->
+  <url>
+    <loc>https://smartripplannerai.netlify.app/affiliate-disclosure.html</loc>
+    <lastmod>2026-04-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <!-- Disclaimer -->
+  <url>
+    <loc>https://smartripplannerai.netlify.app/disclaimer.html</loc>
+    <lastmod>2026-04-04</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
   <!-- Excluded (private/dynamic — also blocked in robots.txt):
        /result.html   — user-specific itinerary
        /dashboard.html — auth-required

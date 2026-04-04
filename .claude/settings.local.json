@@ -5,7 +5,10 @@
       "Bash(gh pr:*)",
       "mcp__Claude_Preview__preview_start",
       "WebFetch(domain:pagespeed.web.dev)",
-      "WebFetch(domain:www.googleapis.com)"
+      "WebFetch(domain:www.googleapis.com)",
+      "Bash(node -e \"const fs=require\\(''fs''\\); fs.writeFileSync\\(''D:/TravelAI/public/test.txt'',''ok''\\); console.log\\(''write ok''\\);\")",
+      "Bash(node gen_pages.js)",
+      "Bash(node -e \":*)"
     ]
   }
 }
