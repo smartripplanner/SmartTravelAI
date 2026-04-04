@@ -8,7 +8,7 @@
     <meta name="keywords" content="travel blog, travel tips, destination guides, budget travel, AI travel, itinerary ideas">
     <meta name="theme-color" content="#0a0f1a">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://smartripplannerai.netlify.app/blog.html">
+    <link rel="canonical" href="https://smarttripplannerai.netlify.app/blog.html">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,22 +25,22 @@
       "@context": "https://schema.org",
       "@type": "Blog",
       "name": "SmartTripPlanner AI Travel Blog",
-      "url": "https://smartripplannerai.netlify.app/blog.html",
+      "url": "https://smarttripplannerai.netlify.app/blog.html",
       "description": "Explore travel tips, destination guides, budget hacks, packing lists, and AI travel insights from SmartTripPlanner AI.",
       "publisher": {
         "@type": "Organization",
         "name": "SmartTripPlanner AI",
-        "url": "https://smartripplannerai.netlify.app/",
+        "url": "https://smarttripplannerai.netlify.app/",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://smartripplannerai.netlify.app/favicon.svg"
+          "url": "https://smarttripplannerai.netlify.app/favicon.svg"
         }
       },
       "inLanguage": "en",
       "isPartOf": {
         "@type": "WebSite",
         "name": "SmartTripPlanner AI",
-        "url": "https://smartripplannerai.netlify.app/"
+        "url": "https://smarttripplannerai.netlify.app/"
       }
     }
     </script>
@@ -114,7 +114,7 @@
 <div class="cursor-follower" id="cursorFollower"></div>
 
 <nav class="navbar" id="navbar">
-    <a href="index.html" class="nav-logo">✈ TravelAI</a>
+    <a href="index.html" class="nav-logo">✈ SmartTripPlanner AI</a>
     <div class="nav-right-mobile">
         <button class="btn-outline btn-sm theme-toggle-btn" onclick="toggleTheme()" style="padding: 8px 16px; border-radius: 50px;">
             <span class="light-icon">☀️</span><span class="dark-icon">🌙</span>
@@ -140,7 +140,7 @@
 
 <div class="blog-page">
     <div class="blog-hero">
-        <div class="section-tag">✦ TravelAI Journal</div>
+        <div class="section-tag">✦ SmartTripPlanner AI Journal</div>
         <h1>Travel Smarter.<br>Read Deeper.</h1>
         <p>Destination guides, budget hacks, itinerary ideas, and AI-powered travel insights — all in one place.</p>
         <a href="form.html"><button class="btn-primary" style="margin:0 auto;">Plan My Next Trip →</button></a>
@@ -174,17 +174,19 @@
         <div style="font-size:2rem; margin-bottom:12px;">✉️</div>
         <h3>Get Travel Inspiration Weekly</h3>
         <p>No spam. Just the best destinations, tips, and AI travel hacks delivered to your inbox.</p>
-        <div class="newsletter-form">
+        <div class="newsletter-form" id="newsletterFormRow">
             <input type="email" id="newsletterEmail" placeholder="your@email.com">
-            <button class="btn-primary" onclick="subscribeNewsletter()" style="padding:12px 22px; white-space:nowrap;">Subscribe →</button>
+            <button class="btn-primary" id="subscribeBtn" onclick="subscribeNewsletter()" style="padding:12px 22px; white-space:nowrap;">Subscribe →</button>
         </div>
-        <p style="margin-top:12px; font-size:0.78rem; color:rgba(var(--white-rgb),0.3);">Join 5,000+ travelers. Unsubscribe anytime.</p>
+        <div id="newsletterSuccess" style="display:none;margin-top:14px;background:rgba(212,167,106,0.1);border:1px solid rgba(212,167,106,0.25);border-radius:10px;padding:12px 20px;font-size:.9rem;color:rgba(245,240,232,0.88);">✅ You're subscribed! Travel tips are coming your way.</div>
+        <div id="newsletterError" style="display:none;margin-top:10px;font-size:.82rem;color:rgba(220,80,80,0.85);"></div>
+        <p style="margin-top:12px; font-size:0.78rem; color:rgba(var(--white-rgb),0.3);">Unsubscribe anytime.</p>
     </div>
 </div>
 
 <footer class="footer">
     <div class="footer-inner">
-        <div class="footer-logo">✈ SmartTripPlanner</div>
+        <div class="footer-logo">SmartTripPlanner AI</div>
         <p>Your AI-powered travel companion. Build your dream trip in seconds.</p>
         <div style="display:flex;gap:16px;justify-content:center;margin:16px 0;flex-wrap:wrap;">
             <a href="index.html" style="color:rgba(var(--white-rgb),.5);font-size:.85rem;text-decoration:none;">Home</a>
@@ -199,7 +201,15 @@
             <a href="affiliate-disclosure.html" style="color:rgba(var(--white-rgb),.35);font-size:.78rem;text-decoration:none;">Affiliate Disclosure</a>
             <a href="disclaimer.html" style="color:rgba(var(--white-rgb),.35);font-size:.78rem;text-decoration:none;">Disclaimer</a>
         </div>
-        <div class="footer-bottom">© 2026 SmartTripPlanner.in — All Rights Reserved</div>
+        <div style="margin:10px 0 14px;font-size:.78rem;color:rgba(var(--white-rgb),.38);display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+            <a href="mailto:smartripplanner@gmail.com" style="color:rgba(var(--white-rgb),.38);text-decoration:none;">&#128231; smartripplanner@gmail.com</a>
+            <span style="color:rgba(var(--white-rgb),.18);">&#183;</span>
+            <a href="https://instagram.com/smarttripplannerai.in" target="_blank" rel="noopener" style="color:rgba(var(--white-rgb),.38);text-decoration:none;">&#128247; @smarttripplannerai.in</a>
+            <span style="color:rgba(var(--white-rgb),.18);">&#183;</span>
+            <a href="https://smarttripplannerai.netlify.app" style="color:rgba(var(--white-rgb),.38);text-decoration:none;">&#127760; smarttripplannerai.netlify.app</a>
+        </div>
+        <div style="margin:4px 0 10px;font-size:.75rem;color:rgba(var(--white-rgb),.28);text-align:center;">Disclosure: SmartTripPlanner AI may earn commission from some booking links at no extra cost to you.</div>
+        <div class="footer-bottom">© 2026 SmartTripPlanner AI. All rights reserved.</div>
     </div>
 </footer>
 
@@ -321,11 +331,34 @@ window.filterByCategory = function(cat, btn) {
     renderPosts(allPosts);
 };
 
-window.subscribeNewsletter = function() {
+const BACKEND = "https://ai-travel-planner-gmmc.onrender.com";
+
+window.subscribeNewsletter = async function() {
     const email = document.getElementById('newsletterEmail').value.trim();
-    if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
-    alert(`Thanks for subscribing! We'll send travel tips to ${email}`);
-    document.getElementById('newsletterEmail').value = '';
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const errEl = document.getElementById('newsletterError');
+    const successEl = document.getElementById('newsletterSuccess');
+    const btn = document.getElementById('subscribeBtn');
+    if (!email || !emailRe.test(email)) {
+        if (errEl) { errEl.style.display='block'; errEl.textContent='Please enter a valid email address.'; }
+        return;
+    }
+    if (errEl) errEl.style.display = 'none';
+    btn.disabled = true; btn.textContent = 'Subscribing...';
+    try {
+        const res = await fetch(BACKEND + '/newsletter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Subscription failed');
+        document.getElementById('newsletterFormRow').style.display = 'none';
+        if (successEl) successEl.style.display = 'block';
+    } catch(e) {
+        btn.disabled = false; btn.textContent = 'Subscribe →';
+        if (errEl) { errEl.style.display='block'; errEl.textContent='Something went wrong. Please try again later.'; }
+    }
 };
 
 function getSamplePosts() {

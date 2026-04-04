@@ -13,7 +13,7 @@ const app = express();
 
 // ── CORS — must be absolute first, before compression and body parsers ──
 const ALLOWED_ORIGINS = [
-    'https://smartripplannerai.netlify.app',
+    'https://smarttripplannerai.netlify.app',
     'https://amazing-travel-123.netlify.app'
 ];
 
@@ -40,7 +40,7 @@ app.use(express.json());
 
 // Health Check
 app.get("/", (req, res) => {
-    res.json({ status: "ok", message: "✈️ TravelAI Backend is Live!", version: "3.0.0" });
+    res.json({ status: "ok", message: "✈️ SmartTripPlanner AI Backend is Live!", version: "3.0.0" });
 });
 
 // ═══════════════════════════════════════════════
@@ -50,7 +50,7 @@ const GEMINI_API_KEY  = process.env.GEMINI_API_KEY;
 const MAPS_API_KEY    = process.env.MAPS_API_KEY;
 const EMAIL_USER      = process.env.EMAIL_USER;
 const BREVO_API_KEY   = process.env.BREVO_API_KEY;
-const ADMIN_EMAILS    = (process.env.ADMIN_EMAILS || "admin@travelai.com").split(",").map(e => e.trim());
+const ADMIN_EMAILS    = (process.env.ADMIN_EMAILS || "smartripplanner@gmail.com").split(",").map(e => e.trim());
 
 if (!GEMINI_API_KEY) console.error("⚠️ WARNING: GEMINI_API_KEY missing.");
 if (!MAPS_API_KEY)   console.error("⚠️ WARNING: MAPS_API_KEY missing — Google Places images disabled.");
@@ -535,7 +535,7 @@ app.post("/chat", async (req, res) => {
             tripContext = buildTripContext(trips.get(tripId));
         }
 
-        const chatPrompt = `You are TravelAI, a friendly AI travel assistant.
+        const chatPrompt = `You are SmartTripPlanner AI, a friendly AI travel assistant.
 You have full access to the user's trip itinerary. Use the details below to give precise, helpful answers.
 Trip Context:
 ${tripContext}
@@ -645,7 +645,7 @@ app.post("/email-itinerary", async (req, res) => {
     const htmlContent = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
 <html><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Your TravelAI Itinerary</title></head>
+<title>Your SmartTripPlanner AI Itinerary</title></head>
 <body style="margin:0;padding:0;background-color:#0d1117;font-family:Arial,Helvetica,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0d1117;">
     <tr><td align="center" style="padding:28px 12px;">
@@ -653,7 +653,7 @@ app.post("/email-itinerary", async (req, res) => {
         style="max-width:600px;width:100%;background-color:#0a0f1a;border-radius:16px;overflow:hidden;border:1px solid rgba(212,167,106,0.15);">
         <tr>
           <td style="background:linear-gradient(135deg,#0a0f1a 0%,#1a2235 100%);padding:36px 40px 28px;text-align:center;border-bottom:1px solid rgba(212,167,106,0.18);">
-            <div style="font-family:Georgia,serif;font-size:13px;letter-spacing:0.22em;text-transform:uppercase;color:#d4a76a;margin-bottom:14px;">✈ TravelAI</div>
+            <div style="font-family:Georgia,serif;font-size:13px;letter-spacing:0.22em;text-transform:uppercase;color:#d4a76a;margin-bottom:14px;">✈ SmartTripPlanner AI</div>
             <h1 style="font-family:Georgia,serif;color:#f5f0e8;font-size:30px;font-weight:300;margin:0 0 10px;line-height:1.2;">Your Trip to ${destination}</h1>
             <p style="color:rgba(245,240,232,0.48);font-size:13px;margin:0;">${days} Days &nbsp;·&nbsp; ${from} → ${destination} &nbsp;·&nbsp; ${tripStyle} Style</p>
           </td>
@@ -685,7 +685,7 @@ app.post("/email-itinerary", async (req, res) => {
         <tr>
           <td style="padding:28px 32px 10px;">
             <h2 style="font-family:Georgia,serif;font-size:20px;font-weight:400;color:#f5f0e8;margin:0 0 4px;">🗓 Day-by-Day Itinerary</h2>
-            <p style="font-size:11px;color:rgba(245,240,232,0.38);margin:0;">Curated by TravelAI based on your preferences</p>
+            <p style="font-size:11px;color:rgba(245,240,232,0.38);margin:0;">Curated by SmartTripPlanner AI based on your preferences</p>
           </td>
         </tr>
         ${dayCardsHtml}
@@ -693,13 +693,13 @@ app.post("/email-itinerary", async (req, res) => {
         <tr>
           <td style="padding:28px 40px 24px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
             <p style="color:rgba(245,240,232,0.5);font-size:14px;margin:0 0 18px;line-height:1.6;">Want to explore more destinations or tweak this plan?</p>
-            <a href="https://smartripplannerai.netlify.app/" style="display:inline-block;background:linear-gradient(135deg,#d4a76a,#c8941a);color:#0a0f1a;text-decoration:none;padding:13px 30px;border-radius:50px;font-size:13px;font-weight:700;letter-spacing:0.06em;">✨ Plan Another Trip</a>
+            <a href="https://smarttripplannerai.netlify.app/" style="display:inline-block;background:linear-gradient(135deg,#d4a76a,#c8941a);color:#0a0f1a;text-decoration:none;padding:13px 30px;border-radius:50px;font-size:13px;font-weight:700;letter-spacing:0.06em;">✨ Plan Another Trip</a>
           </td>
         </tr>
         <tr>
           <td style="padding:18px 40px 22px;background:#050a12;text-align:center;">
             <p style="color:rgba(245,240,232,0.22);font-size:11px;margin:0;line-height:1.7;">
-              Generated by <strong style="color:rgba(212,167,106,0.5);">TravelAI</strong> — Powered by SmartTripPlanner AI<br>
+              Generated by <strong style="color:rgba(212,167,106,0.5);">SmartTripPlanner AI</strong> — Powered by SmartTripPlanner AI<br>
               Flight &amp; hotel prices are estimates only. Always verify before booking.
             </p>
           </td>
@@ -711,9 +711,9 @@ app.post("/email-itinerary", async (req, res) => {
 
     try {
         await axios.post('https://api.brevo.com/v3/smtp/email', {
-            sender: { email: EMAIL_USER, name: "TravelAI Planner" },
+            sender: { email: EMAIL_USER, name: "SmartTripPlanner AI" },
             to: [{ email }],
-            subject: `✈️ Your ${days}-Day ${destination} Itinerary — TravelAI`,
+            subject: `✈️ Your ${days}-Day ${destination} Itinerary — SmartTripPlanner AI`,
             htmlContent
         }, {
             headers: { 'accept': 'application/json', 'api-key': BREVO_API_KEY, 'content-type': 'application/json' },
@@ -843,6 +843,122 @@ app.post("/route-info", async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════
+// 8. CONTACT FORM (sends email via Brevo)
+// ═══════════════════════════════════════════════
+app.post("/contact", async (req, res) => {
+    const { name, email, subject, message } = req.body;
+    if (!name || !email || !message) return res.status(400).json({ error: "Name, email, and message are required." });
+    if (!BREVO_API_KEY || !EMAIL_USER) return res.status(500).json({ error: "Email API not configured." });
+
+    const htmlContent = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"/></head>
+<body style="margin:0;padding:0;background:#0d1117;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0d1117;">
+    <tr><td align="center" style="padding:28px 12px;">
+      <table width="580" cellpadding="0" cellspacing="0" border="0"
+        style="max-width:580px;width:100%;background:#0a0f1a;border-radius:16px;overflow:hidden;border:1px solid rgba(212,167,106,0.15);">
+        <tr>
+          <td style="padding:28px 32px 20px;background:linear-gradient(135deg,#0a0f1a,#1a2235);border-bottom:1px solid rgba(212,167,106,0.15);">
+            <p style="margin:0;font-family:Georgia,serif;font-size:22px;color:#d4a76a;font-weight:600;">✈ SmartTripPlanner AI</p>
+            <p style="margin:6px 0 0;font-size:12px;color:rgba(245,240,232,0.4);">New Contact Form Submission</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 32px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:rgba(245,240,232,0.35);">From</span><br>
+                <span style="font-size:15px;color:#f5f0e8;">${name}</span>
+                <span style="font-size:13px;color:rgba(212,167,106,0.8);margin-left:8px;">&lt;${email}&gt;</span>
+              </td></tr>
+              <tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:rgba(245,240,232,0.35);">Subject</span><br>
+                <span style="font-size:15px;color:#f5f0e8;">${subject || '(no subject)'}</span>
+              </td></tr>
+              <tr><td style="padding:16px 0 8px;">
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:rgba(245,240,232,0.35);">Message</span><br>
+                <div style="margin-top:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px 18px;">
+                  <p style="font-size:14px;color:rgba(245,240,232,0.82);line-height:1.75;margin:0;white-space:pre-wrap;">${message.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
+                </div>
+              </td></tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:14px 32px 20px;background:#050a12;text-align:center;">
+            <p style="color:rgba(245,240,232,0.22);font-size:11px;margin:0;">
+              Sent via SmartTripPlanner AI Contact Form — <a href="https://smarttripplannerai.netlify.app" style="color:rgba(212,167,106,0.5);">smarttripplannerai.netlify.app</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
+
+    try {
+        await axios.post('https://api.brevo.com/v3/smtp/email', {
+            sender: { email: EMAIL_USER, name: "SmartTripPlanner AI" },
+            to: ADMIN_EMAILS.map(e => ({ email: e })),
+            replyTo: { email, name },
+            subject: `📩 Contact Form: ${subject || 'New Message'} — from ${name}`,
+            htmlContent
+        }, {
+            headers: { 'accept': 'application/json', 'api-key': BREVO_API_KEY, 'content-type': 'application/json' },
+            timeout: 10000
+        });
+        res.json({ success: true });
+    } catch(e) {
+        const errData = e.response?.data;
+        console.error("Contact email error:", e.response?.status, JSON.stringify(errData));
+        res.status(500).json({ error: "Failed to send message.", detail: errData || e.message });
+    }
+});
+
+// ═══════════════════════════════════════════════
+// 9. NEWSLETTER SUBSCRIPTION
+// ═══════════════════════════════════════════════
+const subscribers = [];   // in-memory subscriber list (resets on restart)
+
+app.post("/newsletter", async (req, res) => {
+    const { email } = req.body;
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ error: "Valid email address required." });
+    }
+
+    // Avoid duplicate subscriptions
+    if (!subscribers.includes(email.toLowerCase())) {
+        subscribers.push(email.toLowerCase());
+    }
+
+    // Notify admin (best-effort — don't fail the response if email errors)
+    if (BREVO_API_KEY && EMAIL_USER) {
+        try {
+            await axios.post('https://api.brevo.com/v3/smtp/email', {
+                sender: { email: EMAIL_USER, name: "SmartTripPlanner AI" },
+                to: ADMIN_EMAILS.map(e => ({ email: e })),
+                subject: `📬 New Newsletter Subscriber — ${email}`,
+                htmlContent: `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;background:#0d1117;padding:32px;">
+                  <div style="max-width:480px;margin:0 auto;background:#0a0f1a;border:1px solid rgba(212,167,106,0.2);border-radius:14px;padding:28px;">
+                    <p style="font-family:Georgia,serif;font-size:20px;color:#d4a76a;margin:0 0 16px;">✈ New Newsletter Subscriber</p>
+                    <p style="color:rgba(245,240,232,0.75);font-size:14px;margin:0 0 8px;"><strong style="color:#f5f0e8;">Email:</strong> ${email}</p>
+                    <p style="color:rgba(245,240,232,0.75);font-size:14px;margin:0 0 8px;"><strong style="color:#f5f0e8;">Total subscribers:</strong> ${subscribers.length}</p>
+                    <p style="color:rgba(245,240,232,0.4);font-size:11px;margin:16px 0 0;">SmartTripPlanner AI — smarttripplannerai.netlify.app</p>
+                  </div>
+                </body></html>`
+            }, {
+                headers: { 'accept': 'application/json', 'api-key': BREVO_API_KEY, 'content-type': 'application/json' },
+                timeout: 8000
+            });
+        } catch(e) {
+            console.error("Newsletter admin notification error:", e.message);
+        }
+    }
+
+    res.json({ success: true, subscriberCount: subscribers.length });
+});
+
+// ═══════════════════════════════════════════════
 // 10. ADMIN ENDPOINTS (simple email-based auth)
 // ═══════════════════════════════════════════════
 function isAdmin(email) {
@@ -869,5 +985,5 @@ app.post("/admin/blog", async (req, res) => {
 // Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`✈  TravelAI Backend v3.0 running on Port ${PORT}`);
+    console.log(`✈  SmartTripPlanner AI Backend v3.0 running on Port ${PORT}`);
 });

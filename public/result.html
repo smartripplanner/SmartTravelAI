@@ -7,19 +7,19 @@
     <title>Your AI Travel Itinerary — SmartTripPlanner AI</title>
     <meta name="description" content="Your personalised AI-generated travel itinerary — complete with day-by-day plans, hotel options, flights, budget breakdown, visa info, and packing list.">
     <meta name="keywords"  content="AI travel planner, itinerary generator, travel AI, vacation planner, custom trip planner, Gemini AI travel">
-    <meta name="author" content="TravelAI">
+    <meta name="author" content="SmartTripPlanner AI">
     <meta name="theme-color" content="#0a0f1a">
     <meta name="robots" content="noindex, nofollow">
-    <link rel="canonical" href="https://smartripplannerai.netlify.app/result.html">
+    <link rel="canonical" href="https://smarttripplannerai.netlify.app/result.html">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" href="favicon.svg">
 
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://smartripplannerai.netlify.app/">
-    <meta property="og:title" content="TravelAI — Your AI Travel Planner">
+    <meta property="og:url" content="https://smarttripplannerai.netlify.app/">
+    <meta property="og:title" content="SmartTripPlanner AI — Your AI Travel Planner">
     <meta property="og:description"content="Instantly generate custom day-by-day itineraries, flight estimates, and budget breakdowns.">
     <meta property="og:image" content="https://placehold.co/1200x630/1a2235/d4a76a?text=TravelAI+Smart+Planner"> <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="TravelAI — Your AI Travel Planner">
+    <meta name="twitter:title" content="SmartTripPlanner AI — Your AI Travel Planner">
     <meta name="twitter:description" content="Instantly generate custom day-by-day itineraries in seconds.">
     <meta name="twitter:image" content="https://placehold.co/1200x630/1a2235/d4a76a?text=TravelAI+Smart+Planner">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1172,12 +1172,12 @@
                 style="font-family:var(--font-serif);font-size:28px;font-weight:300;color:var(--white);margin-bottom:12px;">
                 Daily Limit Reached</h2>
             <p style="font-size:14px;color:rgba(var(--white-rgb),0.6);line-height:1.6;margin-bottom:28px;"
-                id="usageLimitMsg">You've used all your free itineraries for today. Sign in or upgrade to continue.</p>
+                id="usageLimitMsg">You've used all your guest itineraries for today. Sign in to get 10/day for free.</p>
             <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
                 <button class="btn-primary"
                     onclick="document.getElementById('usageLimitPopup').style.display='none';document.getElementById('authBtn').click()">Sign
-                    In for More ✨</button>
-                <a href="profile.html#upgrade"><button class="btn-outline">Upgrade Plan 👑</button></a>
+                    In for 10/day ✨</button>
+                <button class="btn-outline" style="opacity:0.6;cursor:default;" disabled>Premium — Coming Soon 👑</button>
                 <button class="btn-outline"
                     onclick="document.getElementById('usageLimitPopup').style.display='none'">Maybe Later</button>
             </div>
@@ -1187,7 +1187,7 @@
     <div class="chatbot-fab" data-html2canvas-ignore>
         <div class="chatbot-window" id="chatbotWindow">
             <div class="chatbot-header">
-                <span class="chatbot-title">🤖 TravelAI Assistant</span>
+                <span class="chatbot-title">🤖 SmartTripPlanner AI Assistant</span>
                 <button class="chatbot-close" onclick="toggleChat()">✕</button>
             </div>
             <div class="chatbot-messages" id="chatMessages">
@@ -1202,14 +1202,14 @@
     </div>
 
     <nav class="result-nav" id="topNav" data-html2canvas-ignore>
-        <a href="index.html" class="nav-logo">✈ TravelAI</a>
+        <a href="index.html" class="nav-logo">✈ SmartTripPlanner AI</a>
         <div class="result-nav-actions">
             <button class="btn-outline btn-sm theme-toggle-btn" onclick="toggleTheme()">
                 <span class="light-icon">☀️</span><span class="dark-icon">🌙</span>
             </button>
-            <a href="index.html" class="hide-mobile"><button class="btn-outline btn-sm">🏠 Home</button></a>
+            <a href="index.html"><button class="btn-outline btn-sm">🏠 Home</button></a>
             <button class="btn-outline btn-sm" onclick="exportToPDF()" id="pdfBtn">📥 PDF</button>
-            <button class="btn-outline btn-sm hide-mobile" onclick="document.querySelector('.email-section')?.scrollIntoView({behavior:'smooth'}) || emailItinerary()">📧 Email</button>
+            <button class="btn-outline btn-sm hide-mobile" onclick="document.getElementById('emailInput')?.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>document.getElementById('emailInput')?.focus(),500)">📧 Email</button>
             <a href="form.html"><button class="btn-outline btn-sm">✨ New Trip</button></a>
             <a href="blog.html" class="nav-text-link hide-mobile">Blog</a>
             <a href="dashboard.html" id="navDashboard" style="display:none;" class="nav-text-link hide-mobile">Dashboard</a>
@@ -1478,24 +1478,22 @@
     </div>
     <footer class="footer" id="pdfFooter">
         <div class="footer-inner">
-            <div class="footer-logo">✈ SmartTripPlanner</div>
+            <div class="footer-logo">SmartTripPlanner AI</div>
             <p>Generated by AI — always verify flights &amp; hotel prices before booking.</p>
-            <p style="margin-top:8px; font-size:13px; opacity:0.6;">Follow us on Instagram: <a href="https://instagram.com/smartripplanner.in" target="_blank" style="color:var(--gold); text-decoration:none;">@smartripplanner.in</a></p>
+            <p style="margin-top:8px; font-size:13px; opacity:0.6;">Follow us on Instagram: <a href="https://instagram.com/smarttripplannerai.in" target="_blank" style="color:var(--gold); text-decoration:none;">@smarttripplannerai.in</a></p>
             <div style="display:flex;gap:14px;justify-content:center;margin:10px 0;flex-wrap:wrap;">
                 <a href="privacy-policy.html" style="color:rgba(var(--white-rgb),.35);font-size:.75rem;text-decoration:none;">Privacy Policy</a>
                 <a href="terms.html" style="color:rgba(var(--white-rgb),.35);font-size:.75rem;text-decoration:none;">Terms &amp; Conditions</a>
                 <a href="affiliate-disclosure.html" style="color:rgba(var(--white-rgb),.35);font-size:.75rem;text-decoration:none;">Affiliate Disclosure</a>
                 <a href="disclaimer.html" style="color:rgba(var(--white-rgb),.35);font-size:.75rem;text-decoration:none;">Disclaimer</a>
             </div>
-            <p style="margin-top:4px; font-size:11px; opacity:0.4;">© SmartTripPlanner AI. Unauthorized reproduction or resale of this itinerary is not permitted.</p>
+            <p style="margin-top:4px; font-size:11px; opacity:0.4;">© 2026 SmartTripPlanner AI. Unauthorized reproduction or resale of this itinerary is not permitted.</p>
         </div>
     </footer>
 
     <!-- Print watermark (native browser print only) -->
     <div class="print-watermark" aria-hidden="true">SmartTripPlanner AI</div>
 
-    <!-- Floating Home button -->
-    <a href="index.html" class="float-home-btn" title="Back to Home" data-html2canvas-ignore>🏠</a>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
@@ -1596,7 +1594,7 @@
                 © SmartTripPlanner AI. This itinerary is AI-generated for planning purposes only. Prices, availability, and travel details may change. Please verify bookings and travel requirements before your trip. Unauthorized reproduction or resale of this itinerary is not permitted.
             </div>
             <div style="color:#888; font-size:11px; margin-top:8px;">
-                Follow us on Instagram: <strong style="color:#d4a76a;">@smartripplanner.in</strong>
+                Follow us on Instagram: <strong style="color:#d4a76a;">@smarttripplannerai.in</strong>
             </div>
         </div>
     </div>`;
@@ -1604,7 +1602,7 @@
             // 4. Configure PDF (Notice: No CORS, No Taint, No DOM targeting)
             const opt = {
                 margin: [0, 0],
-                filename: `TravelAI_${dest.replace(/\s+/g, '_')}.pdf`,
+                filename: `SmartTripPlan_${dest.replace(/\s+/g, '_')}.pdf`,
                 image: { type: 'jpeg', quality: 1 },
                 html2canvas: {
                     scale: 2,
@@ -2717,7 +2715,7 @@ async function fetchRealImage(query, fallbackText, type = 'place') {
             if (storedDate === today && storedCount >= 2) {
                 const popup = document.getElementById('usageLimitPopup');
                 document.getElementById('usageLimitMsg').textContent =
-                    `You've used ${storedCount}/2 free itineraries today. Sign in to get 10/day, or upgrade for unlimited access.`;
+                    `You've used ${storedCount}/2 guest itineraries today. Sign in with Google to get 10/day for free. Premium plans with higher limits are coming soon.`;
                 popup.style.display = 'flex';
                 return false;
             }

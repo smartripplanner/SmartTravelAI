@@ -3,7 +3,7 @@
 # ============================================================
 
 # Redirect old domain to canonical domain (301 permanent)
-https://amazing-travel-123.netlify.app/*  https://smartripplannerai.netlify.app/:splat  301!
+https://amazing-travel-123.netlify.app/*  https://smarttripplannerai.netlify.app/:splat  301!
 
 # Redirect index.html to clean root URL
 /index.html   /   301!

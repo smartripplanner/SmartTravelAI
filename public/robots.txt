@@ -20,4 +20,4 @@ Disallow: /result.html
 Disallow: /share.html
 Disallow: /404.html
 
-Sitemap: https://smartripplannerai.netlify.app/sitemap.xml
+Sitemap: https://smarttripplannerai.netlify.app/sitemap.xml

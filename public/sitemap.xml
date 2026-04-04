@@ -6,7 +6,7 @@
 
   <!-- Homepage — highest priority -->
   <url>
-    <loc>https://smartripplannerai.netlify.app/</loc>
+    <loc>https://smarttripplannerai.netlify.app/</loc>
     <lastmod>2026-04-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -14,7 +14,7 @@
 
   <!-- Trip Planning Form -->
   <url>
-    <loc>https://smartripplannerai.netlify.app/form.html</loc>
+    <loc>https://smarttripplannerai.netlify.app/form.html</loc>
     <lastmod>2026-04-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
@@ -22,7 +22,7 @@
 
   <!-- Blog -->
   <url>
-    <loc>https://smartripplannerai.netlify.app/blog.html</loc>
+    <loc>https://smarttripplannerai.netlify.app/blog.html</loc>
     <lastmod>2026-04-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -30,7 +30,7 @@
 
   <!-- Blog Post (dynamic, representative URL) -->
   <url>
-    <loc>https://smartripplannerai.netlify.app/blog-post.html</loc>
+    <loc>https://smarttripplannerai.netlify.app/blog-post.html</loc>
     <lastmod>2026-04-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -38,7 +38,7 @@
 
   <!-- About Us -->
   <url>
-    <loc>https://smartripplannerai.netlify.app/about.html</loc>
+    <loc>https://smarttripplannerai.netlify.app/about.html</loc>
     <lastmod>2026-04-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -46,7 +46,7 @@
 
   <!-- Contact Us -->
   <url>
-    <loc>https://smartripplannerai.netlify.app/contact.html</loc>
+    <loc>https://smarttripplannerai.netlify.app/contact.html</loc>
     <lastmod>2026-04-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -54,7 +54,7 @@
 
   <!-- Privacy Policy -->
   <url>
-    <loc>https://smartripplannerai.netlify.app/privacy-policy.html</loc>
+    <loc>https://smarttripplannerai.netlify.app/privacy-policy.html</loc>
     <lastmod>2026-04-04</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
@@ -62,7 +62,7 @@
 
   <!-- Terms & Conditions -->
   <url>
-    <loc>https://smartripplannerai.netlify.app/terms.html</loc>
+    <loc>https://smarttripplannerai.netlify.app/terms.html</loc>
     <lastmod>2026-04-04</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
@@ -70,7 +70,7 @@
 
   <!-- Affiliate Disclosure -->
   <url>
-    <loc>https://smartripplannerai.netlify.app/affiliate-disclosure.html</loc>
+    <loc>https://smarttripplannerai.netlify.app/affiliate-disclosure.html</loc>
     <lastmod>2026-04-04</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
@@ -78,7 +78,7 @@
 
   <!-- Disclaimer -->
   <url>
-    <loc>https://smartripplannerai.netlify.app/disclaimer.html</loc>
+    <loc>https://smarttripplannerai.netlify.app/disclaimer.html</loc>
     <lastmod>2026-04-04</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>

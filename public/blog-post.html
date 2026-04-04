@@ -6,7 +6,7 @@
     <title id="pageTitle">Travel Guide — SmartTripPlanner AI</title>
     <meta name="description" id="metaDesc" content="Read expert travel guides, destination tips, budget hacks, and AI travel insights from SmartTripPlanner AI.">
     <meta name="theme-color" content="#0a0f1a">
-    <link rel="canonical" id="canonicalUrl" href="https://smartripplannerai.netlify.app/blog-post.html">
+    <link rel="canonical" id="canonicalUrl" href="https://smarttripplannerai.netlify.app/blog-post.html">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -87,7 +87,7 @@
 <div class="cursor-follower" id="cursorFollower"></div>
 
 <nav class="navbar scrolled" id="navbar">
-    <a href="index.html" class="nav-logo">✈ TravelAI</a>
+    <a href="index.html" class="nav-logo">✈ SmartTripPlanner AI</a>
     <div class="nav-right-mobile">
         <button class="btn-outline btn-sm theme-toggle-btn" onclick="toggleTheme()" style="padding: 8px 16px; border-radius: 50px;">
             <span class="light-icon">☀️</span><span class="dark-icon">🌙</span>
@@ -116,7 +116,7 @@
 
 <footer class="footer">
     <div class="footer-inner">
-        <div class="footer-logo">✈ SmartTripPlanner</div>
+        <div class="footer-logo">SmartTripPlanner AI</div>
         <p>Your AI-powered travel companion. Build your dream trip in seconds.</p>
         <div style="display:flex;gap:16px;justify-content:center;margin:16px 0;flex-wrap:wrap;">
             <a href="index.html" style="color:rgba(var(--white-rgb),.5);font-size:.85rem;text-decoration:none;">Home</a>
@@ -131,7 +131,15 @@
             <a href="affiliate-disclosure.html" style="color:rgba(var(--white-rgb),.35);font-size:.78rem;text-decoration:none;">Affiliate Disclosure</a>
             <a href="disclaimer.html" style="color:rgba(var(--white-rgb),.35);font-size:.78rem;text-decoration:none;">Disclaimer</a>
         </div>
-        <div class="footer-bottom">© 2026 SmartTripPlanner.in — All Rights Reserved</div>
+        <div style="margin:10px 0 14px;font-size:.78rem;color:rgba(var(--white-rgb),.38);display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+            <a href="mailto:smartripplanner@gmail.com" style="color:rgba(var(--white-rgb),.38);text-decoration:none;">&#128231; smartripplanner@gmail.com</a>
+            <span style="color:rgba(var(--white-rgb),.18);">&#183;</span>
+            <a href="https://instagram.com/smarttripplannerai.in" target="_blank" rel="noopener" style="color:rgba(var(--white-rgb),.38);text-decoration:none;">&#128247; @smarttripplannerai.in</a>
+            <span style="color:rgba(var(--white-rgb),.18);">&#183;</span>
+            <a href="https://smarttripplannerai.netlify.app" style="color:rgba(var(--white-rgb),.38);text-decoration:none;">&#127760; smarttripplannerai.netlify.app</a>
+        </div>
+        <div style="margin:4px 0 10px;font-size:.75rem;color:rgba(var(--white-rgb),.28);text-align:center;">Disclosure: SmartTripPlanner AI may earn commission from some booking links at no extra cost to you.</div>
+        <div class="footer-bottom">© 2026 SmartTripPlanner AI. All rights reserved.</div>
     </div>
 </footer>
 
@@ -215,7 +223,7 @@ async function loadPost(slug) {
     document.getElementById('metaDesc').content = post.excerpt || post.title;
     // Update canonical URL to include the post slug for proper indexing
     const canonEl = document.getElementById('canonicalUrl');
-    if (canonEl) canonEl.href = `https://smartripplannerai.netlify.app/blog-post.html?slug=${slug}`;
+    if (canonEl) canonEl.href = `https://smarttripplannerai.netlify.app/blog-post.html?slug=${slug}`;
 
     // Load related posts
     const relatedSnap = await getDocs(
@@ -262,7 +270,7 @@ function renderPost(post, related) {
         <div class="post-meta">
             <div class="post-meta-item">📅 <span>${date}</span></div>
             <div class="post-meta-item">⏱ <span>${readTime} min read</span></div>
-            <div class="post-meta-item">✍️ <span>TravelAI Team</span></div>
+            <div class="post-meta-item">✍️ <span>SmartTripPlanner AI Team</span></div>
         </div>
         ${imgHtml}
         <div class="post-body">${bodyHtml}</div>
@@ -294,7 +302,7 @@ function showNotFound() {
 
 window.sharePost = function(platform) {
     const url = window.location.href;
-    const title = document.querySelector('.post-title')?.textContent || 'TravelAI Blog';
+    const title = document.querySelector('.post-title')?.textContent || 'SmartTripPlanner AI Blog';
     if (platform === 'twitter') {
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank');
     } else if (platform === 'whatsapp') {

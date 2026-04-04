@@ -9,7 +9,7 @@
         content="Enter your destination, budget, and travel style — SmartTripPlanner AI generates a complete day-by-day itinerary, hotel recommendations, flights, and budget breakdown in seconds.">
     <meta name="theme-color" content="#0a0f1a">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://smartripplannerai.netlify.app/form.html">
+    <link rel="canonical" href="https://smarttripplannerai.netlify.app/form.html">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,18 +27,18 @@
       "@context": "https://schema.org",
       "@type": "WebPage",
       "name": "Plan Your Trip — SmartTripPlanner AI",
-      "url": "https://smartripplannerai.netlify.app/form.html",
+      "url": "https://smarttripplannerai.netlify.app/form.html",
       "description": "Fill in your travel details and get an AI-generated day-by-day itinerary, flight estimates, hotel recommendations, and full budget breakdown in seconds.",
       "isPartOf": {
         "@type": "WebSite",
         "name": "SmartTripPlanner AI",
-        "url": "https://smartripplannerai.netlify.app/"
+        "url": "https://smarttripplannerai.netlify.app/"
       },
       "breadcrumb": {
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://smartripplannerai.netlify.app/" },
-          { "@type": "ListItem", "position": 2, "name": "Plan My Trip", "item": "https://smartripplannerai.netlify.app/form.html" }
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://smarttripplannerai.netlify.app/" },
+          { "@type": "ListItem", "position": 2, "name": "Plan My Trip", "item": "https://smarttripplannerai.netlify.app/form.html" }
         ]
       }
     }
@@ -286,7 +286,7 @@
                 id="limitMsg">You've used all your free itineraries for today.</p>
             <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
                 <button class="btn-primary" id="limitSignInBtn">Sign In for 10/day ✨</button>
-                <a href="profile.html#upgrade"><button class="btn-outline">Upgrade 👑</button></a>
+                <button class="btn-outline" style="opacity:0.6;cursor:default;" disabled title="Coming soon">Premium — Coming Soon 👑</button>
                 <button class="btn-outline"
                     onclick="document.getElementById('limitOverlay').classList.remove('show')">Maybe Later</button>
             </div>
@@ -311,7 +311,7 @@
     </div>
 
     <nav class="form-nav">
-        <a href="index.html" class="nav-logo">✈ TravelAI</a>
+        <a href="index.html" class="nav-logo">✈ SmartTripPlanner AI</a>
         <div class="nav-right-mobile">
             <button class="btn-outline btn-sm theme-toggle-btn" onclick="toggleTheme()" style="padding:8px 14px;border-radius:50px;">
                 <span class="light-icon">☀️</span><span class="dark-icon">🌙</span>
@@ -665,7 +665,7 @@
                     const limit = 10; // logged-in free limit
                     if (count >= limit) {
                         document.getElementById('limitMsg').textContent =
-                            `You've used ${count}/${limit} itineraries today. Upgrade for unlimited access.`;
+                            `You've used all ${limit} itineraries for today. Premium plans with higher limits are coming soon.`;
                         document.getElementById('limitOverlay').classList.add('show');
                         return false;
                     }

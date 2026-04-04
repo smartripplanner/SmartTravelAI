@@ -7,7 +7,7 @@
     <meta name="description" content="Manage your SmartTripPlanner AI profile and account settings.">
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#0a0f1a">
-    <link rel="canonical" href="https://smartripplannerai.netlify.app/profile.html">
+    <link rel="canonical" href="https://smarttripplannerai.netlify.app/profile.html">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -114,7 +114,7 @@
 <div class="cursor-follower" id="cursorFollower"></div>
 
 <nav class="navbar scrolled" id="navbar">
-    <a href="index.html" class="nav-logo">✈ TravelAI</a>
+    <a href="index.html" class="nav-logo">✈ SmartTripPlanner AI</a>
     <div class="nav-right-mobile">
         <button class="btn-outline btn-sm theme-toggle-btn" onclick="toggleTheme()" style="padding: 8px 16px; border-radius: 50px;">
             <span class="light-icon">☀️</span><span class="dark-icon">🌙</span>
@@ -182,29 +182,14 @@
     </div>
 
     <!-- Plans -->
-    <h3 class="profile-section-title">Choose Your Plan</h3>
+    <h3 class="profile-section-title">Your Plan</h3>
     <div class="plans-grid">
-        <!-- Free -->
-        <div class="plan-card" id="planFreeCard">
-            <div class="plan-icon">🆓</div>
-            <div class="plan-name">Free</div>
+        <!-- Free (Signed In) -->
+        <div class="plan-card current-plan" id="planFreeCard">
+            <div class="plan-popular-tag" id="planProTag">Current Plan</div>
+            <div class="plan-icon">✅</div>
+            <div class="plan-name">Free (Signed In)</div>
             <div class="plan-price">₹0 <span>/ forever</span></div>
-            <ul class="plan-features">
-                <li>2 trips per day</li>
-                <li>AI Itinerary Builder</li>
-                <li>Budget Breakdown</li>
-                <li class="disabled">Save trips to history</li>
-                <li class="disabled">PDF Export</li>
-                <li class="disabled">Priority AI processing</li>
-            </ul>
-            <button class="plan-btn plan-btn-current" disabled>Current Plan</button>
-        </div>
-        <!-- Pro -->
-        <div class="plan-card current-plan" id="planProCard">
-            <div class="plan-popular-tag" id="planProTag">Most Popular</div>
-            <div class="plan-icon">⚡</div>
-            <div class="plan-name">Pro</div>
-            <div class="plan-price">₹299 <span>/ month</span></div>
             <ul class="plan-features">
                 <li>10 trips per day</li>
                 <li>AI Itinerary Builder</li>
@@ -213,13 +198,30 @@
                 <li>PDF Export</li>
                 <li class="disabled">Priority AI processing</li>
             </ul>
-            <button class="plan-btn plan-btn-upgrade" onclick="handleUpgrade('pro')">Upgrade to Pro</button>
+            <button class="plan-btn plan-btn-current" disabled>Current Plan</button>
         </div>
-        <!-- Premium -->
-        <div class="plan-card" id="planPremiumCard">
+        <!-- Pro (Coming Soon) -->
+        <div class="plan-card" id="planProCard" style="opacity:0.7;">
+            <div class="plan-popular-tag" style="background:rgba(var(--white-rgb),0.08);color:rgba(var(--white-rgb),0.5);">Coming Soon</div>
+            <div class="plan-icon">⚡</div>
+            <div class="plan-name">Pro</div>
+            <div class="plan-price" style="color:rgba(var(--white-rgb),0.45);">Coming Soon</div>
+            <ul class="plan-features">
+                <li>Higher daily limits</li>
+                <li>AI Itinerary Builder</li>
+                <li>Budget Breakdown</li>
+                <li>Save trips to history</li>
+                <li>PDF Export</li>
+                <li class="disabled">Priority AI processing</li>
+            </ul>
+            <button class="plan-btn" style="opacity:0.5;cursor:default;" disabled>Coming Soon</button>
+        </div>
+        <!-- Premium (Coming Soon) -->
+        <div class="plan-card" id="planPremiumCard" style="opacity:0.7;">
+            <div class="plan-popular-tag" style="background:rgba(var(--white-rgb),0.08);color:rgba(var(--white-rgb),0.5);">Coming Soon</div>
             <div class="plan-icon">👑</div>
             <div class="plan-name">Premium</div>
-            <div class="plan-price">₹799 <span>/ month</span></div>
+            <div class="plan-price" style="color:rgba(var(--white-rgb),0.45);">Coming Soon</div>
             <ul class="plan-features">
                 <li>Unlimited trips</li>
                 <li>AI Itinerary Builder</li>
@@ -228,7 +230,7 @@
                 <li>PDF Export</li>
                 <li>Priority AI processing</li>
             </ul>
-            <button class="plan-btn plan-btn-premium" onclick="handleUpgrade('premium')">Go Premium 👑</button>
+            <button class="plan-btn" style="opacity:0.5;cursor:default;" disabled>Coming Soon 👑</button>
         </div>
     </div>
 
@@ -253,7 +255,7 @@
 
 <footer class="footer">
     <div class="footer-inner">
-        <div class="footer-logo">✈ SmartTripPlanner</div>
+        <div class="footer-logo">SmartTripPlanner AI</div>
         <p>Your AI-powered travel companion. Build your dream trip in seconds.</p>
         <div style="display:flex;gap:14px;justify-content:center;margin:12px 0 16px;flex-wrap:wrap;">
             <a href="privacy-policy.html" style="color:rgba(var(--white-rgb),.35);font-size:.78rem;text-decoration:none;">Privacy Policy</a>
@@ -261,7 +263,15 @@
             <a href="about.html" style="color:rgba(var(--white-rgb),.35);font-size:.78rem;text-decoration:none;">About Us</a>
             <a href="contact.html" style="color:rgba(var(--white-rgb),.35);font-size:.78rem;text-decoration:none;">Contact</a>
         </div>
-        <div class="footer-bottom">© 2026 SmartTripPlanner.in — All Rights Reserved</div>
+        <div style="margin:10px 0 14px;font-size:.78rem;color:rgba(var(--white-rgb),.38);display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+            <a href="mailto:smartripplanner@gmail.com" style="color:rgba(var(--white-rgb),.38);text-decoration:none;">&#128231; smartripplanner@gmail.com</a>
+            <span style="color:rgba(var(--white-rgb),.18);">&#183;</span>
+            <a href="https://instagram.com/smarttripplannerai.in" target="_blank" rel="noopener" style="color:rgba(var(--white-rgb),.38);text-decoration:none;">&#128247; @smarttripplannerai.in</a>
+            <span style="color:rgba(var(--white-rgb),.18);">&#183;</span>
+            <a href="https://smarttripplannerai.netlify.app" style="color:rgba(var(--white-rgb),.38);text-decoration:none;">&#127760; smarttripplannerai.netlify.app</a>
+        </div>
+        <div style="margin:4px 0 10px;font-size:.75rem;color:rgba(var(--white-rgb),.28);text-align:center;">Disclosure: SmartTripPlanner AI may earn commission from some booking links at no extra cost to you.</div>
+        <div class="footer-bottom">© 2026 SmartTripPlanner AI. All rights reserved.</div>
     </div>
 </footer>
 
@@ -413,7 +423,7 @@ window.deleteTrip = async function(tripId, userId) {
 };
 
 window.handleUpgrade = function(plan) {
-    alert(`Payment integration coming soon!\n\nYou selected: ${plan.toUpperCase()} plan.\n\nWe'll notify you when payments go live.`);
+    alert(`Premium plans are coming soon!\n\nWe'll notify you when paid plans go live.\n\nFor now, enjoy 10 free itineraries per day as a signed-in user.`);
 };
 </script>
 

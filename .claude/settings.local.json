@@ -8,7 +8,9 @@
       "WebFetch(domain:www.googleapis.com)",
       "Bash(node -e \"const fs=require\\(''fs''\\); fs.writeFileSync\\(''D:/TravelAI/public/test.txt'',''ok''\\); console.log\\(''write ok''\\);\")",
       "Bash(node gen_pages.js)",
-      "Bash(node -e \":*)"
+      "Bash(node -e \":*)",
+      "Bash(node rebrand.js)",
+      "Bash(node -e \"require\\(''fs''\\).unlinkSync\\(''D:/TravelAI/rebrand.js''\\); console.log\\(''Cleanup done.''\\);\")"
     ]
   }
 }
