@@ -86,7 +86,7 @@ const COST_TABLE = {
 };
 
 function detectCostRegion(destination) {
-    const d = (destination || '').toLowerCase();
+    const d = String(destination || '').toLowerCase();
     const map = {
         india:          ['india','delhi','mumbai','bangalore','bengaluru','chennai','kolkata','hyderabad','jaipur','goa','kerala','manali','shimla','rishikesh','udaipur','varanasi','agra','pune','kochi','darjeeling','ladakh','kashmir','andaman','ooty','munnar','mysore','hampi','amritsar','jodhpur','coorg','gangtok','leh','srinagar','dehradun','nainital','mussoorie','pondicherry','chandigarh','ahmedabad','lucknow','bhopal','indore','rajasthan','himachal','uttarakhand','karnataka','tamil nadu','gujarat','maharashtra','madhya pradesh','west bengal','odisha','sikkim','meghalaya','assam'],
         south_asia:     ['nepal','kathmandu','pokhara','bhutan','thimphu','paro','sri lanka','colombo','kandy','ella','sigiriya','galle','maldives','male','bangladesh','dhaka','pakistan','islamabad','lahore'],
