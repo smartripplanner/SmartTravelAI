@@ -10,7 +10,8 @@
       "Bash(node gen_pages.js)",
       "Bash(node -e \":*)",
       "Bash(node rebrand.js)",
-      "Bash(node -e \"require\\(''fs''\\).unlinkSync\\(''D:/TravelAI/rebrand.js''\\); console.log\\(''Cleanup done.''\\);\")"
+      "Bash(node -e \"require\\(''fs''\\).unlinkSync\\(''D:/TravelAI/rebrand.js''\\); console.log\\(''Cleanup done.''\\);\")",
+      "Bash(node --check server.js)"
     ]
   }
 }

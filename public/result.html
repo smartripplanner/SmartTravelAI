@@ -133,7 +133,7 @@
         }
 
         .pdf-mode .budget-breakdown-grid {
-            grid-template-columns: repeat(5, 1fr) !important;
+            grid-template-columns: repeat(4, 1fr) !important;
         }
 
         .pdf-mode .best-time-grid {
@@ -294,7 +294,7 @@
 
         .budget-breakdown-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 12px;
         }
 
@@ -1334,6 +1334,10 @@
                     style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(var(--white-rgb),0.4); margin-bottom: 14px;">
                     Cost Breakdown</div>
                 <div class="budget-breakdown-grid" id="budgetBreakdown"></div>
+                <div id="budgetTotalBar"></div>
+                <p id="budgetDisclaimer" style="display:none;margin-top:14px;font-size:12px;color:rgba(var(--white-rgb),0.35);line-height:1.6;text-align:center;">
+                    &#8505;&#65039; These are average travel costs and may vary depending on season, booking time, and personal spending habits.
+                </p>
             </div>
         </div>
 
@@ -1571,11 +1575,8 @@
       </div>`).join('');
 
             // 3. Wrap everything in a fixed-width container for A4 sizing
-            // Build SVG watermark tiled per A4 page height
-            const wmSvg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='794' height='1123'><text x='397' y='561' text-anchor='middle' dominant-baseline='middle' transform='rotate(-35 397 561)' font-size='80' font-family='Georgia,serif' fill='#888888' opacity='0.09' letter-spacing='3'>SmartTripPlanner AI</text></svg>`);
-
             const finalHtml = `
-    <div style="background-color:#0a0f1a; background-image:url('data:image/svg+xml,${wmSvg}'); background-size:794px 1123px; background-repeat:repeat-y; color:#f5f0e8; font-family:Helvetica, Arial, sans-serif; padding:40px; width:794px; box-sizing:border-box;">
+    <div style="background-color:#0a0f1a; color:#f5f0e8; font-family:Helvetica, Arial, sans-serif; padding:40px; width:794px; box-sizing:border-box;">
         <div style="border-bottom:2px solid #d4a76a; padding-bottom:20px; margin-bottom:20px;">
             <div style="color:#d4a76a; letter-spacing:2px; font-size:12px;">TRAVELAI PLANNER</div>
             <h1 style="font-family:Georgia, serif; font-size:32px; margin:10px 0; color:#f5f0e8;">Trip to ${dest}</h1>
@@ -1614,8 +1615,25 @@
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // 5. Pass the raw string directly to html2pdf!
-            html2pdf().set(opt).from(finalHtml).save().then(() => {
+            // 5. Generate PDF, stamp watermark on every page, then save
+            html2pdf().set(opt).from(finalHtml).toPdf().get('pdf').then(function(pdf) {
+                const totalPages = pdf.internal.getNumberOfPages();
+                const pw = pdf.internal.pageSize.getWidth();
+                const ph = pdf.internal.pageSize.getHeight();
+                for (let i = 1; i <= totalPages; i++) {
+                    pdf.setPage(i);
+                    pdf.saveGraphicsState();
+                    pdf.setGState(new pdf.GState({ opacity: 0.09 }));
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(54);
+                    pdf.setTextColor(160, 160, 160);
+                    pdf.text('SmartTripPlanner AI', pw / 2, ph / 2, {
+                        angle: 45,
+                        align: 'center'
+                    });
+                    pdf.restoreGraphicsState();
+                }
+            }).save().then(() => {
                 btn.textContent = originalText;
                 btn.disabled = false;
             }).catch(err => {
@@ -2279,12 +2297,16 @@
         </div>`;
             });
 
+            const numDays = parseInt(days) || 3;
             const breakdownItems = [
                 { icon: '✈️', label: 'Flights', val: bd.flights },
-                { icon: '🏨', label: 'Hotels', val: bd.hotels },
-                { icon: '🍴', label: 'Food', val: bd.food },
+                { icon: '🏨', label: `Hotels (${numDays} nights)`, val: bd.hotels },
+                { icon: '🍴', label: `Food (${numDays} days)`, val: bd.food },
                 { icon: '🚕', label: 'Transport', val: bd.transport },
-                { icon: '🎟️', label: 'Activities', val: bd.activities }
+                { icon: '🎟️', label: 'Activities', val: bd.activities },
+                { icon: '📋', label: 'Visa', val: bd.visa },
+                { icon: '🛡️', label: 'Insurance', val: bd.insurance },
+                { icon: '📦', label: 'Misc / Buffer', val: bd.misc }
             ];
             const bdEl = document.getElementById('budgetBreakdown');
             breakdownItems.forEach(item => {
@@ -2295,6 +2317,15 @@
             <div class="budget-item-val">${item.val || '—'}</div>
         </div>`;
             });
+
+            // Total bar
+            const total = tripData.totalEstimatedCost || '—';
+            document.getElementById('budgetTotalBar').innerHTML = `
+            <div style="margin-top:18px;padding:16px 24px;background:rgba(212,167,106,0.1);border:1px solid rgba(212,167,106,0.25);border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:13px;font-weight:600;color:var(--white);text-transform:uppercase;letter-spacing:0.08em;">Estimated Total</span>
+                <span style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--gold);">${total}</span>
+            </div>`;
+            document.getElementById('budgetDisclaimer').style.display = 'block';
         }
 
         // ── BEST TIME (Phase 2) ──

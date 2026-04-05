@@ -67,6 +67,71 @@ function generateTripId() {
     return `TRIP-${year}-${rand}`;
 }
 
+// ═══════════════════════════════════════════════
+// REALISTIC BUDGET CALCULATION MODULE
+// ═══════════════════════════════════════════════
+// Per-day/per-trip costs in INR: [budget, mid-range, luxury]
+const COST_TABLE = {
+    india:          { flights:[5000,8000,15000],     hotel:[1200,4000,12000],  food:[500,1500,4000],   transport:[300,800,2500],   activities:[200,600,2000],   visa:0,     insurance:[40,60,100] },
+    south_asia:     { flights:[8000,15000,30000],    hotel:[1500,4500,15000],  food:[600,1800,5000],   transport:[400,1000,3000],  activities:[400,1000,3000],  visa:2000,  insurance:[50,80,120] },
+    southeast_asia: { flights:[15000,22000,40000],   hotel:[2000,5500,18000],  food:[1000,2500,6000],  transport:[500,1500,4000],  activities:[500,1500,4000],  visa:2000,  insurance:[60,90,130] },
+    east_asia:      { flights:[25000,40000,75000],   hotel:[4000,10000,30000], food:[2000,4000,10000], transport:[1000,2500,6000], activities:[800,2000,5000],  visa:4000,  insurance:[80,120,180] },
+    middle_east:    { flights:[15000,25000,50000],   hotel:[3000,8000,25000],  food:[1500,3500,8000],  transport:[600,2000,5000],  activities:[800,2000,5000],  visa:5000,  insurance:[60,100,150] },
+    europe:         { flights:[35000,55000,120000],  hotel:[5000,12000,35000], food:[2500,5000,12000], transport:[1000,2500,7000], activities:[1000,2500,6000], visa:7000,  insurance:[100,150,220] },
+    north_america:  { flights:[50000,75000,150000],  hotel:[6000,15000,40000], food:[3000,6000,15000], transport:[1500,3000,8000], activities:[1000,3000,7000], visa:14000, insurance:[120,180,260] },
+    oceania:        { flights:[40000,65000,130000],   hotel:[5000,13000,35000], food:[2500,5500,14000], transport:[1200,3000,8000], activities:[1000,2500,6000], visa:8000,  insurance:[100,160,240] },
+    africa:         { flights:[30000,50000,100000],  hotel:[2500,7000,25000],  food:[1200,3000,8000],  transport:[800,2000,6000],  activities:[1000,3000,8000], visa:4000,  insurance:[80,130,200] },
+    south_america:  { flights:[60000,85000,160000],  hotel:[3000,8000,25000],  food:[1500,3500,9000],  transport:[800,2000,6000],  activities:[800,2000,5000],  visa:5000,  insurance:[100,150,220] },
+    central_asia:   { flights:[20000,35000,60000],   hotel:[2500,6000,18000],  food:[1000,2500,6000],  transport:[500,1500,4000],  activities:[500,1200,3000],  visa:3000,  insurance:[60,100,150] }
+};
+
+function detectCostRegion(destination) {
+    const d = (destination || '').toLowerCase();
+    const map = {
+        india:          ['india','delhi','mumbai','bangalore','bengaluru','chennai','kolkata','hyderabad','jaipur','goa','kerala','manali','shimla','rishikesh','udaipur','varanasi','agra','pune','kochi','darjeeling','ladakh','kashmir','andaman','ooty','munnar','mysore','hampi','amritsar','jodhpur','coorg','gangtok','leh','srinagar','dehradun','nainital','mussoorie','pondicherry','chandigarh','ahmedabad','lucknow','bhopal','indore','rajasthan','himachal','uttarakhand','karnataka','tamil nadu','gujarat','maharashtra','madhya pradesh','west bengal','odisha','sikkim','meghalaya','assam'],
+        south_asia:     ['nepal','kathmandu','pokhara','bhutan','thimphu','paro','sri lanka','colombo','kandy','ella','sigiriya','galle','maldives','male','bangladesh','dhaka','pakistan','islamabad','lahore'],
+        southeast_asia: ['thailand','bangkok','phuket','chiang mai','pattaya','krabi','vietnam','hanoi','ho chi minh','da nang','hoi an','indonesia','bali','jakarta','malaysia','kuala lumpur','langkawi','penang','philippines','manila','cebu','boracay','palawan','cambodia','siem reap','phnom penh','laos','luang prabang','myanmar','yangon','bagan','singapore'],
+        east_asia:      ['japan','tokyo','osaka','kyoto','hokkaido','hiroshima','south korea','seoul','busan','jeju','china','beijing','shanghai','hong kong','guangzhou','chengdu','taiwan','taipei','macau'],
+        middle_east:    ['dubai','abu dhabi','uae','saudi arabia','riyadh','jeddah','qatar','doha','oman','muscat','bahrain','kuwait','jordan','amman','petra','turkey','istanbul','cappadocia','antalya','israel','jerusalem','tel aviv','lebanon','beirut','egypt','cairo','luxor'],
+        europe:         ['france','paris','nice','london','uk','england','scotland','edinburgh','italy','rome','venice','florence','milan','spain','barcelona','madrid','germany','berlin','munich','switzerland','zurich','geneva','interlaken','amsterdam','netherlands','austria','vienna','greece','athens','santorini','mykonos','portugal','lisbon','porto','belgium','brussels','czech','prague','hungary','budapest','poland','warsaw','krakow','croatia','dubrovnik','denmark','copenhagen','sweden','stockholm','norway','oslo','finland','helsinki','iceland','reykjavik','ireland','dublin','romania','bucharest','serbia','belgrade','montenegro','russia','moscow','st petersburg'],
+        north_america:  ['usa','united states','new york','los angeles','san francisco','las vegas','miami','chicago','boston','washington','seattle','hawaii','orlando','canada','toronto','vancouver','montreal','mexico','cancun','mexico city','caribbean','jamaica','bahamas','cuba','costa rica','panama'],
+        oceania:        ['australia','sydney','melbourne','brisbane','perth','gold coast','cairns','new zealand','auckland','queenstown','christchurch','fiji','tahiti','bora bora'],
+        africa:         ['south africa','cape town','johannesburg','kenya','nairobi','masai mara','tanzania','serengeti','zanzibar','kilimanjaro','morocco','marrakech','casablanca','ethiopia','addis ababa','ghana','accra','nigeria','lagos','mauritius','seychelles','madagascar','tunisia','namibia','botswana','rwanda','uganda','zimbabwe','victoria falls'],
+        south_america:  ['brazil','rio de janeiro','sao paulo','argentina','buenos aires','patagonia','peru','lima','cusco','machu picchu','colombia','bogota','cartagena','medellin','chile','santiago','ecuador','quito','galapagos','bolivia','la paz','uyuni','uruguay'],
+        central_asia:   ['uzbekistan','tashkent','samarkand','kazakhstan','almaty','kyrgyzstan','tajikistan','turkmenistan','georgia','tbilisi','armenia','yerevan','azerbaijan','baku','mongolia','ulaanbaatar']
+    };
+    for (const [region, keywords] of Object.entries(map)) {
+        if (keywords.some(k => d.includes(k))) return region;
+    }
+    return 'southeast_asia';
+}
+
+function calculateBudgetReference(destination, from, numDays, style) {
+    const region     = detectCostRegion(destination);
+    const fromRegion = detectCostRegion(from);
+    const si         = style === 'luxury' ? 2 : (style === 'mid' ? 1 : 0);
+    const costs      = COST_TABLE[region] || COST_TABLE.southeast_asia;
+    const d          = Math.max(1, parseInt(numDays) || 3);
+
+    const calc = (idx) => {
+        const f = costs.flights[idx];
+        const h = costs.hotel[idx] * d;
+        const fd = costs.food[idx] * d;
+        const t = costs.transport[idx] * d;
+        const a = costs.activities[idx] * d;
+        const v = (fromRegion === region && region === 'india') ? 0 : costs.visa;
+        const ins = costs.insurance[idx] * d;
+        const sub = f + h + fd + t + a + v + ins;
+        const misc = Math.round(sub * 0.12);
+        return { flights:f, hotels:h, food:fd, transport:t, activities:a, visa:v, insurance:ins, misc, total: sub + misc };
+    };
+
+    const selected = calc(si);
+    const tiers    = [calc(0), calc(1), calc(2)];
+
+    return { ...selected, budget_total: tiers[0].total, midrange_total: tiers[1].total, luxury_total: tiers[2].total, region, days: d };
+}
+
 // Build a compact plain-text summary of a trip for chatbot context
 function buildTripContext(data) {
     const meta   = data.meta || {};
@@ -88,7 +153,7 @@ function buildTripContext(data) {
         `Trip ID: ${meta.tripId || 'N/A'}`,
         `Destination: ${meta.tripTitle || '—'} | From: ${meta.firstCity || '—'} | Mode: ${meta.travelMode || 'flight'}`,
         `Duration: ${(data.itinerary || []).length} days | Total cost: ${data.totalEstimatedCost || '—'}`,
-        `Budget — Flights: ${bd.flights || '—'}, Hotels: ${bd.hotels || '—'}, Food: ${bd.food || '—'}, Transport: ${bd.transport || '—'}`,
+        `Budget — Flights: ${bd.flights || '—'}, Hotels: ${bd.hotels || '—'}, Food: ${bd.food || '—'}, Transport: ${bd.transport || '—'}, Activities: ${bd.activities || '—'}, Visa: ${bd.visa || '—'}, Insurance: ${bd.insurance || '—'}, Misc: ${bd.misc || '—'}`,
         `Best time: ${data.best_time?.best_months || '—'} (${data.best_time?.weather_summary || ''})`,
         `Visa: ${data.visa_info?.type || 'N/A'} | Cost: ${data.visa_info?.cost_approx || '—'} | Processing: ${data.visa_info?.processing_time || '—'}`,
         `Hotels:\n${hotelsSummary}`,
@@ -325,6 +390,10 @@ app.post("/generate", async (req, res) => {
     const firstCity = isMultiCity && parsedCities.length > 0 ? parsedCities[0].city : effectiveDestination;
     const lastCity  = isMultiCity && parsedCities.length > 0 ? parsedCities[parsedCities.length - 1].city : effectiveDestination;
 
+    // ── Budget reference (realistic baseline costs) ────────────────────────────
+    const budgetRef = calculateBudgetReference(effectiveDestination, effectiveFrom, totalDays, style);
+    const fmtINR = v => v.toLocaleString('en-IN');
+
     // ── Flight / Transport prompt section ─────────────────────────────────────
     // Multi-city: show departure (Home→FirstCity) + return (LastCity→Home) structure.
     // Single-city: show 3 options (cheapest / fastest / best_value) with outbound+inbound.
@@ -388,8 +457,22 @@ You are an elite AI travel planner API. Create a hyper-personalized travel itine
 TRIP DETAILS:
 - From: ${effectiveFrom} → Destination: ${destDisplay}
 - Travelers: ${travelers} | Style: ${travelStyle} | Pace: ${travelPace}
-- Interests: ${interestsList} | Budget: ₹${budget} | Days: ${totalDays} | Date: ${date}
+- Interests: ${interestsList} | Days: ${totalDays} | Date: ${date}
 - Day Plan: ${itineraryInstruction}
+
+BUDGET CALCULATION INSTRUCTIONS:
+Calculate REALISTIC average travel costs for ${destDisplay}. Do NOT underestimate.
+Use these reference baseline costs (${budgetRef.region} region, ${travelStyle} style, ${totalDays} days) as MINIMUMS:
+- Round-trip flights from ${effectiveFrom}: ₹${fmtINR(budgetRef.flights)}
+- Hotels (${totalDays} nights): ₹${fmtINR(budgetRef.hotels)}
+- Food (${totalDays} days): ₹${fmtINR(budgetRef.food)}
+- Local transport: ₹${fmtINR(budgetRef.transport)}
+- Activities/attractions: ₹${fmtINR(budgetRef.activities)}
+- Visa: ₹${fmtINR(budgetRef.visa)}
+- Travel insurance: ₹${fmtINR(budgetRef.insurance)}
+- Miscellaneous (12% buffer): ₹${fmtINR(budgetRef.misc)}
+These are baselines — adjust HIGHER for expensive cities (Paris, Tokyo, NYC, Dubai, Zurich, London).
+Adjust LOWER only for genuinely cheaper destinations. Always be realistic.
 
 CRITICAL RULES:
 1. Output EXACTLY ${totalDays} day objects in "itinerary" array.
@@ -423,14 +506,17 @@ Return ONLY this JSON (no markdown, no extra text):
     }
   ],
   "budget_breakdown": {
-    "flights": "₹8000",
-    "hotels": "₹12000",
-    "food": "₹3000",
-    "transport": "₹1500",
-    "activities": "₹500",
-    "budget_total": "₹15000",
-    "midrange_total": "₹30000",
-    "luxury_total": "₹65000"
+    "flights": "₹${fmtINR(budgetRef.flights)}",
+    "hotels": "₹${fmtINR(budgetRef.hotels)}",
+    "food": "₹${fmtINR(budgetRef.food)}",
+    "transport": "₹${fmtINR(budgetRef.transport)}",
+    "activities": "₹${fmtINR(budgetRef.activities)}",
+    "visa": "₹${fmtINR(budgetRef.visa)}",
+    "insurance": "₹${fmtINR(budgetRef.insurance)}",
+    "misc": "₹${fmtINR(budgetRef.misc)}",
+    "budget_total": "₹${fmtINR(budgetRef.budget_total)}",
+    "midrange_total": "₹${fmtINR(budgetRef.midrange_total)}",
+    "luxury_total": "₹${fmtINR(budgetRef.luxury_total)}"
   },
   "best_time": {
     "best_months": "October to March",
@@ -460,7 +546,7 @@ Return ONLY this JSON (no markdown, no extra text):
     "tech": ["Universal adapter", "Power bank", "Camera"],
     "local_tips": ["Download offline maps", "Keep local currency"]
   },
-  "totalEstimatedCost": "₹25000"
+  "totalEstimatedCost": "₹${fmtINR(budgetRef.total)}"
 }`;
 
     try {
@@ -473,6 +559,37 @@ Return ONLY this JSON (no markdown, no extra text):
         if (jsonStart === -1 || jsonEnd === -1) throw new Error("No JSON object found in Gemini response");
         text = text.slice(jsonStart, jsonEnd + 1);
         const data = JSON.parse(text);
+
+        // ── Post-process budget: ensure all 8 categories + totals exist ──
+        if (data.budget_breakdown) {
+            const bd = data.budget_breakdown;
+            const parseINR = v => parseInt(String(v || '0').replace(/[₹,\s]/g, '')) || 0;
+            const toINR = v => '₹' + v.toLocaleString('en-IN');
+            if (!bd.visa || bd.visa === '—') bd.visa = toINR(budgetRef.visa);
+            if (!bd.insurance || bd.insurance === '—') bd.insurance = toINR(budgetRef.insurance);
+            if (!bd.misc || bd.misc === '—') {
+                const sub = parseINR(bd.flights) + parseINR(bd.hotels) + parseINR(bd.food) + parseINR(bd.transport) + parseINR(bd.activities) + parseINR(bd.visa) + parseINR(bd.insurance);
+                bd.misc = toINR(Math.round(sub * 0.12));
+            }
+            // Ensure tier totals exist
+            if (!bd.budget_total) bd.budget_total = toINR(budgetRef.budget_total);
+            if (!bd.midrange_total) bd.midrange_total = toINR(budgetRef.midrange_total);
+            if (!bd.luxury_total) bd.luxury_total = toINR(budgetRef.luxury_total);
+            // Recalculate totalEstimatedCost from actual breakdown
+            const total = parseINR(bd.flights) + parseINR(bd.hotels) + parseINR(bd.food) + parseINR(bd.transport) + parseINR(bd.activities) + parseINR(bd.visa) + parseINR(bd.insurance) + parseINR(bd.misc);
+            data.totalEstimatedCost = toINR(total);
+        } else {
+            // Gemini didn't return budget — use our calculated reference
+            const toINR = v => '₹' + v.toLocaleString('en-IN');
+            data.budget_breakdown = {
+                flights: toINR(budgetRef.flights), hotels: toINR(budgetRef.hotels), food: toINR(budgetRef.food),
+                transport: toINR(budgetRef.transport), activities: toINR(budgetRef.activities), visa: toINR(budgetRef.visa),
+                insurance: toINR(budgetRef.insurance), misc: toINR(budgetRef.misc),
+                budget_total: toINR(budgetRef.budget_total), midrange_total: toINR(budgetRef.midrange_total), luxury_total: toINR(budgetRef.luxury_total)
+            };
+            data.totalEstimatedCost = toINR(budgetRef.total);
+        }
+
         // Generate unique Trip ID and store itinerary for chatbot access
         const tripId = generateTripId();
         const regionName = detectRegion(
