@@ -916,22 +916,21 @@
                 document.getElementById("loading").style.display = "none";
             }
         });
-        window.addEventListener("load", () => {
+      window.addEventListener("load", () => {
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
 
     const destination =
-        localStorage.getItem(
-            "selectedDestination"
-        );
+        params.get("destination");
 
     const budget =
-        localStorage.getItem(
-            "selectedBudget"
-        );
+        params.get("budget");
 
     const days =
-        localStorage.getItem(
-            "selectedDays"
-        );
+        params.get("days");
 
     if(destination){
 
