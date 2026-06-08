@@ -916,6 +916,47 @@
                 document.getElementById("loading").style.display = "none";
             }
         });
+        window.addEventListener("load", () => {
+
+    const destination =
+        localStorage.getItem(
+            "selectedDestination"
+        );
+
+    const budget =
+        localStorage.getItem(
+            "selectedBudget"
+        );
+
+    const days =
+        localStorage.getItem(
+            "selectedDays"
+        );
+
+    if(destination){
+
+        document.querySelector(
+            '[name="destination"]'
+        ).value = destination;
+    }
+
+    if(budget){
+
+        document.querySelector(
+            '[name="budget"]'
+        ).value = budget;
+    }
+
+    if(days){
+
+        document.querySelector(
+            '[name="days"]'
+        ).value = days;
+    }
+
+    updatePreview();
+
+});
     </script>
 </body>
 
